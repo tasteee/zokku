@@ -1,4 +1,3 @@
-import { Sidebar } from '@/components/Sidebar'
 import { JSX } from 'react'
 
 type AppLayoutPropsT = {
@@ -6,12 +5,7 @@ type AppLayoutPropsT = {
 }
 
 const AppLayout = (props: AppLayoutPropsT): JSX.Element => {
-	return (
-		<div className="AppShell">
-			<Sidebar />
-			<main className="MainArea">{props.children}</main>
-		</div>
-	)
+	return <>{props.children}</>
 }
 
 export default AppLayout

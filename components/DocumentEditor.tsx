@@ -7,6 +7,7 @@ import { api } from '@/convex/_generated/api'
 import type { Id } from '@/convex/_generated/dataModel'
 import { renderMarkdown, exportHtml } from '@/app/actions/renderMarkdown'
 import { ZButton } from '@/components/zButton'
+import { CaretLeftIcon } from '@phosphor-icons/react'
 
 type DocumentEditorPropsT = {
 	documentId: Id<'documents'>
@@ -17,13 +18,16 @@ type SaveState = 'saved' | 'saving' | 'unsaved'
 const AUTOSAVE_DELAY_MS = 1000
 const PREVIEW_DEBOUNCE_MS = 300
 
+import { datass, useDatass } from 'datass'
+
 export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const document = useQuery(api.documents.get, { id: props.documentId })
 	const updateDocument = useMutation(api.documents.update)
 	const removeDocument = useMutation(api.documents.remove)
 	const router = useRouter()
 
-	const [title, setTitle] = useState('')
+	const title = useDatass.string('')
+
 	const [content, setContent] = useState('')
 	const [previewHtml, setPreviewHtml] = useState('')
 	const [saveState, setSaveState] = useState<SaveState>('saved')
@@ -66,7 +70,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		if (!isLoaded || isMountedRef.current) return
 
 		isMountedRef.current = true
-		setTitle(document.title)
+		title.set(document.title)
 		setContent(document.content)
 	}, [document])
 
@@ -98,22 +102,22 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 
 	const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
 		const nextTitle = event.target.value
-		setTitle(nextTitle)
+		title.set(nextTitle)
 		scheduleSave(nextTitle, content)
 	}
 
 	const handleContentChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {
 		const nextContent = event.target.value
 		setContent(nextContent)
-		scheduleSave(title, nextContent)
+		scheduleSave(title.state, nextContent)
 	}
 
 	const handleExport = async (): Promise<void> => {
-		const html = await exportHtml(title, content)
+		const html = await exportHtml(title.state, content)
 		const blob = new Blob([html], { type: 'text/html' })
 		const url = URL.createObjectURL(blob)
 		const anchor = globalThis.document.createElement('a')
-		const safeFilename = (title || 'document').replace(/[^a-z0-9\-_\s]/gi, '').trim() || 'document'
+		const safeFilename = (title.state || 'document').replace(/[^a-z0-9\-_\s]/gi, '').trim() || 'document'
 		anchor.href = url
 		anchor.download = `${safeFilename}.html`
 		anchor.click()
@@ -164,12 +168,15 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	}
 
 	return (
-		<>
+		<div className="EditorShell">
 			<div className="Topbar">
+				<button className="TopbarBackButton" onClick={() => router.push('/documents')} title="All documents">
+					<CaretLeftIcon size={18} weight="bold" />
+				</button>
 				<input
 					className="TopbarTitle"
 					type="text"
-					value={title}
+					value={title.state}
 					onChange={handleTitleChange}
 					placeholder="Untitled"
 					spellCheck={false}
@@ -223,6 +230,6 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 					</div>
 				</div>
 			</div>
-		</>
+		</div>
 	)
 }

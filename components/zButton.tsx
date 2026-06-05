@@ -1,7 +1,6 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
 import { prop } from '@/lib/prop'
-import './zButton.css'
 
 type ZColorSwitchPropsT = 'isNeutral' | 'isPurple' | 'isPink' | 'isRed'
 type ZButtonSizePropsT = 'isExtraSmall' | 'isSmall' | 'isMedium' | 'isLarge' | 'isExtraLarge' | 'isIcon'

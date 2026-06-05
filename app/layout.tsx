@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server'
 import { ConvexClientProvider } from '@/components/ConvexClientProvider'
 import './globals.css'
+import '@/components/zButton.css'
 
 export const metadata: Metadata = {
 	title: 'Zokku',
