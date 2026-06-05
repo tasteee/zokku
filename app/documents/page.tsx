@@ -1,5 +1,6 @@
 'use client'
 
+import { JSX } from 'react'
 import { useMutation } from 'convex/react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/convex/_generated/api'

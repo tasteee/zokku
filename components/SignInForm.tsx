@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { JSX, useState } from 'react'
 import { useAuthActions } from '@convex-dev/auth/react'
 import { useRouter } from 'next/navigation'
 

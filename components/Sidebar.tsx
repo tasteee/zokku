@@ -5,6 +5,7 @@ import { useAuthActions } from '@convex-dev/auth/react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/convex/_generated/api'
+import { JSX } from 'react'
 
 export const Sidebar = (): JSX.Element => {
 	const documents = useQuery(api.documents.list)

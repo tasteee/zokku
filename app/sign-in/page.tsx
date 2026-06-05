@@ -1,3 +1,4 @@
+import { JSX } from 'react'
 import { SignInForm } from '@/components/SignInForm'
 
 const SignInPage = (): JSX.Element => {

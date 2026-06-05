@@ -1,4 +1,5 @@
 import { Sidebar } from '@/components/Sidebar'
+import { JSX } from 'react'
 
 type AppLayoutPropsT = {
 	children: React.ReactNode

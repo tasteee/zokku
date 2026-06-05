@@ -1,3 +1,4 @@
+import { JSX } from 'react'
 import type { Metadata } from 'next'
 import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server'
 import { ConvexClientProvider } from '@/components/ConvexClientProvider'

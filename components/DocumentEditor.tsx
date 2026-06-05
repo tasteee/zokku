@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation } from 'convex/react'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect, useRef, useCallback, CSSProperties } from 'react'
+import { useState, useEffect, useRef, useCallback, CSSProperties, JSX } from 'react'
 import { api } from '@/convex/_generated/api'
 import type { Id } from '@/convex/_generated/dataModel'
 import { renderMarkdown, exportHtml } from '@/app/actions/renderMarkdown'

@@ -1,5 +1,6 @@
 'use client'
 
+import { JSX } from 'react'
 import { ConvexAuthNextjsProvider } from '@convex-dev/auth/nextjs'
 import { ConvexReactClient } from 'convex/react'
 

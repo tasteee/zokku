@@ -1,3 +1,5 @@
+type AnyObjectT = /*unresolved*/ any
+
 export const createPropClassNameSwitch = (map: Record<string, string>) => {
 	const fallback = map.default || ''
 	const mapEntries = Object.entries(map)

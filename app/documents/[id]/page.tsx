@@ -1,5 +1,6 @@
 import { DocumentEditor } from '@/components/DocumentEditor'
 import type { Id } from '@/convex/_generated/dataModel'
+import { JSX } from 'react'
 
 type DocumentPagePropsT = {
 	params: Promise<{ id: string }>
