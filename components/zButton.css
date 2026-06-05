@@ -1,0 +1,245 @@
+.zButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	font-weight: 500;
+	white-space: nowrap;
+	border-radius: var(--radius-md);
+	border: 1px solid transparent;
+	cursor: pointer;
+	line-height: 1;
+	transition:
+		opacity 0.1s ease,
+		border-color 0.1s ease,
+		background-color 0.1s ease,
+		color 0.1s ease;
+}
+
+.zButton.isExtraSmall {
+	height: 1.5rem;
+	padding-inline: 0.625rem;
+	font-size: 0.6875rem;
+}
+
+.zButton.isSmall {
+	height: 2rem;
+	padding-inline: 0.875rem;
+	font-size: 0.875rem;
+}
+
+.zButton.isMedium {
+	height: 2.5rem;
+	padding-inline: 1rem;
+	font-size: 0.875rem;
+}
+
+.zButton.isLarge {
+	height: 3rem;
+	padding-inline: 1.5rem;
+	font-size: 1rem;
+}
+
+.zButton.isExtraLarge {
+	height: 3.5rem;
+	padding-inline: 2rem;
+	font-size: 1.125rem;
+}
+
+.zButton.isIcon {
+	width: 2.5rem;
+	height: 2.5rem;
+	padding: 0;
+}
+
+.zButton.isSolid.isPurple {
+	background: var(---purple);
+	border-color: var(---purple);
+	color: var(--primary-foreground);
+	font-weight: 600;
+}
+
+.zButton.isSolid.isPink {
+	background: var(---pink);
+	border-color: var(---pink);
+	color: var(--primary-foreground);
+	font-weight: 600;
+}
+
+.zButton.isSolid.isRed {
+	background: var(--destructive);
+	border-color: var(--destructive);
+	color: var(--destructive-foreground);
+	font-weight: 600;
+}
+
+.zButton.isSolid.isNeutral {
+	background: var(--primary);
+	border-color: var(--primary);
+	color: var(--primary-foreground);
+	font-weight: 600;
+}
+
+.zButton.isSolid:hover {
+	opacity: 0.9;
+}
+
+.zButton.isSolid:active {
+	opacity: 0.8;
+}
+
+.zButton.isOutlined {
+	background: transparent;
+}
+
+.zButton.isOutlined.isPurple {
+	border-color: var(---purple);
+	color: var(---purple);
+}
+
+.zButton.isOutlined.isPink {
+	border-color: var(---pink);
+	color: var(---pink);
+}
+
+.zButton.isOutlined.isRed {
+	border-color: var(--destructive);
+	color: var(--destructive);
+}
+
+.zButton.isOutlined.isNeutral,
+.zButton.isOutlined:not(.isPurple, .isPink, .isRed) {
+	border-color: var(--border);
+	color: var(--foreground);
+}
+
+.zButton.isOutlined.isPurple:hover {
+	background: color-mix(in oklch, var(---purple) 10%, transparent);
+}
+
+.zButton.isOutlined.isPink:hover {
+	background: color-mix(in oklch, var(---pink) 10%, transparent);
+}
+
+.zButton.isOutlined.isRed:hover {
+	background: color-mix(in oklch, var(--destructive) 10%, transparent);
+}
+
+.zButton.isOutlined.isNeutral:hover,
+.zButton.isOutlined:not(.isPurple, .isPink, .isRed):hover {
+	border-color: color-mix(in oklch, var(--foreground) 50%, transparent);
+}
+
+.zButton.isOutlined.isPurple:active {
+	background: color-mix(in oklch, var(---purple) 20%, transparent);
+}
+
+.zButton.isOutlined.isPink:active {
+	background: color-mix(in oklch, var(---pink) 20%, transparent);
+}
+
+.zButton.isOutlined.isRed:active {
+	background: color-mix(in oklch, var(--destructive) 20%, transparent);
+}
+
+.zButton.isOutlined.isNeutral:active,
+.zButton.isOutlined:not(.isPurple, .isPink, .isRed):active {
+	border-color: color-mix(in oklch, var(--foreground) 70%, transparent);
+	background: color-mix(in oklch, var(--foreground) 5%, transparent);
+}
+
+.zButton.isGhost {
+	background: transparent;
+	border-color: transparent;
+}
+
+.zButton.isGhost.isPurple {
+	color: var(---purple);
+}
+
+.zButton.isGhost.isPink {
+	color: var(---pink);
+}
+
+.zButton.isGhost.isRed {
+	color: var(--destructive);
+}
+
+.zButton.isGhost.isNeutral,
+.zButton.isGhost:not(.isPurple, .isPink, .isRed) {
+	color: var(--foreground);
+}
+
+.zButton.isGhost:hover {
+	opacity: 0.7;
+}
+
+.zButton.isGhost:active {
+	opacity: 0.55;
+}
+
+.zButton.isDisabled,
+.zButton:disabled {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+.zButton.isHidden {
+	display: none;
+}
+
+.zButton.isLoading {
+	cursor: progress;
+}
+
+.zButtonSpinner {
+	width: 0.875em;
+	height: 0.875em;
+	border: 2px solid currentColor;
+	border-top-color: transparent;
+	border-radius: 999px;
+	animation: zButtonSpin 0.7s linear infinite;
+}
+
+.zButton > svg {
+	width: 1rem;
+	height: 1rem;
+	margin-top: 1px;
+	flex-shrink: 0;
+}
+
+.zButton.isExtraSmall > svg {
+	width: 0.75rem;
+	height: 0.75rem;
+}
+
+.zButton.isSmall > svg {
+	width: 0.875rem;
+	height: 0.875rem;
+}
+
+.zButton.isMedium > svg {
+	width: 1rem;
+	height: 1rem;
+}
+
+.zButton.isLarge > svg {
+	width: 1.125rem;
+	height: 1.125rem;
+}
+
+.zButton.isExtraLarge > svg {
+	width: 1.25rem;
+	height: 1.25rem;
+}
+
+.zButton.isIcon > svg {
+	width: 1rem;
+	height: 1rem;
+}
+
+@keyframes zButtonSpin {
+	to {
+		transform: rotate(360deg);
+	}
+}

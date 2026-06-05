@@ -1,0 +1,1190 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;900&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+	color-scheme: dark;
+
+	/* Zest palette */
+	--color-pink: oklch(0.75 0.25 350);
+	--color-purple: oklch(0.7 0.25 300);
+	--color-neutral: #fafafa;
+	--color-muted: #a0a0a0;
+	--color-secondary: #707070;
+	--color-border: #2a2f2a;
+	--color-surface: #141814;
+	--color-background: #0a0f0a;
+
+	/* Semantic aliases */
+	--bg: var(--color-background);
+	--paper: var(--color-surface);
+	--paper-soft: oklch(0.16 0.025 145);
+	--line: var(--color-border);
+	--primary: var(--color-neutral);
+	--foreground: var(--color-muted);
+	--muted: var(--color-muted);
+	--accent: var(--color-purple);
+	--accent-alt: var(--color-pink);
+	--warning: var(--color-pink);
+
+	/* Type */
+	--font-sans: 'DM Sans', system-ui, sans-serif;
+	--font-mono: 'DM Mono', 'Fira Code', monospace;
+	--radius: 0.5rem;
+
+	--border: oklch(0.28 0.02 144.99);
+
+	/*  */
+	/*  */
+	/*  */
+
+	--page-gradient-from: #050908;
+	--page-gradient-via: #0a0f0a;
+	--page-gradient-to: #0d120d;
+	--page-gradient-min-height: 2000px;
+	--page-gradient: none;
+	--background: #0a0f0a;
+	--background-light: oklch(0.16 0.025 145);
+	/* --foreground: oklch(0.985 0 0); */
+	--card: #0d120d;
+	--card-foreground: oklch(0.985 0 0);
+	--popover: oklch(0.145 0 0);
+	--popover-foreground: oklch(0.985 0 0);
+	/* --primary: oklch(0.985 0 0); */
+	--primary-foreground: oklch(0.205 0 0);
+	--secondary-foreground: oklch(0.985 0 0);
+	/* --muted: oklch(0.269 0 0); */
+	/* --muted-foreground: oklch(0.708 0 0); */
+	--skeleton: oklch(0.269 0 0);
+	/* --accent: oklch(0.269 0 0); */
+	--accent-foreground: oklch(0.985 0 0);
+	--destructive: oklch(0.396 0.141 25.723);
+	--destructive-foreground: oklch(0.637 0.237 25.331);
+	--border: oklch(0.269 0 0);
+	--input: oklch(0.269 0 0);
+	--ring: oklch(0.439 0 0);
+	--chart-1: oklch(0.7 0.25 300);
+	--chart-2: oklch(0.75 0.25 350);
+	--chart-3: oklch(0.7 0 0);
+	--chart-4: oklch(0.55 0 0);
+	--chart-5: oklch(0.45 0 0);
+	--sidebar: oklch(0.205 0 0);
+	--sidebar-foreground: oklch(0.985 0 0);
+	--sidebar-primary: oklch(0.488 0.243 264.376);
+	--sidebar-primary-foreground: oklch(0.985 0 0);
+	--sidebar-accent: oklch(0.269 0 0);
+	--sidebar-accent-foreground: oklch(0.985 0 0);
+	--sidebar-border: oklch(0.269 0 0);
+	--sidebar-ring: oklch(0.439 0 0);
+
+	--font-sans: 'DM Sans', 'DM Sans Fallback', system-ui, sans-serif;
+	--font-mono: 'DM Mono', 'Geist Mono', monospace;
+	--color-background: var(--background);
+	--color-background-light: var(--background-light);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--color-secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	/* --color-muted: var(--muted); */
+	--color-muted-foreground: var(--muted-foreground);
+	--color-skeleton: var(--skeleton);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-chart-1: var(--chart-1);
+	--color-chart-2: var(--chart-2);
+	--color-chart-3: var(--chart-3);
+	--color-chart-4: var(--chart-4);
+	--color-chart-5: var(--chart-5);
+	--color-neon-pink: var(--neon-pink);
+	--color-neon-purple: var(--neon-purple);
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-ring: var(--sidebar-ring);
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html,
+body,
+#__next {
+	height: 100%;
+}
+
+body {
+	font-family: var(--font-sans);
+	background: var(--bg);
+	color: var(--foreground);
+	-webkit-font-smoothing: antialiased;
+}
+
+/* ─── App Shell ─────────────────────────────────────────── */
+
+.AppShell {
+	display: grid;
+	grid-template-columns: 15rem 1fr;
+	grid-template-rows: 1fr;
+	height: 100dvh;
+	overflow: hidden;
+}
+
+/* ─── Sidebar ────────────────────────────────────────────── */
+
+.Sidebar {
+	display: flex;
+	flex-direction: column;
+	border-right: 1px solid var(--line);
+	background: var(--paper);
+	overflow: hidden;
+}
+
+.SidebarHeader {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.875rem 1rem;
+	border-bottom: 1px solid var(--line);
+}
+
+.SidebarBrand {
+	flex: 1;
+	font-size: 0.8125rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--primary);
+}
+
+.SidebarBrandDot {
+	display: inline-block;
+	width: 0.4375rem;
+	height: 0.4375rem;
+	border-radius: 999px;
+	background: var(--accent);
+	margin-right: 0.5rem;
+	vertical-align: 0.1em;
+}
+
+.SidebarNewButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: transparent;
+	color: var(--muted);
+	font-size: 1.125rem;
+	line-height: 1;
+	cursor: pointer;
+	transition:
+		border-color 120ms,
+		color 120ms;
+}
+
+.SidebarNewButton:hover {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+.SidebarList {
+	flex: 1;
+	overflow-y: auto;
+	padding: 0.5rem 0;
+}
+
+.SidebarItem {
+	display: block;
+	padding: 0.5625rem 1rem;
+	font-size: 0.875rem;
+	font-weight: 400;
+	color: var(--muted);
+	text-decoration: none;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	border-left: 2px solid transparent;
+	transition:
+		background 100ms,
+		color 100ms,
+		border-color 100ms;
+}
+
+.SidebarItem:hover {
+	background: var(--paper-soft);
+	color: var(--foreground);
+}
+
+.SidebarItem[data-active='true'] {
+	border-left-color: var(--accent);
+	color: var(--primary);
+	background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.SidebarEmpty {
+	padding: 1.5rem 1rem;
+	font-size: 0.8125rem;
+	color: var(--muted);
+	line-height: 1.5;
+}
+
+.SidebarFooter {
+	border-top: 1px solid var(--line);
+	padding: 0.75rem 1rem;
+}
+
+.SidebarSignOut {
+	display: block;
+	width: 100%;
+	padding: 0.4375rem 0.75rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: transparent;
+	color: var(--muted);
+	font-family: var(--font-sans);
+	font-size: 0.8125rem;
+	text-align: left;
+	cursor: pointer;
+	transition:
+		border-color 120ms,
+		color 120ms;
+}
+
+.SidebarSignOut:hover {
+	border-color: var(--accent-alt);
+	color: var(--accent-alt);
+}
+
+/* ─── Main Area ─────────────────────────────────────────── */
+
+.MainArea {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	min-width: 0;
+}
+
+/* ─── Topbar ─────────────────────────────────────────────── */
+
+.Topbar {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0 1.25rem;
+	height: 3rem;
+	border-bottom: 1px solid var(--line);
+	flex-shrink: 0;
+}
+
+.TopbarTitle {
+	flex: 1;
+	background: transparent;
+	border: none;
+	border-bottom: 1px solid transparent;
+	color: var(--primary);
+	font-family: var(--font-sans);
+	font-size: 0.9375rem;
+	font-weight: 600;
+	outline: none;
+	padding: 0.125rem 0;
+	min-width: 0;
+	transition: border-color 120ms;
+}
+
+.TopbarTitle:focus {
+	border-bottom-color: var(--accent);
+}
+
+.TopbarSaveState {
+	font-size: 0.75rem;
+	font-weight: 500;
+	letter-spacing: 0.04em;
+	color: var(--muted);
+	flex-shrink: 0;
+}
+
+.TopbarSaveState[data-saving='true'] {
+	color: var(--accent);
+}
+
+.TopbarActions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-shrink: 0;
+}
+
+.TopbarButton {
+	padding: 0.3125rem 0.75rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: transparent;
+	color: var(--muted);
+	font-family: var(--font-sans);
+	font-size: 0.8125rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition:
+		border-color 120ms,
+		color 120ms;
+	white-space: nowrap;
+}
+
+.TopbarButton:hover {
+	border-color: var(--foreground);
+	color: var(--foreground);
+}
+
+.TopbarButton[data-variant='danger'] {
+	color: var(--muted);
+}
+
+.TopbarButton[data-variant='danger']:hover {
+	border-color: var(--accent-alt);
+	color: var(--accent-alt);
+}
+
+.TopbarButton[data-variant='danger'][data-confirm='true'] {
+	border-color: var(--accent-alt);
+	color: var(--accent-alt);
+}
+
+/* ─── Editor Layout ─────────────────────────────────────── */
+
+.EditorLayout {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	flex: 1;
+	overflow: hidden;
+}
+
+.EditorPane {
+	display: flex;
+	flex-direction: column;
+	border-right: none;
+	overflow: hidden;
+	min-width: 0;
+}
+
+.EditorResizeHandle {
+	width: 1px;
+	background: var(--line);
+	cursor: col-resize;
+	position: relative;
+	flex-shrink: 0;
+	transition: background 0.15s;
+}
+
+.EditorResizeHandle::after {
+	content: '';
+	position: absolute;
+	inset: 0 -4px;
+}
+
+.EditorPaneLabel {
+	padding: 0.375rem 1rem;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--muted);
+	border-bottom: 1px solid var(--line);
+	flex-shrink: 0;
+}
+
+.EditorPaneContent {
+	flex: 1;
+	overflow: hidden;
+	min-height: 0;
+}
+
+.EditorTextarea {
+	width: 100%;
+	height: 100%;
+	background: var(--bg);
+	color: var(--foreground);
+	font-family: var(--font-mono);
+	font-size: 0.875rem;
+	line-height: 1.7;
+	border: none;
+	outline: none;
+	resize: none;
+	padding: 1.25rem;
+	min-height: 100%;
+}
+
+.PreviewPane {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	min-width: 0;
+	background: var(--bg);
+}
+
+.PreviewPaneLabel {
+	padding: 0.375rem 1rem;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--muted);
+	border-bottom: 1px solid var(--line);
+	flex-shrink: 0;
+}
+
+.PreviewPaneContent {
+	flex: 1;
+	overflow-y: auto;
+	padding: 1.5rem 2rem;
+	min-height: 0;
+}
+
+/* ─── Home Empty State ───────────────────────────────────── */
+
+.HomeEmpty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	gap: 1rem;
+	padding: 2rem;
+}
+
+.HomeEmptyTitle {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: var(--primary);
+}
+
+.HomeEmptyBody {
+	font-size: 0.9375rem;
+	color: var(--muted);
+	text-align: center;
+	max-width: 22rem;
+	line-height: 1.6;
+}
+
+.HomeEmptyButton {
+	padding: 0.625rem 1.5rem;
+	border: 1px solid var(--accent);
+	border-radius: var(--radius);
+	background: transparent;
+	color: var(--accent);
+	font-family: var(--font-sans);
+	font-size: 0.9375rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background 120ms;
+}
+
+.HomeEmptyButton:hover {
+	background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+/* ─── Auth Pages ─────────────────────────────────────────── */
+
+.AuthShell {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100dvh;
+	background: var(--bg);
+	padding: 1.5rem;
+}
+
+.AuthCard {
+	width: 100%;
+	max-width: 22rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--paper);
+	padding: 2rem;
+}
+
+.AuthCardHeader {
+	margin-bottom: 1.75rem;
+}
+
+.AuthBrand {
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--accent);
+	margin-bottom: 0.75rem;
+}
+
+.AuthTitle {
+	font-size: 1.375rem;
+	font-weight: 700;
+	color: var(--primary);
+	line-height: 1.2;
+}
+
+.AuthSubtitle {
+	margin-top: 0.375rem;
+	font-size: 0.875rem;
+	color: var(--muted);
+}
+
+.AuthForm {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.AuthFieldGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 0.375rem;
+}
+
+.AuthLabel {
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--foreground);
+}
+
+.AuthInput {
+	padding: 0.5625rem 0.75rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--bg);
+	color: var(--primary);
+	font-family: var(--font-sans);
+	font-size: 0.9375rem;
+	outline: none;
+	transition: border-color 120ms;
+}
+
+.AuthInput:focus {
+	border-color: var(--accent);
+}
+
+.AuthInput::placeholder {
+	color: var(--muted);
+}
+
+.AuthSubmitButton {
+	margin-top: 0.5rem;
+	padding: 0.625rem 1rem;
+	border: 1px solid var(--accent);
+	border-radius: var(--radius);
+	background: transparent;
+	color: var(--accent);
+	font-family: var(--font-sans);
+	font-size: 0.9375rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 120ms;
+}
+
+.AuthSubmitButton:hover {
+	background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.AuthSubmitButton:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.AuthError {
+	padding: 0.625rem 0.75rem;
+	border: 1px solid var(--accent-alt);
+	border-radius: var(--radius);
+	background: color-mix(in srgb, var(--accent-alt) 8%, transparent);
+	color: var(--accent-alt);
+	font-size: 0.875rem;
+}
+
+.AuthToggle {
+	margin-top: 1.25rem;
+	text-align: center;
+	font-size: 0.875rem;
+	color: var(--muted);
+}
+
+.AuthToggleLink {
+	background: none;
+	border: none;
+	color: var(--accent);
+	font-family: var(--font-sans);
+	font-size: 0.875rem;
+	cursor: pointer;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+}
+
+/* ─── Document Preview Prose ─────────────────────────────── */
+
+.Prose h1,
+.Prose h2,
+.Prose h3,
+.Prose h4,
+.Prose h5,
+.Prose h6 {
+	color: var(--primary);
+	font-weight: 700;
+	line-height: 1.15;
+	margin-top: 1.75rem;
+	margin-bottom: 1rem;
+}
+
+.Prose h3,
+.Prose h4,
+.Prose h5,
+.Prose h6 {
+	color: #a0a0a0;
+}
+
+.Prose h1 {
+	font-size: 2rem;
+	margin-top: 0;
+}
+.Prose h2 {
+	font-size: 1.5rem;
+}
+.Prose h3 {
+	font-size: 1.25rem;
+}
+.Prose h4 {
+	font-size: 1.0625rem;
+	font-weight: 600;
+}
+.Prose h5,
+.Prose h6 {
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--accent);
+}
+
+.Prose p {
+	font-size: 0.9375rem;
+	line-height: 1.7;
+	color: var(--foreground);
+	margin-bottom: 1em;
+}
+
+.Prose ul,
+.Prose ol {
+	padding-left: 1.5rem;
+	margin-bottom: 1em;
+}
+
+.Prose li {
+	font-size: 0.9375rem;
+	line-height: 1.65;
+	color: var(--foreground);
+	margin-bottom: 0.25em;
+}
+
+.Prose li::marker {
+	color: var(--accent);
+}
+
+.Prose strong {
+	color: var(--primary);
+	font-weight: 600;
+}
+.Prose em {
+	color: var(--foreground);
+}
+
+.Prose a {
+	color: var(--accent);
+	text-decoration-thickness: 0.08em;
+	text-underline-offset: 0.2em;
+	transition: color 120ms;
+}
+.Prose a:hover {
+	color: var(--accent-alt);
+}
+
+.Prose blockquote {
+	margin: 1.5em 0;
+	padding: 0.25rem 0 0.25rem 1rem;
+	border-left: 3px solid var(--accent);
+	color: var(--muted);
+}
+
+.Prose code {
+	font-family: var(--font-mono);
+	font-size: 0.84em;
+	padding: 0.15em 0.35em;
+	border: 1px solid var(--line);
+	border-radius: calc(var(--radius) - 2px);
+	background: var(--paper);
+	color: var(--accent-alt);
+}
+
+.Prose pre {
+	margin: 1.25em 0;
+	padding: 1rem 1.25rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--paper);
+	overflow-x: auto;
+}
+
+.Prose pre code {
+	all: unset;
+	font-family: var(--font-mono);
+	font-size: 0.875rem;
+	color: var(--foreground);
+	white-space: pre;
+}
+
+.Prose hr {
+	margin: 2em 0;
+	border: none;
+	border-top: 1px solid var(--line);
+}
+
+.Prose table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 1.25em 0;
+	font-size: 0.9rem;
+}
+
+.Prose th,
+.Prose td {
+	padding: 0.5rem 0.75rem;
+	border: 1px solid var(--line);
+	text-align: left;
+}
+
+.Prose th {
+	background: var(--paper);
+	color: var(--primary);
+	font-weight: 600;
+}
+
+.Prose td {
+	color: var(--foreground);
+}
+
+/* ─── Type scale variables (used by zText classes) ──────── */
+
+:root {
+	--font-size-display: 4.5rem;
+	--font-size-h1: 3rem;
+	--font-size-h2: 2.25rem;
+	--font-size-h3: 1.5rem;
+	--font-size-h4: 1.25rem;
+	--font-size-body: 1rem;
+	--font-size-small: 0.875rem;
+	--font-size-caption: 0.75rem;
+	--line-height-display: 0.9;
+	--line-height-h1: 1;
+	--line-height-h2: 1.1;
+	--line-height-h3: 1.2;
+	--line-height-h4: 1.3;
+	--line-height-body: 1.65;
+	--line-height-small: 1.5;
+	--line-height-caption: 1.4;
+	--font-weight-regular: 400;
+	--font-weight-medium: 500;
+	--font-weight-semibold: 600;
+	--font-weight-bold: 700;
+	--note-bg: color-mix(in srgb, var(--accent) 10%, transparent);
+	--tip-bg: color-mix(in srgb, var(--primary) 6%, transparent);
+	--warning-bg: color-mix(in srgb, var(--accent-alt) 10%, transparent);
+}
+
+/* ─── Prose: lede / kicker ───────────────────────────────── */
+
+.Prose .lede {
+	color: var(--foreground);
+	font-size: 1.55rem;
+	font-weight: 300;
+	line-height: 1.45;
+}
+
+.Prose .kicker {
+	margin-bottom: 0.7rem;
+	color: var(--accent-alt);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+
+.Prose .centered {
+	text-align: center;
+}
+
+/* ─── Prose: callouts ────────────────────────────────────── */
+
+.Prose .callout {
+	margin: 1.6rem 0;
+	padding: 1rem 1.125rem;
+	border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+	border-left: 4px solid var(--accent);
+	border-radius: 0 var(--radius) var(--radius) 0;
+	background: var(--note-bg);
+	color: var(--foreground);
+}
+
+.Prose .callout-tip {
+	border-color: color-mix(in srgb, var(--foreground) 35%, var(--line));
+	border-left-color: var(--foreground);
+	background: var(--tip-bg);
+}
+
+.Prose .callout-warning {
+	border-color: color-mix(in srgb, var(--accent-alt) 45%, var(--line));
+	border-left-color: var(--accent-alt);
+	background: var(--warning-bg);
+	color: var(--color-neutral);
+}
+
+/* ─── Prose: zQuote ──────────────────────────────────────── */
+
+.Prose .zQuote {
+	position: relative;
+	margin: 2.5rem 0;
+	padding: 1.75rem 2rem 1.75rem 2.5rem;
+	border: none;
+	border-left: 2px solid var(--accent);
+	background: transparent;
+	color: var(--primary);
+	font-size: 1.125rem;
+	font-weight: 300;
+	font-style: italic;
+	line-height: 1.75;
+	letter-spacing: 0.01em;
+}
+
+.Prose .zQuote::before {
+	content: '\201C';
+	position: absolute;
+	top: -0.25rem;
+	left: 1.75rem;
+	font-size: 4rem;
+	font-weight: 700;
+	font-style: normal;
+	line-height: 1;
+	color: var(--accent);
+	opacity: 0.35;
+	pointer-events: none;
+}
+
+.Prose .zNoteCallout {
+	color: var(--color-neutral) !important;
+}
+
+/* ─── Prose: zText ───────────────────────────────────────── */
+
+.Prose .zText {
+	color: var(--foreground);
+	font-size: var(--font-size-body);
+	line-height: var(--line-height-body);
+	font-weight: var(--font-weight-regular);
+}
+
+.Prose .zTextDisplay {
+	color: var(--primary);
+	font-size: var(--font-size-display);
+	font-weight: var(--font-weight-bold);
+	line-height: var(--line-height-display);
+}
+
+.Prose .zTextH1 {
+	color: var(--primary);
+	font-size: var(--font-size-h1);
+	font-weight: var(--font-weight-bold);
+	line-height: var(--line-height-h1);
+}
+
+.Prose .zTextH2 {
+	color: var(--primary);
+	font-size: var(--font-size-h2);
+	font-weight: var(--font-weight-semibold);
+	line-height: var(--line-height-h2);
+}
+
+.Prose .zTextH3 {
+	color: var(--primary);
+	font-size: var(--font-size-h3);
+	font-weight: var(--font-weight-semibold);
+	line-height: var(--line-height-h3);
+}
+
+.Prose .zTextH4 {
+	font-size: var(--font-size-h4);
+	font-weight: var(--font-weight-medium);
+	line-height: var(--line-height-h4);
+}
+
+.Prose .zTextBody {
+	font-size: var(--font-size-body);
+	font-weight: var(--font-weight-regular);
+	line-height: var(--line-height-body);
+}
+
+.Prose .zTextSmall {
+	font-size: var(--font-size-small);
+	font-weight: var(--font-weight-regular);
+	line-height: var(--line-height-small);
+}
+
+.Prose .zTextCaption {
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-medium);
+	line-height: var(--line-height-caption);
+}
+
+.Prose .zTodo {
+	font-size: var(--font-size-small);
+	font-style: italic;
+	color: var(--color-secondary);
+	opacity: 0.85;
+}
+
+/* ─── Prose: zText size modifiers ───────────────────────── */
+
+.Prose .zText.isExtraSmall {
+	font-size: var(--font-size-caption);
+	line-height: var(--line-height-caption);
+}
+
+.Prose .zText.isSmall {
+	font-size: var(--font-size-small);
+	line-height: var(--line-height-small);
+}
+
+.Prose .zText.isMedium {
+	font-size: var(--font-size-body);
+	line-height: var(--line-height-body);
+}
+
+.Prose .zText.isLarge {
+	font-size: var(--font-size-h4);
+	line-height: var(--line-height-h4);
+	margin-top: 0.5rem;
+}
+
+.Prose .zText.isExtraLarge {
+	font-size: var(--font-size-h3);
+	line-height: var(--line-height-h3);
+}
+
+/* ─── Prose: zText weight modifiers ─────────────────────── */
+
+.Prose .zText.isThin {
+	font-weight: var(--font-weight-regular);
+}
+.Prose .zText.isNormal {
+	font-weight: var(--font-weight-regular);
+}
+.Prose .zText.isBold {
+	font-weight: var(--font-weight-semibold);
+}
+.Prose .zText.isVeryBold {
+	font-weight: var(--font-weight-bold);
+}
+.Prose .zText.isItalic {
+	font-style: italic;
+}
+.Prose .zText.isUnderlined {
+	text-decoration: underline;
+}
+
+/* ─── Prose: color modifiers ─────────────────────────────── */
+
+.Prose .isPurple {
+	color: var(--color-purple);
+}
+.Prose .isPink {
+	color: var(--color-pink);
+}
+.Prose .isNeutral {
+	color: var(--color-neutral);
+}
+.Prose .isMuted {
+	color: var(--muted);
+}
+
+/* After an h1, a lede/large text gets extra breathing room */
+.Prose h1 + .zText.isLarge {
+	margin-bottom: 2rem;
+}
+
+/* ─── Prose: zDivider ────────────────────────────────────── */
+
+.Prose .zDivider {
+	border: none;
+	border-top: 1px solid var(--line);
+	margin-top: 24px;
+	margin-bottom: 32px;
+}
+
+.Prose .zDivider.isVertical {
+	border-top: none;
+	border-left: 1px solid var(--line);
+}
+
+/* ─── Prose: zSpacers ────────────────────────────────────── */
+
+.Prose [class*='zSpacer-'] {
+	display: block;
+}
+.Prose .zSpacer-1 {
+	height: 4px;
+}
+.Prose .zSpacer-2 {
+	height: 8px;
+}
+.Prose .zSpacer-3 {
+	height: 12px;
+}
+.Prose .zSpacer-4 {
+	height: 16px;
+}
+.Prose .zSpacer-5 {
+	height: 20px;
+}
+.Prose .zSpacer-6 {
+	height: 24px;
+}
+.Prose .zSpacer-7 {
+	height: 28px;
+}
+.Prose .zSpacer-8 {
+	height: 32px;
+}
+.Prose .zSpacer-9 {
+	height: 36px;
+}
+.Prose .zSpacer-10 {
+	height: 40px;
+}
+.Prose .zSpacer-11 {
+	height: 44px;
+}
+.Prose .zSpacer-12 {
+	height: 48px;
+}
+.Prose .zSpacer-13 {
+	height: 52px;
+}
+.Prose .zSpacer-14 {
+	height: 56px;
+}
+.Prose .zSpacer-15 {
+	height: 60px;
+}
+.Prose .zSpacer-16 {
+	height: 64px;
+}
+.Prose .zSpacer-17 {
+	height: 68px;
+}
+.Prose .zSpacer-18 {
+	height: 72px;
+}
+.Prose .zSpacer-19 {
+	height: 76px;
+}
+.Prose .zSpacer-20 {
+	height: 80px;
+}
+
+/* ─── Prose: zCodeBlock (syntax-highlighted) ─────────────── */
+
+.Prose .zCodeBlock {
+	position: relative;
+	margin: 1.5rem 0;
+	padding-top: 2rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: oklch(0.14 0.02 145);
+	color: var(--code-fg, var(--foreground));
+	overflow-x: auto;
+}
+
+.Prose .zCodeBlock:not(:has(.zCodeFilename)) {
+	padding-top: 1.125rem;
+}
+
+.Prose .zCodeFilename {
+	position: absolute;
+	top: 0.75rem;
+	right: 0.875rem;
+	max-width: min(70%, 28rem);
+	overflow: hidden;
+	color: color-mix(in srgb, var(--code-fg, var(--foreground)) 62%, transparent);
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	line-height: 1.4;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.Prose .zCode {
+	display: grid;
+	gap: 0;
+	min-width: max-content;
+	font-family: var(--font-mono);
+	font-size: 0.92rem;
+	line-height: 1.65;
+	tab-size: 2;
+	padding: 0 0.5rem 0.125rem;
+}
+
+.Prose .zCode .line {
+	display: block;
+	min-height: 1.65em;
+}
+
+.Prose .zCode .token {
+	color: inherit;
+}
+
+.Prose .isSmallCaps {
+	font-variant: small-caps;
+	text-transform: uppercase;
+	font-weight: 1000;
+	font-size: 0.875rem;
+	letter-spacing: 3px;
+	color: var(--color-purple);
+}
+
+.Prose .isSmallCaps + h1 {
+	margin-top: -12px;
+}
+
+.Prose .isCenteredBlock {
+	text-align: center;
+	padding: 48px 48px;
+	font-style: italic;
+	font-size: var(--font-size-h4);
+	color: var(--color-neutral);
+}
