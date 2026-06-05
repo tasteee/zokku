@@ -10,7 +10,6 @@ import rehypeSlug from 'rehype-slug'
 import rehypeStringify from 'rehype-stringify'
 import { codeToTokensBase } from 'shiki'
 import type { ThemeRegistrationAny } from '@shikijs/types'
-import type { Root, Paragraph, Text, Code } from 'mdast'
 import { customMarkers, matchDynamicMarkerDefinition } from '@/lib/markers'
 import type { MarkerDefinitionT } from '@/lib/markers'
 import { codeTheme } from '@/lib/codeTheme'
@@ -38,9 +37,15 @@ type ShikiTokenT = {
 	fontStyle?: number
 }
 
-// ─── Custom paragraph markers ─────────────────────────────────
+// ─── Minimal mdast-compatible types ─────────────────────────
 
+type Text = { type: 'text'; value: string }
+type Code = { type: 'code'; value: string; lang?: string | null; meta?: string | null }
+type Paragraph = { type: 'paragraph'; children: MdastNode[]; data?: Record<string, unknown> }
+type Root = { type: 'root'; children: MdastNode[] }
 type MdastNode = Root | Paragraph | { type: string; children?: MdastNode[]; data?: Record<string, unknown> }
+
+// ─── Custom paragraph markers ─────────────────────────────────
 
 const visitParagraphs = (node: MdastNode, visitor: (node: Paragraph) => void): void => {
 	if (node.type === 'paragraph') visitor(node as Paragraph)
