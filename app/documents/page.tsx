@@ -1,10 +1,9 @@
 'use client'
 
-import { JSX } from 'react'
+import { JSX, useState } from 'react'
 import { useQuery, useMutation } from 'convex/react'
 import { useAuthActions } from '@convex-dev/auth/react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { api } from '@/convex/_generated/api'
 import { ZButton } from '@/components/zButton'
 
@@ -57,6 +56,15 @@ const DocumentsPage = (): JSX.Element => {
 		router.push('/sign-in')
 	}
 
+	const [copiedId, setCopiedId] = useState<string | null>(null)
+
+	const handleShare = (docId: string): void => {
+		const previewUrl = `${window.location.origin}/documents/${docId}/preview`
+		navigator.clipboard.writeText(previewUrl)
+		setCopiedId(docId)
+		setTimeout(() => setCopiedId(null), 2000)
+	}
+
 	const isLoading = documents === undefined
 	const hasDocuments = !isLoading && documents.length > 0
 	const isEmpty = !isLoading && documents.length === 0
@@ -107,13 +115,26 @@ const DocumentsPage = (): JSX.Element => {
 							const preview = getContentPreview(doc.content)
 							const hasPreview = preview.length > 0
 							const titleLabel = doc.title || 'Untitled'
+							const isCopied = copiedId === doc._id
+							const shareLabel = isCopied ? 'Copied!' : 'Share'
 
 							return (
-								<Link key={doc._id} href={`/documents/${doc._id}`} className="DocumentCard">
-									<div className="DocumentCardTitle">{titleLabel}</div>
-									<div className="DocumentCardMeta">Edited {relativeTime}</div>
-									{hasPreview && <div className="DocumentCardPreview">{preview}</div>}
-								</Link>
+								<div key={doc._id} className="DocumentCard" onClick={() => router.push(`/documents/${doc._id}`)}>
+									<div className="DocumentCardBody">
+										<div className="DocumentCardTitle">{titleLabel}</div>
+										<div className="DocumentCardMeta">Edited {relativeTime}</div>
+										{hasPreview && <div className="DocumentCardPreview">{preview}</div>}
+									</div>
+									<div className="DocumentCardActions">
+										<button
+											className="DocumentCardShareButton"
+											onClick={(event) => { event.stopPropagation(); handleShare(doc._id) }}
+											data-copied={isCopied ? 'true' : 'false'}
+										>
+											{shareLabel}
+										</button>
+									</div>
+								</div>
 							)
 						})}
 					</div>
