@@ -1210,6 +1210,22 @@ body {
 	overflow: hidden;
 }
 
+.DocumentPreviewShell {
+	display: flex;
+	flex-direction: column;
+	height: 100dvh;
+	overflow: hidden;
+}
+
+.DocumentPreviewContent {
+	flex: 1;
+	overflow-y: auto;
+	padding: 3rem 2rem;
+	max-width: 720px;
+	margin: 0 auto;
+	width: 100%;
+}
+
 /* ─── Topbar Back Button ─────────────────────────────────── */
 
 .TopbarBackButton {

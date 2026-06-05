@@ -185,6 +185,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 					{saveLabel}
 				</span>
 				<div className="TopbarActions">
+					<ZButton isSmall isGhost label="Preview" onClick={() => router.push(`/documents/${props.documentId}/preview`)} />
 					<ZButton isSmall isGhost label="Export HTML" onClick={handleExport} />
 					<ZButton
 						isRed
