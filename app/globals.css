@@ -428,19 +428,61 @@ body {
 	min-height: 0;
 }
 
-.EditorTextarea {
-	width: 100%;
+.MarkdownEditor {
+	display: flex;
+	flex-direction: column;
 	height: 100%;
+	min-height: 0;
 	background: var(--bg);
-	color: var(--foreground);
-	font-family: var(--font-mono);
-	font-size: 0.875rem;
-	line-height: 1.7;
-	border: none;
-	outline: none;
-	resize: none;
-	padding: 1.25rem;
-	min-height: 100%;
+}
+
+.MarkdownToolbar {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.125rem;
+	padding: 0.3125rem 0.5rem;
+	border-bottom: 1px solid var(--line);
+	flex-shrink: 0;
+}
+
+.MarkdownToolbarButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border: 1px solid transparent;
+	border-radius: var(--small-button-radius);
+	background: transparent;
+	color: var(--muted);
+	cursor: pointer;
+	transition:
+		background-color 0.1s ease,
+		color 0.1s ease,
+		border-color 0.1s ease;
+}
+
+.MarkdownToolbarButton:hover {
+	background: color-mix(in oklch, var(--foreground) 8%, transparent);
+	color: var(--primary);
+}
+
+.MarkdownToolbarButton:active {
+	background: color-mix(in oklch, var(--foreground) 14%, transparent);
+}
+
+.MarkdownToolbarDivider {
+	width: 1px;
+	align-self: stretch;
+	margin: 0.25rem 0.375rem;
+	background: var(--line);
+}
+
+.MarkdownEditorSurface {
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
 }
 
 .PreviewPane {
@@ -726,6 +768,12 @@ body {
 }
 .Prose em {
 	color: var(--foreground);
+}
+
+.Prose .isUnderlined {
+	text-decoration: underline;
+	text-decoration-thickness: 0.08em;
+	text-underline-offset: 0.2em;
 }
 
 .Prose a {
@@ -1406,7 +1454,9 @@ body {
 	border-radius: var(--radius);
 	padding: 0.25rem 0.625rem;
 	cursor: pointer;
-	transition: color 120ms, border-color 120ms;
+	transition:
+		color 120ms,
+		border-color 120ms;
 }
 
 .DocumentCardShareButton:hover {

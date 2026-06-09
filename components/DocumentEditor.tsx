@@ -8,6 +8,7 @@ import type { Id } from '@/convex/_generated/dataModel'
 import { renderMarkdown, exportHtml } from '@/app/actions/renderMarkdown'
 import { ZButton } from '@/components/zButton'
 import { CaretLeftIcon } from '@phosphor-icons/react'
+import { MarkdownEditor } from '@/components/MarkdownEditor'
 
 type DocumentEditorPropsT = {
 	documentId: Id<'documents'>
@@ -106,8 +107,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		scheduleSave(nextTitle, content)
 	}
 
-	const handleContentChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {
-		const nextContent = event.target.value
+	const handleContentChange = (nextContent: string): void => {
 		setContent(nextContent)
 		scheduleSave(title.state, nextContent)
 	}
@@ -205,16 +205,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 				style={{ gridTemplateColumns: `${splitPercent}% auto 1fr` } as CSSProperties}
 			>
 				<div className="EditorPane">
-					<div className="EditorPaneLabel">Markdown</div>
-					<div className="EditorPaneContent">
-						<textarea
-							className="EditorTextarea"
-							value={content}
-							onChange={handleContentChange}
-							placeholder="Start writing..."
-							spellCheck={false}
-						/>
-					</div>
+					<MarkdownEditor value={content} onChange={handleContentChange} />
 				</div>
 
 				<div
