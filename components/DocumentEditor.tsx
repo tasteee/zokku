@@ -7,8 +7,9 @@ import { api } from '@/convex/_generated/api'
 import type { Id } from '@/convex/_generated/dataModel'
 import { renderMarkdown, exportHtml } from '@/app/actions/renderMarkdown'
 import { ZButton } from '@/components/zButton'
-import { CaretLeftIcon } from '@phosphor-icons/react'
+import { CaretLeftIcon, ChatCircleTextIcon } from '@phosphor-icons/react'
 import { MarkdownEditor } from '@/components/MarkdownEditor'
+import { ClaudeChat } from '@/components/ClaudeChat'
 
 type DocumentEditorPropsT = {
 	documentId: Id<'documents'>
@@ -38,8 +39,11 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const isMountedRef = useRef(false)
 
 	const [splitPercent, setSplitPercent] = useState(50)
+	const [chatPercent, setChatPercent] = useState(30)
+	const [isChatOpen, setIsChatOpen] = useState(false)
 	const editorLayoutRef = useRef<HTMLDivElement | null>(null)
 	const isDraggingRef = useRef(false)
+	const isDraggingChatRef = useRef(false)
 
 	const handleResizePointerDown = (event: React.PointerEvent<HTMLDivElement>): void => {
 		isDraggingRef.current = true
@@ -62,6 +66,30 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 
 	const handleResizePointerUp = (event: React.PointerEvent<HTMLDivElement>): void => {
 		isDraggingRef.current = false
+		event.currentTarget.releasePointerCapture(event.pointerId)
+	}
+
+	const handleChatResizePointerDown = (event: React.PointerEvent<HTMLDivElement>): void => {
+		isDraggingChatRef.current = true
+		event.currentTarget.setPointerCapture(event.pointerId)
+	}
+
+	const handleChatResizePointerMove = (event: React.PointerEvent<HTMLDivElement>): void => {
+		const isNotDragging = !isDraggingChatRef.current
+		if (isNotDragging) return
+
+		const layoutElement = editorLayoutRef.current
+		if (layoutElement === null) return
+
+		const layoutRect = layoutElement.getBoundingClientRect()
+		const offsetFromRight = layoutRect.right - event.clientX
+		const rawPercent = (offsetFromRight / layoutRect.width) * 100
+		const clampedPercent = Math.min(60, Math.max(15, rawPercent))
+		setChatPercent(clampedPercent)
+	}
+
+	const handleChatResizePointerUp = (event: React.PointerEvent<HTMLDivElement>): void => {
+		isDraggingChatRef.current = false
 		event.currentTarget.releasePointerCapture(event.pointerId)
 	}
 
@@ -167,6 +195,8 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		)
 	}
 
+	const gridTemplateColumns = isChatOpen ? `${splitPercent}% auto 1fr auto ${chatPercent}%` : `${splitPercent}% auto 1fr`
+
 	return (
 		<div className="EditorShell">
 			<div className="Topbar">
@@ -185,6 +215,14 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 					{saveLabel}
 				</span>
 				<div className="TopbarActions">
+					<button
+						className="ClaudeChatTrigger"
+						data-active={isChatOpen ? 'true' : 'false'}
+						onClick={() => setIsChatOpen(!isChatOpen)}
+					>
+						<ChatCircleTextIcon size={14} weight="bold" />
+						Ask Claude
+					</button>
 					<ZButton isSmall isGhost label="Preview" onClick={() => router.push(`/documents/${props.documentId}/preview`)} />
 					<ZButton isSmall isGhost label="Export HTML" onClick={handleExport} />
 					<ZButton
@@ -199,11 +237,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 				</div>
 			</div>
 
-			<div
-				ref={editorLayoutRef}
-				className="EditorLayout"
-				style={{ gridTemplateColumns: `${splitPercent}% auto 1fr` } as CSSProperties}
-			>
+			<div ref={editorLayoutRef} className="EditorLayout" style={{ gridTemplateColumns } as CSSProperties}>
 				<div className="EditorPane">
 					<MarkdownEditor value={content} onChange={handleContentChange} />
 				</div>
@@ -221,6 +255,18 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 						<div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} />
 					</div>
 				</div>
+
+				{isChatOpen && (
+					<>
+						<div
+							className="EditorResizeHandle"
+							onPointerDown={handleChatResizePointerDown}
+							onPointerMove={handleChatResizePointerMove}
+							onPointerUp={handleChatResizePointerUp}
+						/>
+						<ClaudeChat documentTitle={title.state} documentContent={content} onClose={() => setIsChatOpen(false)} />
+					</>
+				)}
 			</div>
 		</div>
 	)
