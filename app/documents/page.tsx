@@ -1,10 +1,10 @@
 'use client'
 
 import './page.css'
-import { ChangeEvent, FormEvent, JSX, useMemo, useState } from 'react'
+import { ChangeEvent, FormEvent, JSX, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useMutation } from 'convex/react'
 import { useAuthActions } from '@convex-dev/auth/react'
-import { FileText, Folder, FolderPlus, Plus, Trash, X } from '@phosphor-icons/react'
+import { FileText, Folder, FolderPlus, MagnifyingGlass, Plus, Trash, X } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/convex/_generated/api'
 import { Id } from '@/convex/_generated/dataModel'
@@ -45,6 +45,25 @@ const getContentPreview = (content: string): string => {
 	return normalized.slice(0, 160)
 }
 
+const HighlightedMatch = (props: { text: string; query: string }): JSX.Element => {
+	const normalizedQuery = props.query.trim().toLocaleLowerCase()
+	const matchIndex = props.text.toLocaleLowerCase().indexOf(normalizedQuery)
+
+	if (!normalizedQuery || matchIndex < 0) return <>{props.text}</>
+
+	const before = props.text.slice(0, matchIndex)
+	const match = props.text.slice(matchIndex, matchIndex + normalizedQuery.length)
+	const after = props.text.slice(matchIndex + normalizedQuery.length)
+
+	return (
+		<>
+			{before}
+			<mark>{match}</mark>
+			{after}
+		</>
+	)
+}
+
 const DocumentsPage = (): JSX.Element => {
 	const documents = useQuery(api.documents.list)
 	const folders = useQuery(api.folders.list)
@@ -63,6 +82,13 @@ const DocumentsPage = (): JSX.Element => {
 	const [folderDescription, setFolderDescription] = useState('')
 	const [confirmingFolderId, setConfirmingFolderId] = useState<string | null>(null)
 	const [isCreatingFolder, setIsCreatingFolder] = useState(false)
+	const [isSearchOpen, setIsSearchOpen] = useState(false)
+	const [searchInput, setSearchInput] = useState('')
+	const [debouncedSearchInput, setDebouncedSearchInput] = useState('')
+	const searchInputRef = useRef<HTMLInputElement | null>(null)
+
+	const searchTerm = debouncedSearchInput.trim()
+	const searchResults = useQuery(api.documents.search, searchTerm ? { query: searchTerm } : 'skip')
 
 	const safeDocuments = documents ?? []
 	const safeFolders = folders ?? []
@@ -97,6 +123,35 @@ const DocumentsPage = (): JSX.Element => {
 			: selectedFolderId === 'uncategorized'
 				? 'Documents without a parent folder'
 				: selectedFolder?.description || 'No description'
+
+	useEffect(() => {
+		if (!isSearchOpen) return
+
+		const timeoutId = window.setTimeout(() => {
+			searchInputRef.current?.focus()
+		}, 0)
+
+		return () => window.clearTimeout(timeoutId)
+	}, [isSearchOpen])
+
+	useEffect(() => {
+		const timeoutId = window.setTimeout(() => {
+			setDebouncedSearchInput(searchInput)
+		}, 400)
+
+		return () => window.clearTimeout(timeoutId)
+	}, [searchInput])
+
+	useEffect(() => {
+		if (!isSearchOpen) return
+
+		const handleKeyDown = (event: KeyboardEvent): void => {
+			if (event.key === 'Escape') setIsSearchOpen(false)
+		}
+
+		window.addEventListener('keydown', handleKeyDown)
+		return () => window.removeEventListener('keydown', handleKeyDown)
+	}, [isSearchOpen])
 
 	const handleNew = async (): Promise<void> => {
 		const folderId = selectedFolderId !== 'all' && selectedFolderId !== 'uncategorized' ? selectedFolderId : undefined
@@ -154,6 +209,19 @@ const DocumentsPage = (): JSX.Element => {
 		await moveDocument({ id: documentId, folderId })
 	}
 
+	const handleOpenSearch = (): void => {
+		setIsSearchOpen(true)
+	}
+
+	const handleCloseSearch = (): void => {
+		setIsSearchOpen(false)
+	}
+
+	const handleOpenSearchResult = (documentId: Id<'documents'>): void => {
+		setIsSearchOpen(false)
+		router.push(`/documents/${documentId}`)
+	}
+
 	return (
 		<div className="DocumentsHome">
 			<header className="DocumentsHomeHeader">
@@ -163,6 +231,10 @@ const DocumentsPage = (): JSX.Element => {
 				</span>
 
 				<div className="DocumentsHomeHeaderActions">
+					<ZButton isSmall isOutlined isNeutral onClick={handleOpenSearch}>
+						<MagnifyingGlass weight="bold" />
+						Search
+					</ZButton>
 					<ZButton isSmall isOutlined isNeutral onClick={() => setIsFolderComposerOpen(true)}>
 						<FolderPlus weight="bold" />
 						New folder
@@ -390,6 +462,81 @@ const DocumentsPage = (): JSX.Element => {
 							</ZButton>
 						</div>
 					</form>
+				</div>
+			)}
+
+			{isSearchOpen && (
+				<div className="DocumentsSearchBackdrop" role="presentation" onMouseDown={handleCloseSearch}>
+					<section
+						className="DocumentsSearchPalette"
+						role="dialog"
+						aria-modal="true"
+						aria-label="Search documents"
+						onMouseDown={(event) => event.stopPropagation()}
+					>
+						<div className="DocumentsSearchInputRow">
+							<MagnifyingGlass weight="bold" />
+							<input
+								ref={searchInputRef}
+								value={searchInput}
+								onChange={(event) => setSearchInput(event.target.value)}
+								placeholder="Search every document..."
+								aria-label="Search documents"
+							/>
+							<button className="DocumentsSearchClose" type="button" onClick={handleCloseSearch} title="Close search">
+								<X weight="bold" />
+							</button>
+						</div>
+
+						<div className="DocumentsSearchStatus">
+							{!searchInput.trim() && <span>Type to search titles and document text.</span>}
+							{searchInput.trim() && searchInput.trim() !== searchTerm && <span>Searching after you pause...</span>}
+							{searchTerm && searchResults === undefined && <span>Searching...</span>}
+							{searchTerm && searchResults !== undefined && <span>{searchResults.length} matches</span>}
+						</div>
+
+						<div className="DocumentsSearchResults">
+							{searchTerm &&
+								searchResults?.map((result) => {
+									const folder = safeFolders.find((item) => item._id === result.folderId)
+									const folderLabel = folder?.name ?? 'Uncategorized'
+
+									return (
+										<button
+											key={result._id}
+											className="DocumentsSearchResult"
+											type="button"
+											onClick={() => handleOpenSearchResult(result._id)}
+										>
+											<span className="DocumentsSearchResultIcon">
+												<FileText weight="bold" />
+											</span>
+											<span className="DocumentsSearchResultBody">
+												<span className="DocumentsSearchResultMeta">
+													{result.matchType} match · {folderLabel} · Edited {formatRelativeTime(result.updatedAt)}
+												</span>
+												<span className="DocumentsSearchResultTitle">
+													<HighlightedMatch text={result.title} query={searchTerm} />
+												</span>
+												<span className="DocumentsSearchResultSnippet">
+													<HighlightedMatch text={result.snippet} query={searchTerm} />
+												</span>
+											</span>
+										</button>
+									)
+								})}
+
+							{searchTerm && searchResults !== undefined && searchResults.length === 0 && (
+								<div className="DocumentsSearchEmpty">
+									<div className="DocumentsEmptyGlyph">
+										<MagnifyingGlass weight="bold" />
+									</div>
+									<h2>No matches</h2>
+									<p>Try another phrase or a smaller fragment of text.</p>
+								</div>
+							)}
+						</div>
+					</section>
 				</div>
 			)}
 		</div>
