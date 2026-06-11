@@ -1,239 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;900&family=DM+Mono:wght@400;500&display=swap');
-
-/* Theming foundations. */
-:root {
-	--base-font-size: 18px;
-
-	--base-accent-color-0: oklch(0.75 0.25 350);
-	--base-accent-color-1: oklch(0.7 0.25 300);
-
-	--base-neutral-color-light: #fafafa;
-	--base-neutral-color-dark: #0a0f0a;
-
-	--base-sans-font-family: 'DM Sans';
-	--base-mono-font-family: 'DM Mono';
-
-	--base-spacing: 0.25rem;
-}
-
-/* Derived font sizes. */
-/* Scale: Major Third ratio (×1.25), body at step 3. */
-:root {
-	/* Micro labels — the smallest text we will ever render. */
-	--font-size-0: calc(var(--base-font-size) * 0.579); /* ≈ 10px */
-	/* Caption / timestamp / metadata */
-	--font-size-1: calc(var(--base-font-size) * 0.694); /* ≈ 12.5px */
-	/* Small supporting text */
-	--font-size-2: calc(var(--base-font-size) * 0.833); /* ≈ 15px */
-	/* Body — the base reading size */
-	--font-size-3: calc(var(--base-font-size) * 1); /* = 18px */
-	/* Large body / h4 emphasis */
-	--font-size-4: calc(var(--base-font-size) * 1.25); /* ≈ 22.5px */
-	/* H3 / subheading */
-	--font-size-5: calc(var(--base-font-size) * 1.563); /* ≈ 28px */
-	/* H2 / section heading */
-	--font-size-6: calc(var(--base-font-size) * 1.953); /* ≈ 35px */
-	/* H1 / page title */
-	--font-size-7: calc(var(--base-font-size) * 2.441); /* ≈ 44px */
-	/* Display / hero headline */
-	--font-size-8: calc(var(--base-font-size) * 3.052); /* ≈ 55px */
-}
-
-/* Derived color scales. */
-/* 0 = darkest, 9 = lightest, 4 = brand/base hue. */
-/* Hue is taken from the base token at runtime via CSS relative color syntax. */
-/* Changing a base token cascades through the entire scale automatically.    */
-:root {
-	/* Primary scale — hue derived from --base-accent-color-0 at runtime. */
-	--color-primary-0: oklch(from var(--base-accent-color-0) 0.18 0.1 h);
-	--color-primary-1: oklch(from var(--base-accent-color-0) 0.28 0.14 h);
-	--color-primary-2: oklch(from var(--base-accent-color-0) 0.38 0.18 h);
-	--color-primary-3: oklch(from var(--base-accent-color-0) 0.52 0.22 h);
-	--color-primary-4: var(--base-accent-color-0);
-	--color-primary-5: oklch(from var(--base-accent-color-0) 0.82 0.21 h);
-	--color-primary-6: oklch(from var(--base-accent-color-0) 0.87 0.16 h);
-	--color-primary-7: oklch(from var(--base-accent-color-0) 0.91 0.11 h);
-	--color-primary-8: oklch(from var(--base-accent-color-0) 0.94 0.06 h);
-	--color-primary-9: oklch(from var(--base-accent-color-0) 0.97 0.02 h);
-
-	/* Secondary scale — hue derived from --base-accent-color-1 at runtime. */
-	--color-secondary-0: oklch(from var(--base-accent-color-1) 0.15 0.1 h);
-	--color-secondary-1: oklch(from var(--base-accent-color-1) 0.25 0.14 h);
-	--color-secondary-2: oklch(from var(--base-accent-color-1) 0.35 0.18 h);
-	--color-secondary-3: oklch(from var(--base-accent-color-1) 0.5 0.22 h);
-	--color-secondary-4: var(--base-accent-color-1);
-	--color-secondary-5: oklch(from var(--base-accent-color-1) 0.78 0.21 h);
-	--color-secondary-6: oklch(from var(--base-accent-color-1) 0.84 0.16 h);
-	--color-secondary-7: oklch(from var(--base-accent-color-1) 0.89 0.1 h);
-	--color-secondary-8: oklch(from var(--base-accent-color-1) 0.93 0.05 h);
-	--color-secondary-9: oklch(from var(--base-accent-color-1) 0.97 0.02 h);
-
-	/* Neutral scale — hue and chroma preserved from --base-neutral-color-dark at runtime. */
-	/* Steps 0–8 derive hue/chroma from the dark anchor; step 9 from the light anchor. */
-	--color-neutral-0: oklch(from var(--base-neutral-color-dark) l c h);
-	--color-neutral-1: oklch(from var(--base-neutral-color-dark) 0.12 c h);
-	--color-neutral-2: oklch(from var(--base-neutral-color-dark) 0.18 c h);
-	--color-neutral-3: oklch(from var(--base-neutral-color-dark) 0.28 c h);
-	--color-neutral-4: oklch(from var(--base-neutral-color-dark) 0.4 c h);
-	--color-neutral-5: oklch(from var(--base-neutral-color-dark) 0.55 c h);
-	--color-neutral-6: oklch(from var(--base-neutral-color-dark) 0.68 c h);
-	--color-neutral-7: oklch(from var(--base-neutral-color-dark) 0.8 c h);
-	--color-neutral-8: oklch(from var(--base-neutral-color-dark) 0.9 c h);
-	--color-neutral-9: oklch(from var(--base-neutral-color-light) l c h);
-}
-
-/* Derived spacing scale. */
-/* Each step = --base-spacing × N. Step 1 = 4px at the 16px browser default. */
-:root {
-	--spacing-0: 0;
-	--spacing-1: calc(var(--base-spacing) * 1);   /*  4px */
-	--spacing-2: calc(var(--base-spacing) * 2);   /*  8px */
-	--spacing-3: calc(var(--base-spacing) * 3);   /* 12px */
-	--spacing-4: calc(var(--base-spacing) * 4);   /* 16px */
-	--spacing-5: calc(var(--base-spacing) * 5);   /* 20px */
-	--spacing-6: calc(var(--base-spacing) * 6);   /* 24px */
-	--spacing-7: calc(var(--base-spacing) * 7);   /* 28px */
-	--spacing-8: calc(var(--base-spacing) * 8);   /* 32px */
-	--spacing-9: calc(var(--base-spacing) * 9);   /* 36px */
-	--spacing-10: calc(var(--base-spacing) * 10); /* 40px */
-	--spacing-11: calc(var(--base-spacing) * 11); /* 44px */
-	--spacing-12: calc(var(--base-spacing) * 12); /* 48px */
-	--spacing-14: calc(var(--base-spacing) * 14); /* 56px */
-	--spacing-16: calc(var(--base-spacing) * 16); /* 64px */
-	--spacing-20: calc(var(--base-spacing) * 20); /* 80px */
-	--spacing-24: calc(var(--base-spacing) * 24); /* 96px */
-	--spacing-28: calc(var(--base-spacing) * 28); /* 112px */
-	--spacing-32: calc(var(--base-spacing) * 32); /* 128px */
-	--spacing-36: calc(var(--base-spacing) * 36); /* 144px */
-	--spacing-40: calc(var(--base-spacing) * 40); /* 160px */
-}
-
-:root {
-	color-scheme: dark;
-
-	/* Zest palette — resolved from derived color scales at runtime. */
-	--color-pink: var(--color-primary-4);
-	--color-purple: var(--color-secondary-4);
-	--color-neutral: var(--color-neutral-9);
-	--color-muted: var(--color-neutral-6);
-	--color-secondary: var(--color-neutral-5);
-	--color-border: var(--color-neutral-2);
-	--color-surface: var(--color-neutral-1);
-	--color-background: var(--color-neutral-0);
-
-	--pink: var(--color-pink);
-	--purple: var(--color-purple);
-
-	/* Semantic aliases */
-	--bg: var(--color-background);
-	--paper: var(--color-surface);
-	--paper-soft: oklch(0.16 0.025 145);
-	--line: var(--color-border);
-	--primary: var(--color-neutral);
-	--foreground: var(--color-muted);
-	--muted: var(--color-muted);
-	--accent: var(--color-purple);
-	--accent-alt: var(--color-pink);
-	--warning: var(--color-pink);
-
-	/* Type */
-	--font-sans: 'DM Sans', system-ui, sans-serif;
-	--font-mono: 'DM Mono', 'Fira Code', monospace;
-	--radius: 0.5rem;
-
-	--border: oklch(0.28 0.02 144.99);
-
-	/*  */
-	/*  */
-	/*  */
-
-	--page-gradient-from: #050908;
-	--page-gradient-via: #0a0f0a;
-	--page-gradient-to: #0d120d;
-	--page-gradient-min-height: 2000px;
-	--page-gradient: none;
-	--background: var(--color-neutral-0);
-	--background-light: oklch(0.16 0.025 145);
-	/* --foreground: oklch(0.985 0 0); */
-	--card: #0d120d;
-	--card-foreground: oklch(0.985 0 0);
-	--popover: oklch(0.145 0 0);
-	--popover-foreground: oklch(0.985 0 0);
-	/* --primary: oklch(0.985 0 0); */
-	--primary-foreground: oklch(0.205 0 0);
-	--secondary-foreground: oklch(0.985 0 0);
-	/* --muted: oklch(0.269 0 0); */
-	/* --muted-foreground: oklch(0.708 0 0); */
-	--skeleton: oklch(0.269 0 0);
-	/* --accent: oklch(0.269 0 0); */
-	--accent-foreground: oklch(0.985 0 0);
-	--destructive: oklch(0.396 0.141 25.723);
-	--destructive-foreground: oklch(0.637 0.237 25.331);
-	--border: oklch(0.269 0 0);
-	--input: oklch(0.269 0 0);
-	--ring: oklch(0.439 0 0);
-	--chart-1: oklch(0.7 0.25 300);
-	--chart-2: oklch(0.75 0.25 350);
-	--chart-3: oklch(0.7 0 0);
-	--chart-4: oklch(0.55 0 0);
-	--chart-5: oklch(0.45 0 0);
-	--sidebar: oklch(0.205 0 0);
-	--sidebar-foreground: oklch(0.985 0 0);
-	--sidebar-primary: oklch(0.488 0.243 264.376);
-	--sidebar-primary-foreground: oklch(0.985 0 0);
-	--sidebar-accent: oklch(0.269 0 0);
-	--sidebar-accent-foreground: oklch(0.985 0 0);
-	--sidebar-border: oklch(0.269 0 0);
-	--sidebar-ring: oklch(0.439 0 0);
-
-	--font-sans: 'DM Sans', 'DM Sans Fallback', system-ui, sans-serif;
-	--font-mono: 'DM Mono', 'Geist Mono', monospace;
-	--color-background: var(--background);
-	--color-background-light: var(--background-light);
-	--color-foreground: var(--foreground);
-	--color-card: var(--card);
-	--color-card-foreground: var(--card-foreground);
-	--color-popover: var(--popover);
-	--color-popover-foreground: var(--popover-foreground);
-	--color-primary: var(--primary);
-	--color-primary-foreground: var(--primary-foreground);
-	--color-secondary: var(--color-secondary);
-	--color-secondary-foreground: var(--secondary-foreground);
-	/* --color-muted: var(--muted); */
-	--color-muted-foreground: var(--muted-foreground);
-	--color-skeleton: var(--skeleton);
-	--color-accent: var(--accent);
-	--color-accent-foreground: var(--accent-foreground);
-	--color-destructive: var(--destructive);
-	--color-destructive-foreground: var(--destructive-foreground);
-	--color-border: var(--border);
-	--color-input: var(--input);
-	--color-ring: var(--ring);
-	--color-chart-1: var(--chart-1);
-	--color-chart-2: var(--chart-2);
-	--color-chart-3: var(--chart-3);
-	--color-chart-4: var(--chart-4);
-	--color-chart-5: var(--chart-5);
-	--color-neon-pink: var(--neon-pink);
-	--color-neon-purple: var(--neon-purple);
-	--radius-sm: calc(var(--radius) - 4px);
-	--radius-md: calc(var(--radius) - 2px);
-	--radius-lg: var(--radius);
-	--radius-xl: calc(var(--radius) + 4px);
-	--color-sidebar: var(--sidebar);
-	--color-sidebar-foreground: var(--sidebar-foreground);
-	--color-sidebar-primary: var(--sidebar-primary);
-	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-	--color-sidebar-accent: var(--sidebar-accent);
-	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-	--color-sidebar-border: var(--sidebar-border);
-	--color-sidebar-ring: var(--sidebar-ring);
-
-	--small-button-radius: 0.25rem;
-	--medium-button-radius: 0.5rem;
-	--large-button-radius: 0.75rem;
-}
-
 *,
 *::before,
 *::after {
@@ -824,15 +588,13 @@ body {
 .Prose h6 {
 	color: var(--primary);
 	font-weight: 700;
-	margin-top: var(--rhythm-2x);
-	margin-bottom: var(--rhythm);
 }
 
 .Prose h3,
 .Prose h4,
 .Prose h5,
 .Prose h6 {
-	color: #a0a0a0;
+	color: var(--color-neutral-9);
 }
 
 .Prose h1 {
@@ -844,15 +606,21 @@ body {
 .Prose h2 {
 	font-size: var(--font-size-h2);
 	line-height: var(--line-height-h2);
+	margin-top: var(--rhythm-175);
+	margin-bottom: var(--rhythm-75);
 }
 .Prose h3 {
 	font-size: var(--font-size-h3);
 	line-height: var(--line-height-h3);
+	margin-top: var(--rhythm-150);
+	margin-bottom: var(--rhythm-half);
 }
 .Prose h4 {
 	font-size: var(--font-size-h4);
 	line-height: var(--line-height-h4);
 	font-weight: 600;
+	margin-top: var(--rhythm-125);
+	margin-bottom: var(--rhythm-half);
 }
 .Prose h5,
 .Prose h6 {
@@ -862,6 +630,8 @@ body {
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	color: var(--accent);
+	margin-top: var(--rhythm);
+	margin-bottom: var(--rhythm-half);
 }
 
 .Prose p {
@@ -955,7 +725,7 @@ body {
 .Prose table {
 	width: 100%;
 	border-collapse: collapse;
-	margin: 1.25em 0;
+	margin: 1.25em 0 2rem;
 	font-size: 0.9rem;
 }
 
@@ -989,7 +759,7 @@ body {
 	--font-size-small: var(--font-size-2); /* ≈ 15px */
 	--font-size-caption: var(--font-size-1); /* ≈ 12.5px */
 
-	/* Line heights — tuned for each scale step. */
+	/* Line heights - tuned for each scale step. */
 	--line-height-display: 0.9;
 	--line-height-h1: 1.05;
 	--line-height-h2: 1.1;
@@ -999,9 +769,14 @@ body {
 	--line-height-small: 1.55;
 	--line-height-caption: 1.4;
 
-	/* Vertical rhythm — one body line height, derived from the scale. */
+	/* Vertical rhythm - one body line height, derived from the scale. */
 	--rhythm: calc(var(--font-size-body) * var(--line-height-body)); /* ≈ 30px */
 	--rhythm-half: calc(var(--rhythm) / 2); /* ≈ 15px */
+	--rhythm-50: var(--rhythm-half); /* ≈ 15px */
+	--rhythm-75: calc(var(--rhythm) * 0.75); /* ≈ 22.5px */
+	--rhythm-125: calc(var(--rhythm) * 1.25); /* ≈ 37.5px */
+	--rhythm-150: calc(var(--rhythm) * 1.5); /* ≈ 45px */
+	--rhythm-175: calc(var(--rhythm) * 1.75); /* ≈ 52.5px */
 	--rhythm-2x: calc(var(--rhythm) * 2); /* ≈ 60px */
 
 	/* Font weights. */
@@ -1059,7 +834,7 @@ body {
 	border-color: color-mix(in srgb, var(--accent-alt) 45%, var(--line));
 	border-left-color: var(--accent-alt);
 	background: var(--warning-bg);
-	color: var(--color-neutral);
+	color: var(--color-neutral-11);
 }
 
 /* ─── Prose: zQuote ──────────────────────────────────────── */
@@ -1094,103 +869,104 @@ body {
 }
 
 .Prose .zNoteCallout {
-	color: var(--color-neutral) !important;
+	color: var(--color-neutral-11) !important;
 }
 
 /* ─── Prose: zText ───────────────────────────────────────── */
+@layer base {
+	.Prose .zText {
+		color: var(--foreground);
+		font-size: var(--font-size-body);
+		line-height: var(--line-height-body);
+		font-weight: var(--font-weight-regular);
+	}
 
-.Prose .zText {
-	color: var(--foreground);
-	font-size: var(--font-size-body);
-	line-height: var(--line-height-body);
-	font-weight: var(--font-weight-regular);
-}
+	.Prose .zTextDisplay {
+		color: var(--primary);
+		font-size: var(--font-size-display);
+		font-weight: var(--font-weight-bold);
+		line-height: var(--line-height-display);
+	}
 
-.Prose .zTextDisplay {
-	color: var(--primary);
-	font-size: var(--font-size-display);
-	font-weight: var(--font-weight-bold);
-	line-height: var(--line-height-display);
-}
+	.Prose .zTextH1 {
+		color: var(--primary);
+		font-size: var(--font-size-h1);
+		font-weight: var(--font-weight-bold);
+		line-height: var(--line-height-h1);
+	}
 
-.Prose .zTextH1 {
-	color: var(--primary);
-	font-size: var(--font-size-h1);
-	font-weight: var(--font-weight-bold);
-	line-height: var(--line-height-h1);
-}
+	.Prose .zTextH2 {
+		color: var(--primary);
+		font-size: var(--font-size-h2);
+		font-weight: var(--font-weight-semibold);
+		line-height: var(--line-height-h2);
+	}
 
-.Prose .zTextH2 {
-	color: var(--primary);
-	font-size: var(--font-size-h2);
-	font-weight: var(--font-weight-semibold);
-	line-height: var(--line-height-h2);
-}
+	.Prose .zTextH3 {
+		color: var(--primary);
+		font-size: var(--font-size-h3);
+		font-weight: var(--font-weight-semibold);
+		line-height: var(--line-height-h3);
+	}
 
-.Prose .zTextH3 {
-	color: var(--primary);
-	font-size: var(--font-size-h3);
-	font-weight: var(--font-weight-semibold);
-	line-height: var(--line-height-h3);
-}
+	.Prose .zTextH4 {
+		font-size: var(--font-size-h4);
+		font-weight: var(--font-weight-medium);
+		line-height: var(--line-height-h4);
+	}
 
-.Prose .zTextH4 {
-	font-size: var(--font-size-h4);
-	font-weight: var(--font-weight-medium);
-	line-height: var(--line-height-h4);
-}
+	.Prose .zTextBody {
+		font-size: var(--font-size-body);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-body);
+	}
 
-.Prose .zTextBody {
-	font-size: var(--font-size-body);
-	font-weight: var(--font-weight-regular);
-	line-height: var(--line-height-body);
-}
+	.Prose .zTextSmall {
+		font-size: var(--font-size-small);
+		font-weight: var(--font-weight-regular);
+		line-height: var(--line-height-small);
+	}
 
-.Prose .zTextSmall {
-	font-size: var(--font-size-small);
-	font-weight: var(--font-weight-regular);
-	line-height: var(--line-height-small);
-}
+	.Prose .zTextCaption {
+		font-size: var(--font-size-caption);
+		font-weight: var(--font-weight-medium);
+		line-height: var(--line-height-caption);
+	}
 
-.Prose .zTextCaption {
-	font-size: var(--font-size-caption);
-	font-weight: var(--font-weight-medium);
-	line-height: var(--line-height-caption);
-}
+	.Prose .zTodo {
+		font-size: var(--font-size-small);
+		font-style: italic;
+		color: var(--color-secondary);
+		opacity: 0.85;
+	}
 
-.Prose .zTodo {
-	font-size: var(--font-size-small);
-	font-style: italic;
-	color: var(--color-secondary);
-	opacity: 0.85;
-}
+	/* ─── Prose: zText size modifiers ───────────────────────── */
 
-/* ─── Prose: zText size modifiers ───────────────────────── */
+	.Prose .zText.isExtraSmall {
+		font-size: var(--font-size-caption);
+		line-height: var(--line-height-caption);
+	}
 
-.Prose .zText.isExtraSmall {
-	font-size: var(--font-size-caption);
-	line-height: var(--line-height-caption);
-}
+	.Prose .zText.isSmall {
+		font-size: var(--font-size-small);
+		line-height: var(--line-height-small);
+	}
 
-.Prose .zText.isSmall {
-	font-size: var(--font-size-small);
-	line-height: var(--line-height-small);
-}
+	.Prose .zText.isMedium {
+		font-size: var(--font-size-body);
+		line-height: var(--line-height-body);
+	}
 
-.Prose .zText.isMedium {
-	font-size: var(--font-size-body);
-	line-height: var(--line-height-body);
-}
+	.Prose .zText.isLarge {
+		font-size: var(--font-size-h4);
+		line-height: var(--line-height-h4);
+		margin-top: 0.5rem;
+	}
 
-.Prose .zText.isLarge {
-	font-size: var(--font-size-h4);
-	line-height: var(--line-height-h4);
-	margin-top: 0.5rem;
-}
-
-.Prose .zText.isExtraLarge {
-	font-size: var(--font-size-h3);
-	line-height: var(--line-height-h3);
+	.Prose .zText.isExtraLarge {
+		font-size: var(--font-size-h3);
+		line-height: var(--line-height-h3);
+	}
 }
 
 /* ─── Prose: zText weight modifiers ─────────────────────── */
@@ -1223,7 +999,7 @@ body {
 	color: var(--color-pink);
 }
 .Prose .isNeutral {
-	color: var(--color-neutral);
+	color: var(--color-neutral-10);
 }
 .Prose .isMuted {
 	color: var(--muted);
@@ -1372,6 +1148,7 @@ body {
 	font-size: 0.875rem;
 	letter-spacing: 3px;
 	color: var(--color-purple);
+	margin-bottom: var(--spacing-4);
 }
 
 .Prose .isSmallCaps + h1 {
@@ -1383,7 +1160,7 @@ body {
 	padding: var(--spacing-12) var(--spacing-12);
 	font-style: italic;
 	font-size: var(--font-size-h4);
-	color: var(--color-neutral);
+	color: var(--color-neutral-10);
 }
 
 /* ─── Editor Shell ───────────────────────────────────────── */

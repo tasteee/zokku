@@ -1,5 +1,6 @@
 'use client'
 
+import './DocumentEditor.css'
 import { useQuery, useMutation } from 'convex/react'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef, useCallback, CSSProperties, JSX } from 'react'
@@ -23,6 +24,7 @@ const PREVIEW_DEBOUNCE_MS = 300
 import { datass, useDatass } from 'datass'
 
 export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
+	// const { user } = useUser()
 	const document = useQuery(api.documents.get, { id: props.documentId })
 	const updateDocument = useMutation(api.documents.update)
 	const removeDocument = useMutation(api.documents.remove)
@@ -34,6 +36,8 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const [previewHtml, setPreviewHtml] = useState('')
 	const [saveState, setSaveState] = useState<SaveState>('saved')
 	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
+
+	const isUserAllowed = true
 
 	const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 	const isMountedRef = useRef(false)
@@ -215,14 +219,19 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 					{saveLabel}
 				</span>
 				<div className="TopbarActions">
-					<button
-						className="ClaudeChatTrigger"
-						data-active={isChatOpen ? 'true' : 'false'}
-						onClick={() => setIsChatOpen(!isChatOpen)}
-					>
-						<ChatCircleTextIcon size={14} weight="bold" />
-						Ask Claude
-					</button>
+					{isUserAllowed && (
+						<button
+							className="ClaudeChatTrigger"
+							data-active={isChatOpen ? 'true' : 'false'}
+							onClick={() => setIsChatOpen(!isChatOpen)}
+						>
+							{/* only show this button if the user is shane@tasteee.ink or shanecolcleasure@gmail.com */}
+							<>
+								<ChatCircleTextIcon size={14} weight="bold" />
+								Ask Claude
+							</>
+						</button>
+					)}
 					<ZButton isSmall isGhost label="Preview" onClick={() => router.push(`/documents/${props.documentId}/preview`)} />
 					<ZButton isSmall isGhost label="Export HTML" onClick={handleExport} />
 					<ZButton

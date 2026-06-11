@@ -32,10 +32,18 @@ export const get = query({
 })
 
 export const create = mutation({
-	args: {},
-	handler: async (ctx) => {
+	args: {
+		folderId: v.optional(v.id('folders'))
+	},
+	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx)
 		if (!userId) throw new Error('Not authenticated')
+
+		if (args.folderId) {
+			const folder = await ctx.db.get(args.folderId)
+			const isFolderOwner = folder?.authorId === userId
+			if (!folder || !isFolderOwner) throw new Error('Folder not found')
+		}
 
 		const now = Date.now()
 
@@ -43,11 +51,38 @@ export const create = mutation({
 			title: 'Untitled',
 			content: '',
 			authorId: userId,
+			folderId: args.folderId,
 			createdAt: now,
 			updatedAt: now
 		})
 
 		return documentId
+	}
+})
+
+export const move = mutation({
+	args: {
+		id: v.id('documents'),
+		folderId: v.optional(v.id('folders'))
+	},
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx)
+		if (!userId) throw new Error('Not authenticated')
+
+		const document = await ctx.db.get(args.id)
+		const isOwner = document?.authorId === userId
+		if (!document || !isOwner) throw new Error('Document not found')
+
+		if (args.folderId) {
+			const folder = await ctx.db.get(args.folderId)
+			const isFolderOwner = folder?.authorId === userId
+			if (!folder || !isFolderOwner) throw new Error('Folder not found')
+		}
+
+		await ctx.db.patch(args.id, {
+			folderId: args.folderId,
+			updatedAt: Date.now()
+		})
 	}
 })
 

@@ -1,5 +1,6 @@
 'use client'
 
+import './ClaudeChat.css'
 import { useRef, useEffect, JSX } from 'react'
 import { useDatass } from 'datass'
 import { XIcon, PaperPlaneTiltIcon, SpinnerGapIcon } from '@phosphor-icons/react'
@@ -43,7 +44,7 @@ export const ClaudeChat = (props: ClaudeChatPropsT): JSX.Element => {
 		const reply = await sendMessageToClaude({
 			messages: conversationHistory,
 			documentTitle: props.documentTitle,
-			documentContent: props.documentContent,
+			documentContent: props.documentContent
 		})
 
 		const assistantMessage: MessageT = { role: 'assistant', content: reply }
@@ -86,7 +87,9 @@ export const ClaudeChat = (props: ClaudeChatPropsT): JSX.Element => {
 
 				{messages.state.map((message: MessageT, index: number) => {
 					const isUser = message.role === 'user'
-					const bubbleClass = isUser ? 'ClaudeChatBubble ClaudeChatBubbleUser' : 'ClaudeChatBubble ClaudeChatBubbleAssistant'
+					const bubbleClass = isUser
+						? 'ClaudeChatBubble ClaudeChatBubbleUser'
+						: 'ClaudeChatBubble ClaudeChatBubbleAssistant'
 
 					return (
 						<div key={index} className={bubbleClass}>

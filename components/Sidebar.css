@@ -1,0 +1,125 @@
+.Sidebar {
+	display: flex;
+	flex-direction: column;
+	border-right: 1px solid var(--line);
+	background: var(--paper);
+	overflow: hidden;
+}
+
+.SidebarHeader {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-2);
+	padding: 0.875rem var(--spacing-4);
+	border-bottom: 1px solid var(--line);
+}
+
+.SidebarBrand {
+	flex: 1;
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--primary);
+}
+
+.SidebarBrandDot {
+	display: inline-block;
+	width: 0.4375rem;
+	height: 0.4375rem;
+	border-radius: 999px;
+	background: var(--accent);
+	margin-right: var(--spacing-2);
+	vertical-align: 0.1em;
+}
+
+.SidebarNewButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: transparent;
+	color: var(--muted);
+	font-size: 1.125rem;
+	line-height: 1;
+	cursor: pointer;
+	transition:
+		border-color 120ms,
+		color 120ms;
+}
+
+.SidebarNewButton:hover {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+.SidebarList {
+	flex: 1;
+	overflow-y: auto;
+	padding: var(--spacing-2) 0;
+}
+
+.SidebarItem {
+	display: block;
+	padding: 0.5625rem var(--spacing-4);
+	font-size: var(--font-size-small);
+	font-weight: var(--font-weight-regular);
+	color: var(--muted);
+	text-decoration: none;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	border-left: 2px solid transparent;
+	transition:
+		background 100ms,
+		color 100ms,
+		border-color 100ms;
+}
+
+.SidebarItem:hover {
+	background: var(--paper-soft);
+	color: var(--foreground);
+}
+
+.SidebarItem[data-active='true'] {
+	border-left-color: var(--accent);
+	color: var(--primary);
+	background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.SidebarEmpty {
+	padding: var(--spacing-6) var(--spacing-4);
+	font-size: var(--font-size-caption);
+	color: var(--muted);
+	line-height: var(--line-height-body);
+}
+
+.SidebarFooter {
+	border-top: 1px solid var(--line);
+	padding: var(--spacing-3) var(--spacing-4);
+}
+
+.SidebarSignOut {
+	display: block;
+	width: 100%;
+	padding: 0.4375rem var(--spacing-3);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: transparent;
+	color: var(--muted);
+	font-family: var(--font-sans);
+	font-size: var(--font-size-caption);
+	text-align: left;
+	cursor: pointer;
+	transition:
+		border-color 120ms,
+		color 120ms;
+}
+
+.SidebarSignOut:hover {
+	border-color: var(--accent-alt);
+	color: var(--accent-alt);
+}

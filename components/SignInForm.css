@@ -1,0 +1,131 @@
+.AuthShell {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100dvh;
+	background: var(--bg);
+	padding: var(--spacing-6);
+}
+
+.AuthCard {
+	width: 100%;
+	max-width: 22rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--paper);
+	padding: var(--spacing-8);
+}
+
+.AuthCardHeader {
+	margin-bottom: var(--spacing-7);
+}
+
+.AuthBrand {
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--accent);
+	margin-bottom: var(--spacing-3);
+}
+
+.AuthTitle {
+	font-size: var(--font-size-h4);
+	font-weight: var(--font-weight-bold);
+	color: var(--primary);
+	line-height: var(--line-height-h4);
+}
+
+.AuthSubtitle {
+	margin-top: var(--spacing-1);
+	font-size: var(--font-size-small);
+	color: var(--muted);
+}
+
+.AuthForm {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-4);
+}
+
+.AuthFieldGroup {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-1);
+}
+
+.AuthLabel {
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-medium);
+	color: var(--foreground);
+}
+
+.AuthInput {
+	padding: var(--spacing-2) var(--spacing-3);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--bg);
+	color: var(--primary);
+	font-family: var(--font-sans);
+	font-size: var(--font-size-body);
+	outline: none;
+	transition: border-color 120ms;
+}
+
+.AuthInput:focus {
+	border-color: var(--accent);
+}
+
+.AuthInput::placeholder {
+	color: var(--muted);
+}
+
+.AuthSubmitButton {
+	margin-top: var(--spacing-2);
+	padding: var(--spacing-2) var(--spacing-4);
+	border: 1px solid var(--accent);
+	border-radius: var(--radius);
+	background: transparent;
+	color: var(--accent);
+	font-family: var(--font-sans);
+	font-size: var(--font-size-body);
+	font-weight: var(--font-weight-semibold);
+	cursor: pointer;
+	transition: background 120ms;
+}
+
+.AuthSubmitButton:hover {
+	background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.AuthSubmitButton:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.AuthError {
+	padding: var(--spacing-2) var(--spacing-3);
+	border: 1px solid var(--accent-alt);
+	border-radius: var(--radius);
+	background: color-mix(in srgb, var(--accent-alt) 8%, transparent);
+	color: var(--accent-alt);
+	font-size: var(--font-size-small);
+}
+
+.AuthToggle {
+	margin-top: var(--spacing-5);
+	text-align: center;
+	font-size: var(--font-size-small);
+	color: var(--muted);
+}
+
+.AuthToggleLink {
+	background: none;
+	border: none;
+	color: var(--accent);
+	font-family: var(--font-sans);
+	font-size: var(--font-size-small);
+	cursor: pointer;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+}

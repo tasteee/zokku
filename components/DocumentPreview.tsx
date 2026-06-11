@@ -1,5 +1,6 @@
 'use client'
 
+import './DocumentPreview.css'
 import { useQuery } from 'convex/react'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, JSX } from 'react'

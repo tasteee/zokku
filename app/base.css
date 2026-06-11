@@ -1,0 +1,267 @@
+/* Theming foundations. */
+:root {
+	--base-font-size: 18px;
+
+	--base-accent-color-0: oklch(0.75 0.25 350);
+	--base-accent-color-1: oklch(0.7 0.25 300);
+
+	--base-neutral-color-light: #fff;
+	--base-neutral-color-dark: lch(3.87% 2.82 144.45);
+
+	--base-sans-font-family: 'DM Sans';
+	--base-mono-font-family: 'DM Mono';
+
+	--base-spacing: 0.25rem;
+
+	/* Derived font sizes. */
+	/* Scale: Major Third ratio (×1.25), body at step 3. */
+
+	/* Micro labels - the smallest text we will ever render. */
+	--font-size-0: calc(var(--base-font-size) * 0.579); /* ≈ 10px */
+	/* Caption / timestamp / metadata */
+	--font-size-1: calc(var(--base-font-size) * 0.694); /* ≈ 12.5px */
+	/* Small supporting text */
+	--font-size-2: calc(var(--base-font-size) * 0.833); /* ≈ 15px */
+	/* Body - the base reading size */
+	--font-size-3: calc(var(--base-font-size) * 1); /* = 18px */
+	/* Large body / h4 emphasis */
+	--font-size-4: calc(var(--base-font-size) * 1.25); /* ≈ 22.5px */
+	/* H3 / subheading */
+	--font-size-5: calc(var(--base-font-size) * 1.563); /* ≈ 28px */
+	/* H2 / section heading */
+	--font-size-6: calc(var(--base-font-size) * 1.953); /* ≈ 35px */
+	/* H1 / page title */
+	--font-size-7: calc(var(--base-font-size) * 2.441); /* ≈ 44px */
+	/* Display / hero headline */
+	--font-size-8: calc(var(--base-font-size) * 3.052); /* ≈ 55px */
+
+	/* Derived color scales. */
+	/* 0 = darkest, 9 = lightest, 4 = brand/base hue. */
+	/* Hue is taken from the base token at runtime via CSS relative color syntax. */
+	/* Changing a base token cascades through the entire scale automatically.    */
+
+	/* Primary scale - hue derived from --base-accent-color-0 at runtime. */
+	--color-primary-0: oklch(from var(--base-accent-color-0) 0.18 0.1 h);
+	--color-primary-1: oklch(from var(--base-accent-color-0) 0.28 0.14 h);
+	--color-primary-2: oklch(from var(--base-accent-color-0) 0.38 0.18 h);
+	--color-primary-3: oklch(from var(--base-accent-color-0) 0.52 0.22 h);
+	--color-primary-4: var(--base-accent-color-0);
+	--color-primary-5: oklch(from var(--base-accent-color-0) 0.82 0.21 h);
+	--color-primary-6: oklch(from var(--base-accent-color-0) 0.87 0.16 h);
+	--color-primary-7: oklch(from var(--base-accent-color-0) 0.91 0.11 h);
+	--color-primary-8: oklch(from var(--base-accent-color-0) 0.94 0.06 h);
+	--color-primary-9: oklch(from var(--base-accent-color-0) 0.97 0.02 h);
+
+	/* Secondary scale - hue derived from --base-accent-color-1 at runtime. */
+	--color-secondary-0: oklch(from var(--base-accent-color-1) 0.15 0.1 h);
+	--color-secondary-1: oklch(from var(--base-accent-color-1) 0.25 0.14 h);
+	--color-secondary-2: oklch(from var(--base-accent-color-1) 0.35 0.18 h);
+	--color-secondary-3: oklch(from var(--base-accent-color-1) 0.5 0.22 h);
+	--color-secondary-4: var(--base-accent-color-1);
+	--color-secondary-5: oklch(from var(--base-accent-color-1) 0.78 0.21 h);
+	--color-secondary-6: oklch(from var(--base-accent-color-1) 0.84 0.16 h);
+	--color-secondary-7: oklch(from var(--base-accent-color-1) 0.89 0.1 h);
+	--color-secondary-8: oklch(from var(--base-accent-color-1) 0.93 0.05 h);
+	--color-secondary-9: oklch(from var(--base-accent-color-1) 0.97 0.02 h);
+
+	/* Neutral scale - hue and chroma preserved from --base-neutral-color-dark at runtime. */
+	/* Steps 0-8 derive hue/chroma from the dark anchor; step 9 from the light anchor. */
+	--color-neutral-0: oklch(from var(--base-neutral-color-dark) l c h);
+	--color-neutral-1: oklch(from var(--base-neutral-color-dark) 0.12 c h);
+	--color-neutral-2: oklch(from var(--base-neutral-color-dark) 0.18 c h);
+	--color-neutral-3: oklch(from var(--base-neutral-color-dark) 0.28 c h);
+	--color-neutral-4: oklch(from var(--base-neutral-color-dark) 0.4 c h);
+	--color-neutral-5: oklch(from var(--base-neutral-color-dark) 0.55 c h);
+	--color-neutral-6: oklch(from var(--base-neutral-color-dark) 0.68 c h);
+	--color-neutral-7: oklch(from var(--base-neutral-color-dark) 0.8 c h);
+	--color-neutral-8: oklch(from var(--base-neutral-color-dark) 0.9 c h);
+	--color-neutral-9: oklch(from var(--base-neutral-color-light) l c h);
+
+	/* Derived spacing scale. */
+	/* Each step = --base-spacing × N. Step 1 = 4px at the 16px browser default. */
+	--spacing-0: 0;
+	--spacing-1: calc(var(--base-spacing) * 1); /*  4px */
+	--spacing-2: calc(var(--base-spacing) * 2); /*  8px */
+	--spacing-3: calc(var(--base-spacing) * 3); /* 12px */
+	--spacing-4: calc(var(--base-spacing) * 4); /* 16px */
+	--spacing-5: calc(var(--base-spacing) * 5); /* 20px */
+	--spacing-6: calc(var(--base-spacing) * 6); /* 24px */
+	--spacing-7: calc(var(--base-spacing) * 7); /* 28px */
+	--spacing-8: calc(var(--base-spacing) * 8); /* 32px */
+	--spacing-9: calc(var(--base-spacing) * 9); /* 36px */
+	--spacing-10: calc(var(--base-spacing) * 10); /* 40px */
+	--spacing-11: calc(var(--base-spacing) * 11); /* 44px */
+	--spacing-12: calc(var(--base-spacing) * 12); /* 48px */
+	--spacing-14: calc(var(--base-spacing) * 14); /* 56px */
+	--spacing-16: calc(var(--base-spacing) * 16); /* 64px */
+	--spacing-20: calc(var(--base-spacing) * 20); /* 80px */
+	--spacing-24: calc(var(--base-spacing) * 24); /* 96px */
+	--spacing-28: calc(var(--base-spacing) * 28); /* 112px */
+	--spacing-32: calc(var(--base-spacing) * 32); /* 128px */
+	--spacing-36: calc(var(--base-spacing) * 36); /* 144px */
+	--spacing-40: calc(var(--base-spacing) * 40); /* 160px */
+}
+
+:root {
+	/*
+		Zest palette.
+	*/
+	--color-pink: var(--color-primary-4);
+	--color-purple: var(--color-secondary-4);
+
+	/*
+		Dark theme semantic colors.
+
+		Important:
+		Background/surfaces use low neutral steps.
+		Text/foreground uses high neutral steps.
+		Borders/inputs use low-to-mid neutral steps.
+	*/
+	--bg: var(--color-neutral-0);
+	--paper: var(--color-neutral-1);
+	--paper-soft: var(--color-neutral-2);
+	--line: var(--color-neutral-3);
+
+	--primary: var(--color-neutral-9);
+	--foreground: var(--color-neutral-8);
+	--muted: var(--color-neutral-6);
+	--secondary: var(--color-neutral-5);
+
+	--accent: var(--color-purple);
+	--accent-alt: var(--color-pink);
+	--warning: var(--color-pink);
+
+	--pink: var(--color-pink);
+	--purple: var(--color-purple);
+
+	/*
+		Component-neutral aliases.
+	*/
+	--background: var(--bg);
+	--background-light: var(--paper-soft);
+
+	--card: var(--paper);
+	--card-foreground: var(--primary);
+
+	--popover: var(--paper);
+	--popover-foreground: var(--primary);
+
+	--primary-foreground: var(--bg);
+
+	--secondary-foreground: var(--primary);
+
+	--muted-foreground: var(--muted);
+
+	--skeleton: var(--color-neutral-3);
+
+	--accent-foreground: var(--primary);
+
+	--destructive: oklch(0.396 0.141 25.723);
+	--destructive-foreground: oklch(0.637 0.237 25.331);
+
+	--border: var(--line);
+	--input: var(--line);
+	--ring: var(--color-neutral-4);
+
+	--chart-1: var(--color-purple);
+	--chart-2: var(--color-pink);
+	--chart-3: var(--color-neutral-7);
+	--chart-4: var(--color-neutral-5);
+	--chart-5: var(--color-neutral-4);
+
+	--sidebar: var(--paper);
+	--sidebar-foreground: var(--primary);
+	--sidebar-primary: var(--accent);
+	--sidebar-primary-foreground: var(--primary);
+	--sidebar-accent: var(--paper-soft);
+	--sidebar-accent-foreground: var(--primary);
+	--sidebar-border: var(--line);
+	--sidebar-ring: var(--ring);
+
+	/*
+		Page gradient.
+
+		These are now derived from the neutral system instead of being
+		hard-coded to black-green values.
+	*/
+	--page-gradient-from: var(--color-neutral-0);
+	--page-gradient-via: var(--color-neutral-1);
+	--page-gradient-to: var(--color-neutral-2);
+	--page-gradient-min-height: 2000px;
+	--page-gradient: none;
+
+	/*
+		Font aliases.
+	*/
+	--font-sans: var(--base-sans-font-family), 'DM Sans Fallback', system-ui, sans-serif;
+	--font-mono: var(--base-mono-font-family), 'Geist Mono', 'Fira Code', monospace;
+
+	/*
+		Radius aliases.
+	*/
+	--radius: var(--base-radius);
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+
+	--small-button-radius: 0.25rem;
+	--medium-button-radius: 0.5rem;
+	--large-button-radius: 0.75rem;
+
+	/*
+		Tailwind / framework bridge aliases.
+
+		No circular aliases.
+		No hard-coded neutral colors.
+		Everything points back to semantic tokens.
+	*/
+	--color-background: var(--background);
+	--color-background-light: var(--background-light);
+	--color-foreground: var(--foreground);
+
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+
+	--color-skeleton: var(--skeleton);
+
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+
+	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
+
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+
+	--color-chart-1: var(--chart-1);
+	--color-chart-2: var(--chart-2);
+	--color-chart-3: var(--chart-3);
+	--color-chart-4: var(--chart-4);
+	--color-chart-5: var(--chart-5);
+
+	--color-neon-pink: var(--color-pink);
+	--color-neon-purple: var(--color-purple);
+
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-ring: var(--sidebar-ring);
+}

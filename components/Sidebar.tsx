@@ -1,5 +1,6 @@
 'use client'
 
+import './Sidebar.css'
 import { useQuery, useMutation } from 'convex/react'
 import { useAuthActions } from '@convex-dev/auth/react'
 import { useRouter, usePathname } from 'next/navigation'
@@ -15,7 +16,7 @@ export const Sidebar = (): JSX.Element => {
 	const pathname = usePathname()
 
 	const handleNew = async (): Promise<void> => {
-		const documentId = await createDocument()
+		const documentId = await createDocument({})
 		router.push(`/documents/${documentId}`)
 	}
 

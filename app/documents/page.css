@@ -1,0 +1,710 @@
+.DocumentsHome {
+	min-height: 100dvh;
+	background:
+		radial-gradient(circle at 50% -20%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 32rem),
+		var(--bg);
+	display: flex;
+	flex-direction: column;
+}
+
+.DocumentsHomeHeader {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-3);
+	padding: 0 var(--spacing-8);
+	height: 3.5rem;
+	border-bottom: 1px solid var(--line);
+	flex-shrink: 0;
+	position: sticky;
+	top: 0;
+	background: color-mix(in srgb, var(--bg) 86%, transparent);
+	backdrop-filter: blur(14px);
+	-webkit-backdrop-filter: blur(14px);
+	z-index: 10;
+}
+
+.DocumentsHomeBrand {
+	flex: 1;
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--primary);
+	user-select: none;
+}
+
+.DocumentsHomeBrandDot {
+	display: inline-block;
+	width: 0.4375rem;
+	height: 0.4375rem;
+	border-radius: 999px;
+	background: var(--accent);
+	margin-right: var(--spacing-2);
+	vertical-align: 0.1em;
+}
+
+.DocumentsHomeHeaderActions {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-2);
+}
+
+.DocumentsHomeBody {
+	flex: 1;
+	display: grid;
+	grid-template-columns: 17.5rem minmax(0, 1fr);
+	gap: var(--spacing-8);
+	width: 100%;
+	max-width: 88rem;
+	margin: 0 auto;
+	padding: var(--spacing-8);
+	box-sizing: border-box;
+}
+
+.DocumentsFolderRail {
+	position: sticky;
+	top: calc(3.5rem + var(--spacing-8));
+	align-self: start;
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-3);
+	max-height: calc(100dvh - 7.5rem);
+	padding: var(--spacing-3);
+	border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+	border-radius: var(--medium-button-radius);
+	background: color-mix(in srgb, var(--paper) 82%, transparent);
+	box-shadow: 0 18px 60px color-mix(in srgb, black 22%, transparent);
+	overflow: hidden;
+}
+
+.DocumentsRailSection,
+.DocumentsFolderList {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-1);
+}
+
+.DocumentsFolderList {
+	overflow-y: auto;
+	padding-right: var(--spacing-1);
+}
+
+.DocumentsRailDivider {
+	height: 1px;
+	background: var(--line);
+	margin: var(--spacing-1) 0;
+}
+
+.DocumentsRailHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 var(--spacing-2);
+	font-size: var(--font-size-0);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.11em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+.DocumentsFolderRow {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: var(--spacing-1);
+}
+
+.DocumentsFolderItem,
+.DocumentsFolderDelete,
+.DocumentsModalClose {
+	font-family: var(--font-sans);
+	cursor: pointer;
+}
+
+.DocumentsFolderItem {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	gap: var(--spacing-2);
+	width: 100%;
+	min-height: 2.25rem;
+	padding: 0 var(--spacing-2);
+	border: 1px solid transparent;
+	border-radius: var(--small-button-radius);
+	background: transparent;
+	color: var(--muted);
+	text-align: left;
+	transition:
+		background 120ms,
+		border-color 120ms,
+		color 120ms;
+}
+
+.DocumentsFolderItem:hover {
+	background: color-mix(in srgb, var(--primary) 6%, transparent);
+	color: var(--foreground);
+}
+
+.DocumentsFolderItem[data-active='true'] {
+	border-color: color-mix(in srgb, var(--accent) 38%, transparent);
+	background: color-mix(in srgb, var(--accent) 12%, transparent);
+	color: var(--primary);
+}
+
+.DocumentsFolderItemIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1rem;
+	color: currentColor;
+}
+
+.DocumentsFolderItemIcon svg {
+	width: 0.95rem;
+	height: 0.95rem;
+}
+
+.DocumentsFolderItemText {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-medium);
+}
+
+.DocumentsFolderItemCount {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.375rem;
+	height: 1.25rem;
+	padding: 0 var(--spacing-1);
+	border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+	border-radius: 999px;
+	font-size: var(--font-size-0);
+	color: var(--muted);
+}
+
+.DocumentsFolderDelete {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border: 1px solid transparent;
+	border-radius: var(--small-button-radius);
+	background: transparent;
+	color: var(--muted);
+	transition:
+		border-color 120ms,
+		background 120ms,
+		color 120ms;
+}
+
+.DocumentsFolderDelete svg {
+	width: 0.875rem;
+	height: 0.875rem;
+}
+
+.DocumentsFolderDelete:hover,
+.DocumentsFolderDelete[data-confirm='true'] {
+	border-color: color-mix(in srgb, var(--accent-alt) 44%, transparent);
+	background: color-mix(in srgb, var(--accent-alt) 10%, transparent);
+	color: var(--accent-alt);
+}
+
+.DocumentsFolderDelete[data-confirm='true'] {
+	width: auto;
+	padding: 0 var(--spacing-2);
+	font-size: var(--font-size-0);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.DocumentsWorkspace {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-6);
+}
+
+.DocumentsWorkspaceHeader {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: var(--spacing-6);
+	padding-bottom: var(--spacing-5);
+	border-bottom: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
+}
+
+.DocumentsWorkspaceKicker {
+	margin-bottom: var(--spacing-2);
+	font-size: var(--font-size-0);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--accent);
+}
+
+.DocumentsWorkspaceTitle {
+	font-size: var(--font-size-h3);
+	line-height: var(--line-height-h3);
+	font-weight: var(--font-weight-bold);
+	color: var(--primary);
+}
+
+.DocumentsWorkspaceDescription {
+	margin-top: var(--spacing-2);
+	max-width: 34rem;
+	font-size: var(--font-size-small);
+	line-height: var(--line-height-small);
+	color: var(--muted);
+}
+
+.DocumentsWorkspaceStats {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-2);
+	color: var(--muted);
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-medium);
+	white-space: nowrap;
+}
+
+.DocumentsWorkspaceStats span {
+	padding: var(--spacing-1) var(--spacing-2);
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--paper) 62%, transparent);
+}
+
+.DocumentsGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+	gap: var(--spacing-4);
+}
+
+.DocumentCard {
+	display: flex;
+	flex-direction: column;
+	min-height: 13rem;
+	padding: var(--spacing-5);
+	border: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
+	border-radius: var(--medium-button-radius);
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--primary) 3%, transparent), transparent 42%),
+		color-mix(in srgb, var(--paper) 92%, transparent);
+	text-decoration: none;
+	cursor: pointer;
+	transition:
+		border-color 160ms,
+		box-shadow 160ms,
+		transform 160ms,
+		background 160ms;
+	will-change: transform;
+}
+
+.DocumentCard:hover {
+	border-color: color-mix(in srgb, var(--accent) 58%, transparent);
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 46%),
+		var(--paper);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent),
+		0 16px 44px color-mix(in srgb, black 26%, transparent);
+	transform: translateY(-2px);
+}
+
+.DocumentCardBody {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-2);
+	flex: 1;
+	min-width: 0;
+}
+
+.DocumentCardTopline {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--spacing-3);
+	font-size: var(--font-size-0);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+.DocumentCardTopline span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.DocumentCardTitle {
+	font-size: var(--font-size-small);
+	font-weight: var(--font-weight-semibold);
+	color: var(--primary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	line-height: 1.35;
+}
+
+.DocumentCardPreview {
+	font-size: var(--font-size-caption);
+	color: var(--muted);
+	line-height: var(--line-height-small);
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	opacity: 0.88;
+}
+
+.DocumentCardActions {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+	gap: var(--spacing-3);
+	margin-top: var(--spacing-5);
+	padding-top: var(--spacing-4);
+	border-top: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
+}
+
+.DocumentMoveControl {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-1);
+	min-width: 0;
+	cursor: default;
+}
+
+.DocumentMoveControl span {
+	font-size: var(--font-size-0);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--secondary);
+}
+
+.DocumentMoveControl select {
+	width: 100%;
+	height: 2rem;
+	padding: 0 var(--spacing-8) 0 var(--spacing-2);
+	border: 1px solid var(--line);
+	border-radius: var(--small-button-radius);
+	background: var(--bg);
+	color: var(--foreground);
+	font-family: var(--font-sans);
+	font-size: var(--font-size-caption);
+	outline: none;
+	cursor: pointer;
+	transition:
+		border-color 120ms,
+		background 120ms;
+}
+
+.DocumentMoveControl select:focus,
+.DocumentMoveControl select:hover {
+	border-color: color-mix(in srgb, var(--accent) 56%, var(--line));
+	background: color-mix(in srgb, var(--accent) 6%, var(--bg));
+}
+
+.DocumentCardShareButton {
+	height: 2rem;
+	padding: 0 var(--spacing-3);
+	border: 1px solid var(--line);
+	border-radius: var(--small-button-radius);
+	background: transparent;
+	color: var(--muted);
+	font-family: var(--font-sans);
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-medium);
+	cursor: pointer;
+	transition:
+		color 120ms,
+		border-color 120ms,
+		background 120ms;
+}
+
+.DocumentCardShareButton:hover {
+	color: var(--primary);
+	border-color: var(--muted);
+	background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.DocumentCardShareButton[data-copied='true'] {
+	color: var(--accent);
+	border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+@keyframes skeletonPulse {
+	0%,
+	100% {
+		opacity: 0.38;
+	}
+	50% {
+		opacity: 0.68;
+	}
+}
+
+.DocumentCardSkeleton {
+	height: 13rem;
+	border: 1px solid var(--line);
+	border-radius: var(--medium-button-radius);
+	background: var(--paper);
+	animation: skeletonPulse 1.8s ease-in-out infinite;
+}
+
+.DocumentCardSkeleton:nth-child(2) {
+	animation-delay: 0.15s;
+}
+
+.DocumentCardSkeleton:nth-child(3) {
+	animation-delay: 0.3s;
+}
+
+.DocumentCardSkeleton:nth-child(4) {
+	animation-delay: 0.45s;
+}
+
+.DocumentCardSkeleton:nth-child(5) {
+	animation-delay: 0.6s;
+}
+
+.DocumentCardSkeleton:nth-child(6) {
+	animation-delay: 0.75s;
+}
+
+.DocumentsEmpty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 28rem;
+	padding: var(--spacing-12) var(--spacing-8);
+	text-align: center;
+	gap: var(--spacing-4);
+	border: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+	border-radius: var(--medium-button-radius);
+	background: color-mix(in srgb, var(--paper) 54%, transparent);
+}
+
+.DocumentsEmptyCompact {
+	min-height: 22rem;
+}
+
+.DocumentsEmptyGlyph {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border: 1px solid color-mix(in srgb, var(--accent) 36%, transparent);
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--accent) 9%, transparent);
+	color: var(--accent);
+}
+
+.DocumentsEmptyGlyph svg {
+	width: 1.25rem;
+	height: 1.25rem;
+}
+
+.DocumentsEmptyTitle {
+	font-size: var(--font-size-h4);
+	font-weight: var(--font-weight-bold);
+	color: var(--primary);
+	line-height: var(--line-height-h4);
+}
+
+.DocumentsEmptyBody {
+	font-size: var(--font-size-small);
+	color: var(--muted);
+	max-width: 26rem;
+	line-height: var(--line-height-small);
+}
+
+.DocumentsEmptyButton {
+	margin-top: var(--spacing-1);
+}
+
+.DocumentsModalBackdrop {
+	position: fixed;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--spacing-6);
+	background: color-mix(in srgb, var(--bg) 72%, transparent);
+	backdrop-filter: blur(18px);
+	-webkit-backdrop-filter: blur(18px);
+	z-index: 30;
+}
+
+.DocumentsFolderComposer {
+	width: min(100%, 30rem);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-5);
+	padding: var(--spacing-6);
+	border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+	border-radius: var(--medium-button-radius);
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--primary) 4%, transparent), transparent 36%),
+		var(--paper);
+	box-shadow: 0 28px 90px color-mix(in srgb, black 46%, transparent);
+}
+
+.DocumentsFolderComposerHeader {
+	display: flex;
+	align-items: start;
+	justify-content: space-between;
+	gap: var(--spacing-4);
+	padding-bottom: var(--spacing-1);
+}
+
+.DocumentsFolderComposerHeader h2 {
+	font-size: var(--font-size-h4);
+	line-height: var(--line-height-h4);
+	color: var(--primary);
+}
+
+.DocumentsModalClose {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	border: 1px solid var(--line);
+	border-radius: var(--small-button-radius);
+	background: transparent;
+	color: var(--muted);
+	transition:
+		border-color 120ms,
+		color 120ms,
+		background 120ms;
+}
+
+.DocumentsModalClose:hover {
+	border-color: var(--foreground);
+	color: var(--primary);
+	background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.DocumentsModalClose svg {
+	width: 0.875rem;
+	height: 0.875rem;
+}
+
+.DocumentsField {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-2);
+}
+
+.DocumentsField span {
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-semibold);
+	color: var(--foreground);
+}
+
+.DocumentsField input,
+.DocumentsField textarea {
+	width: 100%;
+	border: 1px solid var(--line);
+	border-radius: var(--small-button-radius);
+	background: var(--bg);
+	color: var(--primary);
+	font-family: var(--font-sans);
+	font-size: var(--font-size-small);
+	outline: none;
+	transition:
+		border-color 120ms,
+		box-shadow 120ms;
+}
+
+.DocumentsField input {
+	height: 2.75rem;
+	padding: 0 var(--spacing-3);
+}
+
+.DocumentsField textarea {
+	min-height: 6.5rem;
+	padding: var(--spacing-3);
+	resize: vertical;
+	line-height: var(--line-height-small);
+}
+
+.DocumentsField input::placeholder,
+.DocumentsField textarea::placeholder {
+	color: var(--muted);
+}
+
+.DocumentsField input:focus,
+.DocumentsField textarea:focus {
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.DocumentsFolderComposerActions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: var(--spacing-2);
+	padding-top: var(--spacing-1);
+}
+
+@media (max-width: 860px) {
+	.DocumentsHomeHeader {
+		height: auto;
+		min-height: 3.5rem;
+		align-items: flex-start;
+		flex-direction: column;
+		padding: var(--spacing-4);
+	}
+
+	.DocumentsHomeHeaderActions {
+		width: 100%;
+		flex-wrap: wrap;
+	}
+
+	.DocumentsHomeBody {
+		grid-template-columns: 1fr;
+		padding: var(--spacing-4);
+		gap: var(--spacing-5);
+	}
+
+	.DocumentsFolderRail {
+		position: static;
+		max-height: none;
+	}
+
+	.DocumentsWorkspaceHeader {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.DocumentsWorkspaceStats {
+		flex-wrap: wrap;
+	}
+}
+
+@media (max-width: 520px) {
+	.DocumentsGrid {
+		grid-template-columns: 1fr;
+	}
+
+	.DocumentCardActions {
+		grid-template-columns: 1fr;
+	}
+
+	.DocumentCardShareButton {
+		width: 100%;
+	}
+
+	.DocumentsFolderComposer {
+		padding: var(--spacing-5);
+	}
+}

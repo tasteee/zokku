@@ -1,8 +1,11 @@
+import './base.css'
+import './main.css'
+
 import { JSX } from 'react'
 import type { Metadata } from 'next'
+import { DM_Mono, DM_Sans } from 'next/font/google'
 import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server'
 import { ConvexClientProvider } from '@/components/ConvexClientProvider'
-import './globals.css'
 import '@/components/zButton.css'
 
 export const metadata: Metadata = {
@@ -10,6 +13,17 @@ export const metadata: Metadata = {
 	description: 'A gorgeous markdown document editor.'
 }
 
+const dmSans = DM_Sans({
+	subsets: ['latin'],
+	weight: ['300', '400', '500', '600', '700', '900'],
+	variable: '--font-dm-sans'
+})
+
+const dmMono = DM_Mono({
+	subsets: ['latin'],
+	weight: ['400', '500'],
+	variable: '--font-dm-mono'
+})
 type RootLayoutPropsT = {
 	children: React.ReactNode
 }
@@ -17,7 +31,7 @@ type RootLayoutPropsT = {
 const RootLayout = (props: RootLayoutPropsT): JSX.Element => {
 	return (
 		<ConvexAuthNextjsServerProvider>
-			<html lang="en">
+			<html lang="en" className={`${dmSans.className} ${dmMono.className}`}>
 				<body>
 					<ConvexClientProvider>{props.children}</ConvexClientProvider>
 				</body>

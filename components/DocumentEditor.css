@@ -1,0 +1,91 @@
+.EditorShell {
+	display: flex;
+	flex-direction: column;
+	height: 100dvh;
+	overflow: hidden;
+}
+
+/* ─── Editor Layout ─────────────────────────────────────── */
+
+.EditorLayout {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	flex: 1;
+	overflow: hidden;
+}
+
+.EditorPane {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	min-width: 0;
+	min-width: 400px;
+}
+
+.EditorResizeHandle {
+	width: 1px;
+	background: var(--line);
+	cursor: col-resize;
+	position: relative;
+	flex-shrink: 0;
+	transition: background 0.15s;
+}
+
+.EditorResizeHandle::after {
+	content: '';
+	position: absolute;
+	inset: 0 -4px;
+}
+
+.EditorPaneLabel {
+	padding: var(--spacing-1) var(--spacing-4);
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--muted);
+	border-bottom: 1px solid var(--line);
+	flex-shrink: 0;
+}
+
+.EditorPaneContent {
+	flex: 1;
+	overflow: hidden;
+	min-height: 0;
+}
+
+/* ─── Preview Pane ───────────────────────────────────────── */
+
+.PreviewPane {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	min-width: 0;
+	background: var(--bg);
+}
+
+.PreviewPaneLabel {
+	display: flex;
+	align-items: center;
+	height: 40px;
+	padding: var(--spacing-1) var(--spacing-4);
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--muted);
+	border-bottom: 1px solid var(--line);
+	flex-shrink: 0;
+}
+
+.PreviewPaneContent {
+	flex: 1;
+	overflow-y: auto;
+	padding: var(--spacing-6) var(--spacing-8);
+	min-height: 0;
+}
+
+.PreviewPaneContent .Prose {
+	max-width: 52rem;
+	margin: 0 auto;
+}

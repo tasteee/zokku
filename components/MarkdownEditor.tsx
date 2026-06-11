@@ -1,5 +1,6 @@
 'use client'
 
+import './MarkdownEditor.css'
 import { useRef, JSX } from 'react'
 import { Editor } from '@monaco-editor/react'
 import type { OnMount, OnChange, BeforeMount, Monaco } from '@monaco-editor/react'

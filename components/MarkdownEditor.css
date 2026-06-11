@@ -1,0 +1,57 @@
+.MarkdownEditor {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	min-height: 0;
+	background: var(--bg);
+}
+
+.MarkdownToolbar {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--spacing-1);
+	padding: var(--spacing-1) var(--spacing-2);
+	height: 40px;
+	border-bottom: 1px solid var(--line);
+	flex-shrink: 0;
+}
+
+.MarkdownToolbarButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border: 1px solid transparent;
+	border-radius: var(--small-button-radius);
+	background: transparent;
+	color: var(--muted);
+	cursor: pointer;
+	transition:
+		background-color 0.1s ease,
+		color 0.1s ease,
+		border-color 0.1s ease;
+}
+
+.MarkdownToolbarButton:hover {
+	background: color-mix(in oklch, var(--foreground) 8%, transparent);
+	color: var(--primary);
+}
+
+.MarkdownToolbarButton:active {
+	background: color-mix(in oklch, var(--foreground) 14%, transparent);
+}
+
+.MarkdownToolbarDivider {
+	width: 1px;
+	align-self: stretch;
+	margin: var(--spacing-1) var(--spacing-1);
+	background: var(--line);
+}
+
+.MarkdownEditorSurface {
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+}
