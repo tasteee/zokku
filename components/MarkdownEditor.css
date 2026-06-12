@@ -1,9 +1,37 @@
 .MarkdownEditor {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	height: 100%;
 	min-height: 0;
 	background: var(--bg);
+}
+
+.MarkdownCopyToast {
+	position: absolute;
+	bottom: var(--spacing-5);
+	left: 50%;
+	transform: translateX(-50%) translateY(4px);
+	padding: var(--spacing-2) var(--spacing-4);
+	background: var(--paper);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	color: var(--primary);
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-semibold);
+	letter-spacing: 0.04em;
+	white-space: nowrap;
+	pointer-events: none;
+	opacity: 0;
+	transition:
+		opacity 150ms,
+		transform 150ms;
+	z-index: 10;
+}
+
+.MarkdownCopyToast[data-visible='true'] {
+	opacity: 1;
+	transform: translateX(-50%) translateY(0);
 }
 
 .MarkdownToolbar {

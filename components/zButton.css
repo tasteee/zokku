@@ -93,6 +93,21 @@
 	opacity: 0.8;
 }
 
+.zButton.isDim {
+	background: rgba(255, 255, 255, 0.145);
+	border-color: transparent;
+	color: white;
+	font-weight: 600;
+}
+
+.zButton.isDim:hover {
+	background: rgba(255, 255, 255, 0.22);
+}
+
+.zButton.isDim:active {
+	background: rgba(255, 255, 255, 0.3);
+}
+
 .zButton.isOutlined {
 	background: transparent;
 }

@@ -6,13 +6,19 @@ export const proxy = convexAuthNextjsMiddleware(async (request, { convexAuth }) 
 	const isAuthenticated = await convexAuth.isAuthenticated()
 	const isGoingToPublicRoute = isPublicRoute(request)
 
+	console.log('got request: ', request.url)
+
 	if (!isAuthenticated && !isGoingToPublicRoute) {
+		console.log('sending to sign in')
 		return nextjsMiddlewareRedirect(request, '/sign-in')
 	}
 
 	if (isAuthenticated && isGoingToPublicRoute) {
+		console.log('sending to home')
 		return nextjsMiddlewareRedirect(request, '/')
 	}
+
+	console.log('allowing request to proceed', { isAuthenticated, isGoingToPublicRoute, requestUrl: request.url })
 })
 
 export const config = {

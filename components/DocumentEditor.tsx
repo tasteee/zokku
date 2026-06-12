@@ -45,6 +45,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const [splitPercent, setSplitPercent] = useState(50)
 	const [chatPercent, setChatPercent] = useState(30)
 	const [isChatOpen, setIsChatOpen] = useState(false)
+	const [mobilePaneView, setMobilePaneView] = useState<'editor' | 'preview'>('editor')
 	const editorLayoutRef = useRef<HTMLDivElement | null>(null)
 	const isDraggingRef = useRef(false)
 	const isDraggingChatRef = useRef(false)
@@ -246,7 +247,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 				</div>
 			</div>
 
-			<div ref={editorLayoutRef} className="EditorLayout" style={{ gridTemplateColumns } as CSSProperties}>
+			<div ref={editorLayoutRef} className="EditorLayout" data-mobile-view={mobilePaneView} style={{ gridTemplateColumns } as CSSProperties}>
 				<div className="EditorPane">
 					<MarkdownEditor value={content} onChange={handleContentChange} />
 				</div>
@@ -276,6 +277,23 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 						<ClaudeChat documentTitle={title.state} documentContent={content} onClose={() => setIsChatOpen(false)} />
 					</>
 				)}
+			</div>
+
+			<div className="EditorMobileToggle" role="group" aria-label="Switch pane">
+				<button
+					className="EditorMobileToggleButton"
+					data-active={mobilePaneView === 'editor' ? 'true' : 'false'}
+					onClick={() => setMobilePaneView('editor')}
+				>
+					Editor
+				</button>
+				<button
+					className="EditorMobileToggleButton"
+					data-active={mobilePaneView === 'preview' ? 'true' : 'false'}
+					onClick={() => setMobilePaneView('preview')}
+				>
+					Preview
+				</button>
 			</div>
 		</div>
 	)

@@ -1,0 +1,168 @@
+.documentsWorkspace {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-6);
+}
+
+.documentsWorkspaceHeader {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: var(--spacing-6);
+	padding-bottom: var(--spacing-5);
+	border-bottom: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
+}
+
+.documentsWorkspaceKicker {
+	margin-bottom: var(--spacing-2);
+	font-size: var(--font-size-0);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--accent);
+}
+
+.documentsWorkspaceTitle {
+	font-size: var(--font-size-h3);
+	line-height: var(--line-height-h3);
+	font-weight: var(--font-weight-bold);
+	color: var(--primary);
+}
+
+.documentsWorkspaceDescription {
+	margin-top: var(--spacing-2);
+	max-width: 34rem;
+	font-size: var(--font-size-small);
+	line-height: var(--line-height-small);
+	color: var(--muted);
+}
+
+.documentsWorkspaceActions {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: var(--spacing-3);
+	flex-shrink: 0;
+}
+
+.documentsWorkspaceButtons {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-2);
+}
+
+.documentsWorkspaceSearchTrigger {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--spacing-2);
+	height: 2rem;
+	padding: 0 var(--spacing-3);
+	border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+	border-radius: var(--small-button-radius);
+	background: color-mix(in srgb, var(--paper) 74%, transparent);
+	color: var(--muted);
+	font-family: var(--font-sans);
+	cursor: pointer;
+	transition:
+		border-color 140ms,
+		background 140ms,
+		color 140ms,
+		box-shadow 140ms;
+}
+
+.documentsWorkspaceSearchTrigger svg {
+	width: 0.875rem;
+	height: 0.875rem;
+	flex-shrink: 0;
+}
+
+.documentsWorkspaceSearchTrigger:hover {
+	border-color: color-mix(in srgb, var(--accent) 46%, transparent);
+	background: color-mix(in srgb, var(--accent) 8%, transparent);
+	color: var(--accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.documentsWorkspaceSearchHint {
+	font-size: var(--font-size-0);
+	font-weight: var(--font-weight-semibold);
+	letter-spacing: 0.04em;
+	opacity: 0.7;
+}
+
+.documentsWorkspaceStats {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-2);
+	color: var(--muted);
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-medium);
+	white-space: nowrap;
+}
+
+.documentsWorkspaceStats span {
+	padding: var(--spacing-1) var(--spacing-2);
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--paper) 62%, transparent);
+}
+
+.documentsWorkspaceGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+	gap: var(--spacing-4);
+}
+
+.documentsWorkspaceEmpty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 28rem;
+	padding: var(--spacing-12) var(--spacing-8);
+	text-align: center;
+	gap: var(--spacing-4);
+	border: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+	border-radius: var(--medium-button-radius);
+	background: color-mix(in srgb, var(--paper) 54%, transparent);
+}
+
+.documentsWorkspaceEmptyCompact {
+	min-height: 22rem;
+}
+
+.documentsWorkspaceEmptyGlyph {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border: 1px solid color-mix(in srgb, var(--accent) 36%, transparent);
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--accent) 9%, transparent);
+	color: var(--accent);
+}
+
+.documentsWorkspaceEmptyGlyph svg {
+	width: 1.25rem;
+	height: 1.25rem;
+}
+
+.documentsWorkspaceEmptyTitle {
+	font-size: var(--font-size-h4);
+	font-weight: var(--font-weight-bold);
+	color: var(--primary);
+	line-height: var(--line-height-h4);
+}
+
+.documentsWorkspaceEmptyBody {
+	font-size: var(--font-size-small);
+	color: var(--muted);
+	max-width: 26rem;
+	line-height: var(--line-height-small);
+}
+
+.documentsWorkspaceEmptyButton {
+	margin-top: var(--spacing-1);
+}

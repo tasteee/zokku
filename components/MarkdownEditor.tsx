@@ -1,11 +1,12 @@
 'use client'
 
 import './MarkdownEditor.css'
-import { useRef, JSX } from 'react'
+import { useRef, useState, JSX } from 'react'
 import { Editor } from '@monaco-editor/react'
 import type { OnMount, OnChange, BeforeMount, Monaco } from '@monaco-editor/react'
 import type { editor as MonacoEditorNS } from 'monaco-editor'
 import {
+	CopyIcon,
 	TextBolderIcon,
 	TextItalicIcon,
 	TextUnderlineIcon,
@@ -121,6 +122,8 @@ const defineZestTheme = (monaco: Monaco): void => {
 export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 	const editorRef = useRef<MonacoEditorNS.IStandaloneCodeEditor | null>(null)
 	const monacoRef = useRef<Monaco | null>(null)
+	const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+	const [isCopied, setIsCopied] = useState(false)
 
 	const focusEditor = (): void => {
 		const editor = editorRef.current
@@ -226,6 +229,22 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 
 		editor.executeEdits('markdown-toolbar', [{ range: selection, text: replacementText, forceMoveMarkers: true }])
 		focusEditor()
+	}
+
+	const handleCopy = async (): Promise<void> => {
+		const editor = editorRef.current
+		if (editor === null) return
+
+		const model = editor.getModel()
+		if (model === null) return
+
+		const fullText = model.getValue()
+		const copyError = await navigator.clipboard.writeText(fullText).then(() => null, (error: unknown) => error)
+		if (copyError !== null) return
+
+		if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current)
+		setIsCopied(true)
+		copyTimerRef.current = setTimeout(() => { setIsCopied(false) }, 1500)
 	}
 
 	const handleBold = (): void => {
@@ -336,6 +355,14 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 	const toolbarItems: ToolbarItemT[] = [
 		{
 			kind: 'button',
+			id: 'copy',
+			title: 'Copy contents',
+			icon: <CopyIcon size={iconSize} weight={iconWeight} />,
+			onClick: handleCopy
+		},
+		{ kind: 'divider', id: 'divider-0' },
+		{
+			kind: 'button',
 			id: 'bold',
 			title: 'Bold  (Ctrl+B)',
 			icon: <TextBolderIcon size={iconSize} weight={iconWeight} />,
@@ -424,6 +451,10 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 
 	return (
 		<div className="MarkdownEditor">
+			<div className="MarkdownCopyToast" data-visible={isCopied ? 'true' : 'false'} aria-live="polite">
+				Copied!
+			</div>
+
 			<div className="MarkdownToolbar">
 				{toolbarItems.map((item: ToolbarItemT): JSX.Element => {
 					const isDivider = item.kind === 'divider'

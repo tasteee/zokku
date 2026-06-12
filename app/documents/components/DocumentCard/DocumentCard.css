@@ -1,0 +1,188 @@
+.documentCard {
+	display: flex;
+	flex-direction: column;
+	min-height: 13rem;
+	padding: var(--spacing-5);
+	border: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
+	border-radius: var(--medium-button-radius);
+	background: color-mix(in srgb, var(--paper) 92%, transparent);
+	text-decoration: none;
+	cursor: pointer;
+	transition:
+		border-color 160ms,
+		box-shadow 160ms,
+		transform 160ms,
+		background 160ms;
+	will-change: transform;
+}
+
+.documentCard:hover {
+	border-color: color-mix(in srgb, var(--accent) 58%, transparent);
+	background: var(--paper);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent),
+		0 16px 44px color-mix(in srgb, black 26%, transparent);
+	transform: translateY(-2px);
+}
+
+.documentCardBody {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-2);
+	flex: 1;
+	min-width: 0;
+}
+
+.documentCardTopline {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--spacing-3);
+	font-size: var(--font-size-0);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+.documentCardTopline span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.documentCardTitle {
+	font-size: var(--font-size-small);
+	font-weight: var(--font-weight-semibold);
+	color: var(--primary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	line-height: 1.35;
+}
+
+.documentCardPreview {
+	font-size: var(--font-size-caption);
+	color: var(--muted);
+	line-height: var(--line-height-small);
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	opacity: 0.88;
+}
+
+.documentCardActions {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+	gap: var(--spacing-3);
+	margin-top: var(--spacing-5);
+	padding-top: var(--spacing-4);
+	border-top: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
+}
+
+.documentMoveControl {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-1);
+	min-width: 0;
+	cursor: default;
+}
+
+.documentMoveControl span {
+	font-size: var(--font-size-0);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--secondary);
+}
+
+.documentMoveControl select {
+	width: 100%;
+	height: 2rem;
+	padding: 0 var(--spacing-8) 0 var(--spacing-2);
+	border: 1px solid var(--line);
+	border-radius: var(--small-button-radius);
+	background: var(--bg);
+	color: var(--foreground);
+	font-family: var(--font-sans);
+	font-size: var(--font-size-caption);
+	outline: none;
+	cursor: pointer;
+	transition:
+		border-color 120ms,
+		background 120ms;
+}
+
+.documentMoveControl select:focus,
+.documentMoveControl select:hover {
+	border-color: color-mix(in srgb, var(--accent) 56%, var(--line));
+	background: color-mix(in srgb, var(--accent) 6%, var(--bg));
+}
+
+.documentCardShareButton {
+	height: 2rem;
+	padding: 0 var(--spacing-3);
+	border: 1px solid var(--line);
+	border-radius: var(--small-button-radius);
+	background: transparent;
+	color: var(--muted);
+	font-family: var(--font-sans);
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-medium);
+	cursor: pointer;
+	transition:
+		color 120ms,
+		border-color 120ms,
+		background 120ms;
+}
+
+.documentCardShareButton:hover {
+	color: var(--primary);
+	border-color: var(--muted);
+	background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.documentCardShareButton[data-copied='true'] {
+	color: var(--accent);
+	border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+@keyframes skeletonPulse {
+	0%,
+	100% {
+		opacity: 0.38;
+	}
+	50% {
+		opacity: 0.68;
+	}
+}
+
+.documentCardSkeleton {
+	height: 13rem;
+	border: 1px solid var(--line);
+	border-radius: var(--medium-button-radius);
+	background: var(--paper);
+	animation: skeletonPulse 1.8s ease-in-out infinite;
+}
+
+.documentCardSkeleton:nth-child(2) {
+	animation-delay: 0.15s;
+}
+
+.documentCardSkeleton:nth-child(3) {
+	animation-delay: 0.3s;
+}
+
+.documentCardSkeleton:nth-child(4) {
+	animation-delay: 0.45s;
+}
+
+.documentCardSkeleton:nth-child(5) {
+	animation-delay: 0.6s;
+}
+
+.documentCardSkeleton:nth-child(6) {
+	animation-delay: 0.75s;
+}

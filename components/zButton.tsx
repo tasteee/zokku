@@ -4,7 +4,7 @@ import { prop } from '@/lib/prop'
 
 type ZColorSwitchPropsT = 'isNeutral' | 'isPurple' | 'isPink' | 'isRed'
 type ZButtonSizePropsT = 'isExtraSmall' | 'isSmall' | 'isMedium' | 'isLarge' | 'isExtraLarge' | 'isIcon'
-type ZButtonKindPropsT = 'isGhost' | 'isOutlined' | 'isSolid'
+type ZButtonKindPropsT = 'isGhost' | 'isOutlined' | 'isSolid' | 'isDim'
 
 type ZButtonOtherPropsT = {
 	isHidden?: boolean
@@ -34,6 +34,7 @@ const CUSTOM_PROPS = [
 	'isGhost',
 	'isOutlined',
 	'isSolid',
+	'isDim',
 	'isHidden',
 	'isDisabled',
 	'isLoading',
@@ -67,6 +68,7 @@ const getKindClass = prop.classNameSwitch({
 	isGhost: 'isGhost',
 	isOutlined: 'isOutlined',
 	isSolid: 'isSolid',
+	isDim: 'isDim',
 	default: 'isOutlined'
 })
 

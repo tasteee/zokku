@@ -1,0 +1,41 @@
+.documentsHeader {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-3);
+	padding: 0 var(--spacing-8);
+	height: 3.5rem;
+	border-bottom: 1px solid var(--line);
+	flex-shrink: 0;
+	position: sticky;
+	top: 0;
+	background: color-mix(in srgb, var(--bg) 86%, transparent);
+	backdrop-filter: blur(14px);
+	-webkit-backdrop-filter: blur(14px);
+	z-index: 10;
+}
+
+.documentsHeaderBrand {
+	flex: 1;
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--primary);
+	user-select: none;
+}
+
+.documentsHeaderBrandDot {
+	display: inline-block;
+	width: 0.4375rem;
+	height: 0.4375rem;
+	border-radius: 999px;
+	background: var(--accent);
+	margin-right: var(--spacing-2);
+	vertical-align: 0.1em;
+}
+
+.documentsHeaderActions {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-2);
+}

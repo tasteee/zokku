@@ -6,6 +6,31 @@
 	padding: 0;
 }
 
+/* ─── Scrollbars ─────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--line);
+	border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--muted);
+}
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--line) transparent;
+}
+
 html,
 body,
 #__next {
@@ -634,13 +659,6 @@ body {
 	margin-bottom: var(--rhythm-half);
 }
 
-.Prose p {
-	font-size: var(--font-size-body);
-	line-height: var(--line-height-body);
-	color: var(--foreground);
-	margin-bottom: var(--rhythm);
-}
-
 .Prose ul,
 .Prose ol {
 	padding-left: 1.5rem;
@@ -874,6 +892,13 @@ body {
 
 /* ─── Prose: zText ───────────────────────────────────────── */
 @layer base {
+	.Prose p {
+		font-size: var(--font-size-body);
+		line-height: var(--line-height-body);
+		color: var(--foreground);
+		margin-bottom: var(--rhythm);
+	}
+
 	.Prose .zText {
 		color: var(--foreground);
 		font-size: var(--font-size-body);
@@ -1389,7 +1414,7 @@ body {
 	box-shadow:
 		0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent),
 		0 8px 32px color-mix(in srgb, var(--accent) 10%, transparent);
-	transform: translateY(-2px);
+	transform: translateY(-1px);
 }
 
 .DocumentCardTitle {
