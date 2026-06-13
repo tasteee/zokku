@@ -4,14 +4,14 @@ import './FolderRail.css'
 import { JSX } from 'react'
 import { FileText, Folder, FolderPlus, Trash } from '@phosphor-icons/react'
 import { Id } from '@/convex/_generated/dataModel'
-import { $composer, $documents, $folders, FolderFilterT, FolderT } from '../../stores'
+import { $composer, $documents, $folders, DocumentT, FolderFilterT, FolderT } from '../../stores'
 
 type FolderRailPropsT = {
 	onDeleteFolder: (folderId: Id<'folders'>) => Promise<void>
 }
 
 export const FolderRail = (props: FolderRailPropsT): JSX.Element => {
-	const documents = $documents.use.lookup('list')
+	const documents = $documents.use.lookup('list') as DocumentT[]
 	const folders = $folders.use.lookup('list') as FolderT[]
 	const selectedId = $folders.use.lookup('selectedId') as FolderFilterT
 	const confirmingFolderId = $composer.use.lookup('confirmingFolderId')
@@ -66,11 +66,7 @@ export const FolderRail = (props: FolderRailPropsT): JSX.Element => {
 				<span>Folders</span>
 				<div className="folderRailHeaderActions">
 					<span>{totalFoldered}</span>
-					<button
-						className="folderRailAddButton"
-						title="New folder"
-						onClick={() => $composer.set.lookup('isOpen', true)}
-					>
+					<button className="folderRailAddButton" title="New folder" onClick={() => $composer.set.lookup('isOpen', true)}>
 						<FolderPlus weight="bold" />
 					</button>
 				</div>

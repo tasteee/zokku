@@ -890,15 +890,14 @@ body {
 	color: var(--color-neutral-11) !important;
 }
 
+.Prose p {
+	font-size: var(--font-size-body);
+	line-height: var(--line-height-body);
+	color: var(--foreground);
+	margin-bottom: var(--rhythm);
+}
 /* ─── Prose: zText ───────────────────────────────────────── */
 @layer base {
-	.Prose p {
-		font-size: var(--font-size-body);
-		line-height: var(--line-height-body);
-		color: var(--foreground);
-		margin-bottom: var(--rhythm);
-	}
-
 	.Prose .zText {
 		color: var(--foreground);
 		font-size: var(--font-size-body);
@@ -1442,6 +1441,7 @@ body {
 	line-height: 1.6;
 	display: -webkit-box;
 	-webkit-line-clamp: 3;
+	line-clamp: 3;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	opacity: 0.8;
