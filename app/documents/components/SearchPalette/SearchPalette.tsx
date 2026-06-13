@@ -5,7 +5,7 @@ import { JSX, useEffect, useRef } from 'react'
 import { FileText, MagnifyingGlass, X } from '@phosphor-icons/react'
 import { Id } from '@/convex/_generated/dataModel'
 import { $folders, $search, FolderT, SearchResultT } from '../../stores'
-import { formatRelativeTime } from '../../helpers.ts'
+import { formatRelativeTime } from '../../helpers'
 import { HighlightedMatch } from '../HighlightedMatch/HighlightedMatch'
 
 type SearchPalettePropsT = {
@@ -82,35 +82,36 @@ export const SearchPalette = (props: SearchPalettePropsT): JSX.Element => {
 
 				{hasInput && (
 					<div className="searchPaletteResults">
-						{hasResults && results.map((result) => {
-							const folder = folders.find((item) => item._id === result.folderId)
-							const folderLabel = folder?.name ?? 'Uncategorized'
-							const relativeTime = formatRelativeTime(result.updatedAt)
+						{hasResults &&
+							results.map((result) => {
+								const folder = folders.find((item) => item._id === result.folderId)
+								const folderLabel = folder?.name ?? 'Uncategorized'
+								const relativeTime = formatRelativeTime(result.updatedAt)
 
-							return (
-								<button
-									key={result._id}
-									className="searchPaletteResult"
-									type="button"
-									onClick={() => handleResultClick(result._id)}
-								>
-									<span className="searchPaletteResultIcon">
-										<FileText weight="bold" />
-									</span>
-									<span className="searchPaletteResultBody">
-										<span className="searchPaletteResultMeta">
-											{result.matchType} match · {folderLabel} · Edited {relativeTime}
+								return (
+									<button
+										key={result._id}
+										className="searchPaletteResult"
+										type="button"
+										onClick={() => handleResultClick(result._id)}
+									>
+										<span className="searchPaletteResultIcon">
+											<FileText weight="bold" />
 										</span>
-										<span className="searchPaletteResultTitle">
-											<HighlightedMatch text={result.title} query={searchInput.trim()} />
+										<span className="searchPaletteResultBody">
+											<span className="searchPaletteResultMeta">
+												{result.matchType} match · {folderLabel} · Edited {relativeTime}
+											</span>
+											<span className="searchPaletteResultTitle">
+												<HighlightedMatch text={result.title} query={searchInput.trim()} />
+											</span>
+											<span className="searchPaletteResultSnippet">
+												<HighlightedMatch text={result.snippet} query={searchInput.trim()} />
+											</span>
 										</span>
-										<span className="searchPaletteResultSnippet">
-											<HighlightedMatch text={result.snippet} query={searchInput.trim()} />
-										</span>
-									</span>
-								</button>
-							)
-						})}
+									</button>
+								)
+							})}
 
 						{isResultsEmpty && (
 							<div className="searchPaletteEmpty">
