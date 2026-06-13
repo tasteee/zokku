@@ -139,11 +139,7 @@ const DocumentsPage = (): JSX.Element => {
 
 			<div className="documentsPageBody">
 				<FolderRail onDeleteFolder={handleDeleteFolder} />
-				<DocumentsWorkspace
-					onNew={handleNew}
-					onMoveDocument={handleMoveDocument}
-					onShareDocument={handleShareDocument}
-				/>
+				<DocumentsWorkspace onNew={handleNew} onMoveDocument={handleMoveDocument} onShareDocument={handleShareDocument} />
 			</div>
 
 			{isComposerOpen && <FolderComposer onSubmit={handleCreateFolder} />}

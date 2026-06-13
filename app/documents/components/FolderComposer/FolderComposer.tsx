@@ -1,8 +1,8 @@
 'use client'
 
 import './FolderComposer.css'
-import { FormEvent, JSX } from 'react'
-import { X } from '@phosphor-icons/react'
+import { JSX, SubmitEvent } from 'react'
+import { XIcon } from '@phosphor-icons/react'
 import { ZButton } from '@/components/zButton'
 import { $composer } from '../../stores'
 
@@ -19,7 +19,7 @@ export const FolderComposer = (props: FolderComposerPropsT): JSX.Element => {
 		$composer.set.lookup('isOpen', false)
 	}
 
-	const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+	const handleSubmit = async (event: SubmitEvent<HTMLFormElement>): Promise<void> => {
 		event.preventDefault()
 		const trimmedName = folderName.trim()
 		const trimmedDescription = folderDescription.trim()
@@ -29,18 +29,14 @@ export const FolderComposer = (props: FolderComposerPropsT): JSX.Element => {
 
 	return (
 		<div className="folderComposerBackdrop" role="presentation" onMouseDown={handleClose}>
-			<form
-				className="folderComposer"
-				onSubmit={handleSubmit}
-				onMouseDown={(event) => event.stopPropagation()}
-			>
+			<form className="folderComposer" onSubmit={handleSubmit} onMouseDown={(event) => event.stopPropagation()}>
 				<div className="folderComposerHeader">
 					<div>
 						<div className="folderComposerKicker">New folder</div>
 						<h2>Create a folder</h2>
 					</div>
 					<button className="folderComposerClose" type="button" onClick={handleClose} title="Close">
-						<X weight="bold" />
+						<XIcon weight="bold" />
 					</button>
 				</div>
 

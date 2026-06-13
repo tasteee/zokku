@@ -2,7 +2,7 @@
 
 import './SearchPalette.css'
 import { JSX, useEffect, useRef } from 'react'
-import { FileText, MagnifyingGlass, X } from '@phosphor-icons/react'
+import { FileTextIcon, MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react'
 import { Id } from '@/convex/_generated/dataModel'
 import { $folders, $search, FolderT, SearchResultT } from '../../stores'
 import { formatRelativeTime } from '../../helpers'
@@ -65,7 +65,7 @@ export const SearchPalette = (props: SearchPalettePropsT): JSX.Element => {
 				onMouseDown={(event) => event.stopPropagation()}
 			>
 				<div className="searchPaletteInputRow">
-					<MagnifyingGlass weight="bold" />
+					<MagnifyingGlassIcon weight="bold" />
 					<input
 						ref={inputRef}
 						value={searchInput}
@@ -74,7 +74,7 @@ export const SearchPalette = (props: SearchPalettePropsT): JSX.Element => {
 						aria-label="Search documents"
 					/>
 					<button className="searchPaletteClose" type="button" onClick={handleClose} title="Close search">
-						<X weight="bold" />
+						<XIcon weight="bold" />
 					</button>
 				</div>
 
@@ -96,7 +96,7 @@ export const SearchPalette = (props: SearchPalettePropsT): JSX.Element => {
 										onClick={() => handleResultClick(result._id)}
 									>
 										<span className="searchPaletteResultIcon">
-											<FileText weight="bold" />
+											<FileTextIcon weight="bold" />
 										</span>
 										<span className="searchPaletteResultBody">
 											<span className="searchPaletteResultMeta">
@@ -116,7 +116,7 @@ export const SearchPalette = (props: SearchPalettePropsT): JSX.Element => {
 						{isResultsEmpty && (
 							<div className="searchPaletteEmpty">
 								<div className="searchPaletteEmptyGlyph">
-									<MagnifyingGlass weight="bold" />
+									<MagnifyingGlassIcon weight="bold" />
 								</div>
 								<h2>No matches</h2>
 								<p>Try another phrase or a smaller fragment of text.</p>
