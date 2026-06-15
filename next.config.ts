@@ -1,8 +1,15 @@
 import type { NextConfig } from 'next'
-import path from 'path'
 
 const nextConfig: NextConfig = {
-	output: 'standalone'
+	output: 'standalone',
+	async rewrites() {
+		return [
+			{
+				source: '/api/auth/:path*',
+				destination: `${process.env.NEXT_PUBLIC_CONVEX_URL!.replace('.cloud', '.site')}/api/auth/:path*`
+			}
+		]
+	}
 }
 
 export default nextConfig
