@@ -12,8 +12,12 @@
 }
 
 /* Light theme: remap semantic tokens onto the high end of the
-   neutral scale (9 = lightest) for surfaces and the low end for text. */
+   neutral scale (9 = lightest) for surfaces and the low end for text.
+   Accent colors swap to US Bank brand colors: purple → blue, pink → red. */
 [data-preview-theme='light'] {
+	--color-purple: #0c2074;
+	--color-pink: #d22630;
+
 	--bg: var(--color-neutral-9);
 	--paper: var(--color-neutral-8);
 	--paper-soft: var(--color-neutral-7);
@@ -22,6 +26,13 @@
 	--foreground: var(--color-neutral-2);
 	--muted: var(--color-neutral-4);
 	--secondary: var(--color-neutral-5);
+
+	--accent: var(--color-purple);
+	--accent-alt: var(--color-pink);
+	--warning: var(--color-pink);
+
+	--pink: var(--color-pink);
+	--purple: var(--color-purple);
 }
 
 /* ─── Font presets ───────────────────────────────────────── */
@@ -73,7 +84,10 @@
 	background: transparent;
 	color: var(--muted);
 	cursor: pointer;
-	transition: color 120ms, background 120ms, border-color 120ms;
+	transition:
+		color 120ms,
+		background 120ms,
+		border-color 120ms;
 }
 
 .PreviewSettingsTrigger:hover {
@@ -136,7 +150,9 @@
 	font-size: var(--font-size-1);
 	font-weight: 500;
 	cursor: pointer;
-	transition: color 120ms, background 120ms;
+	transition:
+		color 120ms,
+		background 120ms;
 }
 
 .PreviewSettingsSegment:hover {
@@ -169,7 +185,9 @@
 	background: transparent;
 	color: var(--foreground);
 	cursor: pointer;
-	transition: color 120ms, background 120ms;
+	transition:
+		color 120ms,
+		background 120ms;
 }
 
 .PreviewSettingsStepperButton:hover:not(:disabled) {

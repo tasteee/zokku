@@ -1,12 +1,13 @@
 'use client'
 
 import './MarkdownEditor.css'
-import { useRef, useState, JSX } from 'react'
+import { useRef, useState, useEffect, JSX } from 'react'
 import { Editor } from '@monaco-editor/react'
 import type { OnMount, OnChange, BeforeMount, Monaco } from '@monaco-editor/react'
 import type { editor as MonacoEditorNS } from 'monaco-editor'
 import {
 	CopyIcon,
+	ClipboardIcon,
 	TextBolderIcon,
 	TextItalicIcon,
 	TextUnderlineIcon,
@@ -24,6 +25,7 @@ import {
 type MarkdownEditorPropsT = {
 	value: string
 	onChange: (nextValue: string) => void
+	onImageUpload?: (blob: Blob) => Promise<string | null>
 }
 
 type ToolbarButtonT = {
@@ -123,7 +125,58 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 	const editorRef = useRef<MonacoEditorNS.IStandaloneCodeEditor | null>(null)
 	const monacoRef = useRef<Monaco | null>(null)
 	const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+	const surfaceRef = useRef<HTMLDivElement | null>(null)
+	const onImageUploadRef = useRef(props.onImageUpload)
+
 	const [isCopied, setIsCopied] = useState(false)
+	const [isUploadingImage, setIsUploadingImage] = useState(false)
+
+	useEffect(() => { onImageUploadRef.current = props.onImageUpload })
+
+	useEffect(() => {
+		const surface = surfaceRef.current
+		if (surface === null) return
+
+		const handleImagePaste = (event: ClipboardEvent): void => {
+			const upload = onImageUploadRef.current
+			if (upload === undefined) return
+
+			const items = Array.from(event.clipboardData?.items ?? [])
+			const imageItem = items.find((item) => item.type.startsWith('image/'))
+			if (imageItem === undefined) return
+
+			// getAsFile must be called synchronously before the event is released
+			const blob = imageItem.getAsFile()
+			if (blob === null) return
+
+			event.preventDefault()
+
+			void (async () => {
+				setIsUploadingImage(true)
+				const url = await upload(blob)
+				setIsUploadingImage(false)
+
+				if (url === null) return
+
+				const editor = editorRef.current
+				const monaco = monacoRef.current
+				if (editor === null || monaco === null) return
+
+				const selection = editor.getSelection()
+				if (selection === null) return
+
+				const selectedText = editor.getModel()?.getValueInRange(selection) ?? ''
+				const labelText = selectedText || 'image'
+				const markdown = `![${labelText}](${url})`
+
+				editor.executeEdits('paste-image', [{ range: selection, text: markdown, forceMoveMarkers: true }])
+				editor.focus()
+			})()
+		}
+
+		surface.addEventListener('paste', handleImagePaste, true)
+		return () => surface.removeEventListener('paste', handleImagePaste, true)
+	}, [])
 
 	const focusEditor = (): void => {
 		const editor = editorRef.current
@@ -247,6 +300,22 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 		copyTimerRef.current = setTimeout(() => { setIsCopied(false) }, 1500)
 	}
 
+	const handlePaste = async (): Promise<void> => {
+		const editor = editorRef.current
+		const monaco = monacoRef.current
+		if (editor === null) return
+		if (monaco === null) return
+
+		const clipboardText = await navigator.clipboard.readText().catch(() => null)
+		if (clipboardText === null) return
+
+		const selection = editor.getSelection()
+		if (selection === null) return
+
+		editor.executeEdits('paste', [{ range: selection, text: clipboardText, forceMoveMarkers: true }])
+		focusEditor()
+	}
+
 	const handleBold = (): void => {
 		wrapSelection('**', '**', 'bold text')
 	}
@@ -360,6 +429,13 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 			icon: <CopyIcon size={iconSize} weight={iconWeight} />,
 			onClick: handleCopy
 		},
+		{
+			kind: 'button',
+			id: 'paste',
+			title: 'Paste from clipboard',
+			icon: <ClipboardIcon size={iconSize} weight={iconWeight} />,
+			onClick: handlePaste
+		},
 		{ kind: 'divider', id: 'divider-0' },
 		{
 			kind: 'button',
@@ -454,6 +530,9 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 			<div className="MarkdownCopyToast" data-visible={isCopied ? 'true' : 'false'} aria-live="polite">
 				Copied!
 			</div>
+			<div className="MarkdownUploadToast" data-visible={isUploadingImage ? 'true' : 'false'} aria-live="polite">
+				Uploading image…
+			</div>
 
 			<div className="MarkdownToolbar">
 				{toolbarItems.map((item: ToolbarItemT): JSX.Element => {
@@ -475,7 +554,7 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 				})}
 			</div>
 
-			<div className="MarkdownEditorSurface">
+			<div ref={surfaceRef} className="MarkdownEditorSurface">
 				<Editor
 					height="100%"
 					defaultLanguage="markdown"

@@ -12,6 +12,7 @@ import type * as auth from "../auth.js";
 import type * as documents from "../documents.js";
 import type * as folders from "../folders.js";
 import type * as http from "../http.js";
+import type * as images from "../images.js";
 
 import type {
   ApiFromModules,
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   documents: typeof documents;
   folders: typeof folders;
   http: typeof http;
+  images: typeof images;
 }>;
 
 /**

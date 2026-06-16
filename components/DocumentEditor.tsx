@@ -31,6 +31,8 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const document = useQuery(api.documents.get, { id: props.documentId })
 	const updateDocument = useMutation(api.documents.update)
 	const removeDocument = useMutation(api.documents.remove)
+	const generateUploadUrl = useMutation(api.images.generateUploadUrl)
+	const getImageUrl = useMutation(api.images.getImageUrl)
 	const router = useRouter()
 
 	const title = useDatass.string('')
@@ -203,6 +205,22 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		setIsConfirmingDelete(false)
 	}
 
+	const handleImageUpload = async (blob: Blob): Promise<string | null> => {
+		const uploadUrl = await generateUploadUrl()
+
+		const uploadResponse = await fetch(uploadUrl, {
+			method: 'POST',
+			headers: { 'Content-Type': blob.type },
+			body: blob
+		})
+
+		if (!uploadResponse.ok) return null
+
+		const uploadResult = await uploadResponse.json() as { storageId: string }
+		const imageUrl = await getImageUrl({ storageId: uploadResult.storageId })
+		return imageUrl
+	}
+
 	const saveLabel = saveState === 'saving' ? 'Saving...' : saveState === 'unsaved' ? 'Unsaved' : 'Saved'
 	const deleteLabel = isConfirmingDelete ? 'Sure?' : 'Delete'
 	const isDocumentMissing = document === null
@@ -277,7 +295,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 
 			<div ref={editorLayoutRef} className="EditorLayout" data-mobile-view={mobilePaneView} style={{ gridTemplateColumns } as CSSProperties}>
 				<div className="EditorPane">
-					<MarkdownEditor value={content} onChange={handleContentChange} />
+					<MarkdownEditor value={content} onChange={handleContentChange} onImageUpload={handleImageUpload} />
 				</div>
 
 				<div

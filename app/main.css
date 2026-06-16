@@ -799,7 +799,27 @@ body {
 	--font-weight-semibold: 600;
 	--font-weight-bold: 700;
 
-	--note-bg: color-mix(in srgb, var(--accent) 10%, transparent);
+	--note-bg: color-mix(in srgb, var(--purple) 10%, transparent);
+	--tip-bg: color-mix(in srgb, var(--primary) 6%, transparent);
+	--warning-bg: color-mix(in srgb, var(--accent-alt) 10%, transparent);
+}
+
+[data-preview-theme='light'] {
+	--color-purple: #0c2074;
+	--color-pink: #d22630;
+
+	--color-neutral-0: oklch(0.08 0.006 255);
+	--color-neutral-1: oklch(0.12 0.007 255);
+	--color-neutral-2: oklch(0.18 0.008 255);
+	--color-neutral-3: oklch(0.28 0.009 255);
+	--color-neutral-4: oklch(0.4 0.01 255);
+	--color-neutral-5: oklch(0.55 0.01 255);
+	--color-neutral-6: oklch(0.68 0.009 255);
+	--color-neutral-7: oklch(0.8 0.007 255);
+	--color-neutral-8: oklch(0.91 0.005 255);
+	--color-neutral-9: oklch(0.98 0.003 255);
+
+	--note-bg: color-mix(in srgb, var(--purple) 10%, transparent);
 	--tip-bg: color-mix(in srgb, var(--primary) 6%, transparent);
 	--warning-bg: color-mix(in srgb, var(--accent-alt) 10%, transparent);
 }
