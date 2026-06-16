@@ -13,6 +13,7 @@ import type { ThemeRegistrationAny } from '@shikijs/types'
 import { customMarkers, matchDynamicMarkerDefinition } from '@/lib/markers'
 import type { MarkerDefinitionT } from '@/lib/markers'
 import { codeTheme } from '@/lib/codeTheme'
+import type { PreviewSettingsT } from '@/components/previewSettings'
 
 // ─── Minimal hast-compatible types ───────────────────────────
 
@@ -337,11 +338,49 @@ const escapeHtml = (text: string): string => {
 	return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
-export const exportHtml = async (title: string, content: string): Promise<string> => {
+// Mirrors getPreviewSurfaceStyle in previewSettings.ts.
+// Computes all --font-size-* vars as resolved px values so the
+// exported HTML doesn't rely on :root calc() re-evaluation.
+const FIXED_STEP_RATIOS = [0.579, 0.694, 0.833, 1] as const
+
+const SCALE_STEP_RATIOS: Record<PreviewSettingsT['scale'], readonly number[]> = {
+	compact: [1.2, 1.44, 1.728, 2.074, 2.488],
+	default: [1.25, 1.563, 1.953, 2.441, 3.052],
+	spacious: [1.333, 1.777, 2.369, 3.157, 4.209],
+}
+
+const buildSurfaceStyle = (settings: PreviewSettingsT): string => {
+	const base = settings.baseFontSize
+	const scaleRatios = SCALE_STEP_RATIOS[settings.scale]
+
+	const vars: string[] = [`--base-font-size: ${base}px`]
+
+	for (const [index, ratio] of FIXED_STEP_RATIOS.entries()) {
+		vars.push(`--font-size-${index}: ${(base * ratio).toFixed(3)}px`)
+	}
+
+	for (const [index, ratio] of scaleRatios.entries()) {
+		vars.push(`--font-size-${index + 4}: ${(base * ratio).toFixed(3)}px`)
+	}
+
+	return vars.join('; ')
+}
+
+export const exportHtml = async (title: string, content: string, settings: PreviewSettingsT): Promise<string> => {
 	const bodyHtml = await renderMarkdownForExport(content)
 
-	const globalsCssPath = join(process.cwd(), 'app', 'globals.css')
-	const globalsCss = await readFile(globalsCssPath, 'utf-8')
+	const baseCssPath = join(process.cwd(), 'app', 'base.css')
+	const mainCssPath = join(process.cwd(), 'app', 'main.css')
+	const previewCssPath = join(process.cwd(), 'components', 'PreviewSettings.css')
+
+	const baseCss = await readFile(baseCssPath, 'utf-8')
+	const mainCss = await readFile(mainCssPath, 'utf-8')
+	const previewCss = await readFile(previewCssPath, 'utf-8')
+
+	const globalsCss = `${baseCss}\n${mainCss}\n${previewCss}`
+
+	const surfaceAttributes = `data-preview-theme="${settings.theme}" data-preview-font="${settings.font}" data-preview-scale="${settings.scale}"`
+	const surfaceStyle = buildSurfaceStyle(settings)
 
 	return `<!DOCTYPE html>
 <html lang="en">
@@ -351,15 +390,17 @@ export const exportHtml = async (title: string, content: string): Promise<string
   <title>${escapeHtml(title)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,900&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&display=swap" />
   <style>
 ${globalsCss}
   </style>
   <style>
+    :root { --font-fraunces: 'Fraunces'; }
     body { padding: 3rem clamp(1.5rem, 8vw, 6rem); }
     .Prose { max-width: 52rem; margin: 0 auto; padding-bottom: 64px; }
   </style>
 </head>
-<body>
+<body ${surfaceAttributes} style="${surfaceStyle}">
 <div class="Prose">${bodyHtml}</div>
 </body>
 </html>`

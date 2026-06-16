@@ -1,6 +1,6 @@
 /* Theming foundations. */
 :root {
-	--base-font-size: 18px;
+	/* --base-font-size: 18px; */
 
 	--base-accent-color-0: oklch(0.75 0.25 350);
 	--base-accent-color-1: oklch(0.7 0.25 300);
@@ -17,23 +17,23 @@
 	/* Scale: Major Third ratio (×1.25), body at step 3. */
 
 	/* Micro labels - the smallest text we will ever render. */
-	--font-size-0: calc(var(--base-font-size) * 0.579); /* ≈ 10px */
+	--font-size-0: 0.579rem; /* ≈ 10px */
 	/* Caption / timestamp / metadata */
-	--font-size-1: calc(var(--base-font-size) * 0.694); /* ≈ 12.5px */
+	--font-size-1: 0.694rem; /* ≈ 12.5px */
 	/* Small supporting text */
-	--font-size-2: calc(var(--base-font-size) * 0.833); /* ≈ 15px */
+	--font-size-2: 0.833rem; /* ≈ 15px */
 	/* Body - the base reading size */
-	--font-size-3: calc(var(--base-font-size) * 1); /* = 18px */
+	--font-size-3: 1rem; /* = 18px */
 	/* Large body / h4 emphasis */
-	--font-size-4: calc(var(--base-font-size) * 1.25); /* ≈ 22.5px */
+	--font-size-4: 1.25rem; /* ≈ 22.5px */
 	/* H3 / subheading */
-	--font-size-5: calc(var(--base-font-size) * 1.563); /* ≈ 28px */
+	--font-size-5: 1.563rem; /* ≈ 28px */
 	/* H2 / section heading */
-	--font-size-6: calc(var(--base-font-size) * 1.953); /* ≈ 35px */
+	--font-size-6: 1.953rem; /* ≈ 35px */
 	/* H1 / page title */
-	--font-size-7: calc(var(--base-font-size) * 2.441); /* ≈ 44px */
+	--font-size-7: 2.441rem; /* ≈ 44px */
 	/* Display / hero headline */
-	--font-size-8: calc(var(--base-font-size) * 3.052); /* ≈ 55px */
+	--font-size-8: 3.052rem; /* ≈ 55px */
 
 	/* Derived color scales. */
 	/* 0 = darkest, 9 = lightest, 4 = brand/base hue. */

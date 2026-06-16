@@ -1,0 +1,190 @@
+/* ─── Preview token overrides ────────────────────────────── */
+
+/*
+	Each control maps onto base design tokens. Any element carrying a
+	data-preview-theme attribute paints its own themed surface, so the
+	same rules drive the in-editor pane and the exported HTML body.
+*/
+
+[data-preview-theme] {
+	background: var(--bg);
+	color: var(--foreground);
+}
+
+/* Light theme: remap semantic tokens onto the high end of the
+   neutral scale (9 = lightest) for surfaces and the low end for text. */
+[data-preview-theme='light'] {
+	--bg: var(--color-neutral-9);
+	--paper: var(--color-neutral-8);
+	--paper-soft: var(--color-neutral-7);
+	--line: var(--color-neutral-7);
+	--primary: var(--color-neutral-0);
+	--foreground: var(--color-neutral-2);
+	--muted: var(--color-neutral-4);
+	--secondary: var(--color-neutral-5);
+}
+
+/* ─── Font presets ───────────────────────────────────────── */
+
+/*
+	Setting font-family here (not just --font-sans) is required because
+	descendants inherit font-family as a computed value from body (DM Sans),
+	not as a var() reference. Declaring font-family: var(--font-sans) on
+	this container forces re-evaluation using the locally-scoped --font-sans,
+	which descendant elements then inherit.
+*/
+[data-preview-font] {
+	font-family: var(--font-sans);
+}
+
+[data-preview-font='serif'] {
+	--font-sans: var(--font-fraunces), 'Iowan Old Style', Georgia, serif;
+}
+
+[data-preview-font='mono'] {
+	--font-sans: var(--font-mono);
+}
+
+/* ─── Type scale presets ─────────────────────────────────── */
+
+/*
+	Scale ratios and base font size are applied as computed inline styles
+	via getPreviewSurfaceStyle() in previewSettings.ts, which sets
+	--font-size-0 through --font-size-8 directly. CSS selectors here are
+	kept as documentation but are superseded by the inline style values.
+*/
+
+/* ─── Settings popover ───────────────────────────────────── */
+
+.PreviewSettingsRoot {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.PreviewSettingsTrigger {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border: 1px solid transparent;
+	border-radius: var(--small-button-radius);
+	background: transparent;
+	color: var(--muted);
+	cursor: pointer;
+	transition: color 120ms, background 120ms, border-color 120ms;
+}
+
+.PreviewSettingsTrigger:hover {
+	color: var(--primary);
+	background: var(--paper-soft);
+}
+
+.PreviewSettingsTrigger.isOpen {
+	color: var(--primary);
+	background: var(--paper-soft);
+	border-color: var(--line);
+}
+
+.PreviewSettingsPanel {
+	position: absolute;
+	top: calc(100% + var(--spacing-2));
+	right: 0;
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-5);
+	width: 260px;
+	padding: var(--spacing-5);
+	border: 1px solid var(--line);
+	border-radius: var(--medium-button-radius);
+	background: var(--paper);
+}
+
+.PreviewSettingsGroup {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-2);
+}
+
+.PreviewSettingsGroupLabel {
+	font-size: var(--font-size-0);
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+.PreviewSettingsSegmented {
+	display: flex;
+	padding: var(--spacing-1);
+	gap: var(--spacing-1);
+	border: 1px solid var(--line);
+	border-radius: var(--medium-button-radius);
+	background: var(--bg);
+}
+
+.PreviewSettingsSegment {
+	flex: 1;
+	padding: var(--spacing-2) 0;
+	border: none;
+	border-radius: var(--small-button-radius);
+	background: transparent;
+	color: var(--muted);
+	font-family: var(--font-sans);
+	font-size: var(--font-size-1);
+	font-weight: 500;
+	cursor: pointer;
+	transition: color 120ms, background 120ms;
+}
+
+.PreviewSettingsSegment:hover {
+	color: var(--primary);
+}
+
+.PreviewSettingsSegment.isActive {
+	background: var(--paper-soft);
+	color: var(--primary);
+}
+
+.PreviewSettingsStepper {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--spacing-1);
+	border: 1px solid var(--line);
+	border-radius: var(--medium-button-radius);
+	background: var(--bg);
+}
+
+.PreviewSettingsStepperButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	border: none;
+	border-radius: var(--small-button-radius);
+	background: transparent;
+	color: var(--foreground);
+	cursor: pointer;
+	transition: color 120ms, background 120ms;
+}
+
+.PreviewSettingsStepperButton:hover:not(:disabled) {
+	color: var(--primary);
+	background: var(--paper-soft);
+}
+
+.PreviewSettingsStepperButton:disabled {
+	color: var(--secondary);
+	cursor: not-allowed;
+}
+
+.PreviewSettingsStepperValue {
+	font-size: var(--font-size-2);
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--primary);
+}

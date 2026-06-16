@@ -3,7 +3,7 @@ import './main.css'
 
 import { JSX } from 'react'
 import type { Metadata } from 'next'
-import { DM_Mono, DM_Sans } from 'next/font/google'
+import { DM_Mono, DM_Sans, Fraunces } from 'next/font/google'
 import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server'
 import { ConvexClientProvider } from '@/components/ConvexClientProvider'
 import '@/components/zButton.css'
@@ -24,6 +24,13 @@ const dmMono = DM_Mono({
 	weight: ['400', '500'],
 	variable: '--font-dm-mono'
 })
+
+const fraunces = Fraunces({
+	subsets: ['latin'],
+	weight: ['300', '400', '500', '600', '700'],
+	variable: '--font-fraunces'
+})
+
 type RootLayoutPropsT = {
 	children: React.ReactNode
 }
@@ -31,7 +38,7 @@ type RootLayoutPropsT = {
 const RootLayout = (props: RootLayoutPropsT): JSX.Element => {
 	return (
 		<ConvexAuthNextjsServerProvider>
-			<html lang="en" className={`${dmSans.className} ${dmMono.className}`}>
+			<html lang="en" className={`${dmSans.className} ${dmMono.className} ${fraunces.variable}`}>
 				<body>
 					<ConvexClientProvider>{props.children}</ConvexClientProvider>
 				</body>

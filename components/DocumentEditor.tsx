@@ -11,6 +11,9 @@ import { ZButton } from '@/components/zButton'
 import { CaretLeftIcon, ChatCircleTextIcon } from '@phosphor-icons/react'
 import { MarkdownEditor } from '@/components/MarkdownEditor'
 import { ClaudeChat } from '@/components/ClaudeChat'
+import { PreviewSettings } from '@/components/PreviewSettings'
+import { $previewSettings, loadPreviewSettings, savePreviewSettings, getPreviewSurfaceStyle } from '@/components/previewSettings'
+import type { PreviewSettingsT, PreviewThemeT, PreviewFontT, PreviewScaleT } from '@/components/previewSettings'
 
 type DocumentEditorPropsT = {
 	documentId: Id<'documents'>
@@ -21,7 +24,7 @@ type SaveState = 'saved' | 'saving' | 'unsaved'
 const AUTOSAVE_DELAY_MS = 1000
 const PREVIEW_DEBOUNCE_MS = 300
 
-import { datass, useDatass } from 'datass'
+import { useDatass } from 'datass'
 
 export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	// const { user } = useUser()
@@ -36,6 +39,18 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const [previewHtml, setPreviewHtml] = useState('')
 	const [saveState, setSaveState] = useState<SaveState>('saved')
 	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
+
+	const previewTheme = $previewSettings.use.lookup('theme') as PreviewThemeT
+	const previewFont = $previewSettings.use.lookup('font') as PreviewFontT
+	const previewScale = $previewSettings.use.lookup('scale') as PreviewScaleT
+	const previewBaseFontSize = $previewSettings.use.lookup('baseFontSize') as number
+
+	const previewSettings: PreviewSettingsT = {
+		theme: previewTheme,
+		font: previewFont,
+		scale: previewScale,
+		baseFontSize: previewBaseFontSize
+	}
 
 	const isUserAllowed = true
 
@@ -119,6 +134,18 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		return () => clearTimeout(previewTimer)
 	}, [content])
 
+	// Hydrate preview settings from localStorage after mount so the server
+	// and first client render agree on the default before applying choices.
+	useEffect(() => {
+		const storedSettings = loadPreviewSettings()
+		$previewSettings.set.replace(storedSettings)
+	}, [])
+
+	const handlePreviewSettingsChange = (nextSettings: PreviewSettingsT): void => {
+		$previewSettings.set.replace(nextSettings)
+		savePreviewSettings(nextSettings)
+	}
+
 	const scheduleSave = useCallback(
 		(nextTitle: string, nextContent: string): void => {
 			if (saveTimerRef.current !== null) clearTimeout(saveTimerRef.current)
@@ -146,7 +173,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	}
 
 	const handleExport = async (): Promise<void> => {
-		const html = await exportHtml(title.state, content)
+		const html = await exportHtml(title.state, content, previewSettings)
 		const blob = new Blob([html], { type: 'text/html' })
 		const url = URL.createObjectURL(blob)
 		const anchor = globalThis.document.createElement('a')
@@ -201,6 +228,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	}
 
 	const gridTemplateColumns = isChatOpen ? `${splitPercent}% auto 1fr auto ${chatPercent}%` : `${splitPercent}% auto 1fr`
+	const previewSurfaceStyle = getPreviewSurfaceStyle(previewSettings)
 
 	return (
 		<div className="EditorShell">
@@ -260,8 +288,17 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 				/>
 
 				<div className="PreviewPane">
-					<div className="PreviewPaneLabel">Preview</div>
-					<div className="PreviewPaneContent">
+					<div className="PreviewPaneLabel">
+						<span className="PreviewPaneLabelText">Preview</span>
+						<PreviewSettings settings={previewSettings} onChange={handlePreviewSettingsChange} />
+					</div>
+					<div
+						className="PreviewPaneContent"
+						data-preview-theme={previewSettings.theme}
+						data-preview-font={previewSettings.font}
+						data-preview-scale={previewSettings.scale}
+						style={previewSurfaceStyle}
+					>
 						<div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} />
 					</div>
 				</div>
