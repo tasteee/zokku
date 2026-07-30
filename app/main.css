@@ -684,6 +684,21 @@ body {
 	color: var(--primary);
 	font-weight: 600;
 }
+
+.Prose img,
+.Prose video {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	margin: var(--rhythm) 0;
+	border-radius: var(--radius);
+}
+
+.Prose video {
+	width: 100%;
+	background: #000;
+}
+
 .Prose em {
 	color: var(--foreground);
 }

@@ -1,10 +1,10 @@
 import { v } from 'convex/values'
 import { mutation } from './_generated/server'
 import { getAuthUserId } from '@convex-dev/auth/server'
-import type { Id } from './_generated/dataModel'
 
 export const generateUploadUrl = mutation({
 	args: {},
+	returns: v.string(),
 	handler: async (ctx) => {
 		const userId = await getAuthUserId(ctx)
 		if (!userId) throw new Error('Not authenticated')
@@ -12,12 +12,12 @@ export const generateUploadUrl = mutation({
 	}
 })
 
-export const getImageUrl = mutation({
-	args: { storageId: v.string() },
+export const getMediaUrl = mutation({
+	args: { storageId: v.id('_storage') },
+	returns: v.union(v.string(), v.null()),
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx)
 		if (!userId) throw new Error('Not authenticated')
-		const url = await ctx.storage.getUrl(args.storageId as Id<'_storage'>)
-		return url
+		return await ctx.storage.getUrl(args.storageId)
 	}
 })

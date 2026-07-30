@@ -25,7 +25,7 @@ import {
 type MarkdownEditorPropsT = {
 	value: string
 	onChange: (nextValue: string) => void
-	onImageUpload?: (blob: Blob) => Promise<string | null>
+	onMediaUpload?: (blob: Blob, onProgress: (percent: number) => void) => Promise<string | null>
 }
 
 type ToolbarButtonT = {
@@ -126,37 +126,49 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 	const monacoRef = useRef<Monaco | null>(null)
 	const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 	const surfaceRef = useRef<HTMLDivElement | null>(null)
-	const onImageUploadRef = useRef(props.onImageUpload)
+	const uploadErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+	const onMediaUploadRef = useRef(props.onMediaUpload)
 
 	const [isCopied, setIsCopied] = useState(false)
-	const [isUploadingImage, setIsUploadingImage] = useState(false)
+	const [isUploadingMedia, setIsUploadingMedia] = useState(false)
+	const [uploadProgress, setUploadProgress] = useState(0)
+	const [uploadError, setUploadError] = useState('')
 
-	useEffect(() => { onImageUploadRef.current = props.onImageUpload })
+	useEffect(() => {
+		onMediaUploadRef.current = props.onMediaUpload
+	}, [props.onMediaUpload])
+
+	useEffect(() => {
+		return () => {
+			if (uploadErrorTimerRef.current !== null) clearTimeout(uploadErrorTimerRef.current)
+		}
+	}, [])
 
 	useEffect(() => {
 		const surface = surfaceRef.current
 		if (surface === null) return
 
-		const handleImagePaste = (event: ClipboardEvent): void => {
-			const upload = onImageUploadRef.current
+		const getUploadableFile = (files: FileList | null | undefined): File | null => {
+			const matchingFile = Array.from(files ?? []).find((file) => {
+				const isImage = file.type.startsWith('image/')
+				const isVideo = file.type.startsWith('video/')
+				return isImage || isVideo
+			})
+
+			return matchingFile ?? null
+		}
+
+		const insertMedia = async (blob: Blob, kind: 'image' | 'video'): Promise<void> => {
+			const upload = onMediaUploadRef.current
 			if (upload === undefined) return
 
-			const items = Array.from(event.clipboardData?.items ?? [])
-			const imageItem = items.find((item) => item.type.startsWith('image/'))
-			if (imageItem === undefined) return
+			setIsUploadingMedia(true)
+			setUploadProgress(0)
+			setUploadError('')
 
-			// getAsFile must be called synchronously before the event is released
-			const blob = imageItem.getAsFile()
-			if (blob === null) return
-
-			event.preventDefault()
-
-			void (async () => {
-				setIsUploadingImage(true)
-				const url = await upload(blob)
-				setIsUploadingImage(false)
-
-				if (url === null) return
+			try {
+				const url = await upload(blob, setUploadProgress)
+				if (url === null) throw new Error('The upload did not return a media URL')
 
 				const editor = editorRef.current
 				const monaco = monacoRef.current
@@ -166,16 +178,68 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 				if (selection === null) return
 
 				const selectedText = editor.getModel()?.getValueInRange(selection) ?? ''
-				const labelText = selectedText || 'image'
-				const markdown = `![${labelText}](${url})`
+				const labelText = selectedText || (kind === 'video' ? 'video' : 'image')
+				const markdown = kind === 'video'
+					? `<video controls preload="metadata" src="${url}"></video>`
+					: `![${labelText}](${url})`
 
-				editor.executeEdits('paste-image', [{ range: selection, text: markdown, forceMoveMarkers: true }])
+				editor.executeEdits('insert-media', [{ range: selection, text: markdown, forceMoveMarkers: true }])
 				editor.focus()
-			})()
+			} catch (error) {
+				console.error('Media upload failed', error)
+				setUploadError('Upload failed. Try again.')
+
+				if (uploadErrorTimerRef.current !== null) clearTimeout(uploadErrorTimerRef.current)
+				uploadErrorTimerRef.current = setTimeout(() => setUploadError(''), 4000)
+			} finally {
+				setIsUploadingMedia(false)
+			}
 		}
 
-		surface.addEventListener('paste', handleImagePaste, true)
-		return () => surface.removeEventListener('paste', handleImagePaste, true)
+		const handleMediaPaste = (event: ClipboardEvent): void => {
+			const clipboardData = event.clipboardData
+			const mediaItem = Array.from(clipboardData?.items ?? []).find((item) => {
+				return item.kind === 'file' && (item.type.startsWith('image/') || item.type.startsWith('video/'))
+			})
+			const mediaFile = getUploadableFile(clipboardData?.files) ?? mediaItem?.getAsFile() ?? null
+			if (mediaFile === null) return
+
+			event.preventDefault()
+			const kind = mediaFile.type.startsWith('video/') ? 'video' : 'image'
+			void insertMedia(mediaFile, kind)
+		}
+
+		const handleMediaDrop = (event: DragEvent): void => {
+			const files = event.dataTransfer?.files
+			const mediaFile = getUploadableFile(files)
+			if (mediaFile === null) return
+
+			event.preventDefault()
+			event.stopPropagation()
+			const kind = mediaFile.type.startsWith('video/') ? 'video' : 'image'
+			void insertMedia(mediaFile, kind)
+		}
+
+		const handleMediaDragOver = (event: DragEvent): void => {
+			const dataTransfer = event.dataTransfer
+			if (dataTransfer === null) return
+
+			const hasFiles = Array.from(dataTransfer.types).includes('Files')
+			if (!hasFiles) return
+
+			event.preventDefault()
+			event.stopPropagation()
+			dataTransfer.dropEffect = 'copy'
+		}
+
+		surface.addEventListener('paste', handleMediaPaste, true)
+		surface.addEventListener('drop', handleMediaDrop, true)
+		surface.addEventListener('dragover', handleMediaDragOver, true)
+		return () => {
+			surface.removeEventListener('paste', handleMediaPaste, true)
+			surface.removeEventListener('drop', handleMediaDrop, true)
+			surface.removeEventListener('dragover', handleMediaDragOver, true)
+		}
 	}, [])
 
 	const focusEditor = (): void => {
@@ -530,8 +594,22 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 			<div className="MarkdownCopyToast" data-visible={isCopied ? 'true' : 'false'} aria-live="polite">
 				Copied!
 			</div>
-			<div className="MarkdownUploadToast" data-visible={isUploadingImage ? 'true' : 'false'} aria-live="polite">
-				Uploading image…
+			<div
+				className="MarkdownUploadToast"
+				data-visible={isUploadingMedia || uploadError !== '' ? 'true' : 'false'}
+				data-error={uploadError !== '' ? 'true' : 'false'}
+				aria-live="polite"
+			>
+				{uploadError || (
+					<>
+						<span className="MarkdownUploadLabel">
+							{uploadProgress >= 100 ? 'Finishing…' : `Uploading… ${uploadProgress}%`}
+						</span>
+						<span className="MarkdownUploadProgress" aria-hidden="true">
+							<span className="MarkdownUploadProgressFill" style={{ width: `${uploadProgress}%` }} />
+						</span>
+					</>
+				)}
 			</div>
 
 			<div className="MarkdownToolbar">

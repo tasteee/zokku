@@ -23,20 +23,37 @@ export const SignInForm = (): JSX.Element => {
 	const togglePrompt = isSignUp ? 'Already have an account?' : 'New here?'
 	const toggleLabel = isSignUp ? 'Sign in' : 'Create account'
 
+	const submitAuthRequest = async (flow: AuthMode): Promise<void> => {
+		const formData = new FormData()
+		formData.set('email', email)
+		formData.set('password', password)
+		formData.set('flow', flow)
+		await signIn('password', formData)
+	}
+
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
 		event.preventDefault()
 		setErrorMessage(null)
 		setIsSubmitting(true)
 
-		const formData = new FormData()
-		formData.set('email', email)
-		formData.set('password', password)
-		formData.set('flow', mode)
-
 		try {
-			await signIn('password', formData)
+			await submitAuthRequest(mode)
 			router.push('/documents')
 		} catch (caughtError) {
+			const isMissingAccount = mode === 'signIn' && caughtError instanceof Error && caughtError.message.toLowerCase().includes('invalidaccountid')
+			if (isMissingAccount) {
+				try {
+					setMode('signUp')
+					await submitAuthRequest('signUp')
+					router.push('/documents')
+				} catch (fallbackError) {
+					const isError = fallbackError instanceof Error
+					const fallbackMessage = 'Could not create the account. Please try again.'
+					setErrorMessage(isError ? fallbackError.message : fallbackMessage)
+				}
+				return
+			}
+
 			const isError = caughtError instanceof Error
 			const fallbackMessage = 'Something went wrong. Please try again.'
 			setErrorMessage(isError ? caughtError.message : fallbackMessage)

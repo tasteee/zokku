@@ -11,7 +11,7 @@ import { ZButton } from '@/components/zButton'
 import { CaretLeftIcon, ChatCircleTextIcon } from '@phosphor-icons/react'
 import { MarkdownEditor } from '@/components/MarkdownEditor'
 import { ClaudeChat } from '@/components/ClaudeChat'
-import { PreviewSettings } from '@/components/PreviewSettings'
+import { PreviewSettings } from '@/components/PreviewSettingsPanel'
 import { $previewSettings, loadPreviewSettings, savePreviewSettings, getPreviewSurfaceStyle } from '@/components/previewSettings'
 import type { PreviewSettingsT, PreviewThemeT, PreviewFontT, PreviewScaleT } from '@/components/previewSettings'
 
@@ -32,7 +32,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const updateDocument = useMutation(api.documents.update)
 	const removeDocument = useMutation(api.documents.remove)
 	const generateUploadUrl = useMutation(api.images.generateUploadUrl)
-	const getImageUrl = useMutation(api.images.getImageUrl)
+	const getMediaUrl = useMutation(api.images.getMediaUrl)
 	const router = useRouter()
 
 	const title = useDatass.string('')
@@ -205,20 +205,38 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		setIsConfirmingDelete(false)
 	}
 
-	const handleImageUpload = async (blob: Blob): Promise<string | null> => {
+	const handleMediaUpload = async (blob: Blob, onProgress: (percent: number) => void): Promise<string | null> => {
 		const uploadUrl = await generateUploadUrl()
+		const uploadResult = await new Promise<{ storageId: Id<'_storage'> }>((resolve, reject) => {
+			const request = new XMLHttpRequest()
+			request.open('POST', uploadUrl)
+			request.setRequestHeader('Content-Type', blob.type || 'application/octet-stream')
 
-		const uploadResponse = await fetch(uploadUrl, {
-			method: 'POST',
-			headers: { 'Content-Type': blob.type },
-			body: blob
+			request.upload.addEventListener('progress', (event) => {
+				if (!event.lengthComputable) return
+				onProgress(Math.round((event.loaded / event.total) * 100))
+			})
+
+			request.addEventListener('load', () => {
+				const isSuccessful = request.status >= 200 && request.status < 300
+				if (!isSuccessful) {
+					reject(new Error(`Media upload failed with status ${request.status}`))
+					return
+				}
+
+				try {
+					onProgress(100)
+					resolve(JSON.parse(request.responseText) as { storageId: Id<'_storage'> })
+				} catch {
+					reject(new Error('Media upload returned an invalid response'))
+				}
+			})
+
+			request.addEventListener('error', () => reject(new Error('Media upload failed')))
+			request.addEventListener('abort', () => reject(new Error('Media upload was cancelled')))
+			request.send(blob)
 		})
-
-		if (!uploadResponse.ok) return null
-
-		const uploadResult = await uploadResponse.json() as { storageId: string }
-		const imageUrl = await getImageUrl({ storageId: uploadResult.storageId })
-		return imageUrl
+		return await getMediaUrl({ storageId: uploadResult.storageId })
 	}
 
 	const saveLabel = saveState === 'saving' ? 'Saving...' : saveState === 'unsaved' ? 'Unsaved' : 'Saved'
@@ -295,7 +313,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 
 			<div ref={editorLayoutRef} className="EditorLayout" data-mobile-view={mobilePaneView} style={{ gridTemplateColumns } as CSSProperties}>
 				<div className="EditorPane">
-					<MarkdownEditor value={content} onChange={handleContentChange} onImageUpload={handleImageUpload} />
+					<MarkdownEditor value={content} onChange={handleContentChange} onMediaUpload={handleMediaUpload} />
 				</div>
 
 				<div

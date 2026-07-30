@@ -24,7 +24,7 @@ import { datass } from 'datass'
 const $previewSettings = datass.object<PreviewSettingsT>({
 	theme: 'light',
 	font: 'sans',
-	scale: 'medium',
+	scale: 'default',
 	baseFontSize: 18
 })
 
