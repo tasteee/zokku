@@ -40,7 +40,8 @@ export const SignInForm = (): JSX.Element => {
 			await submitAuthRequest(mode)
 			router.push('/documents')
 		} catch (caughtError) {
-			const isMissingAccount = mode === 'signIn' && caughtError instanceof Error && caughtError.message.toLowerCase().includes('invalidaccountid')
+			const isMissingAccount =
+				mode === 'signIn' && caughtError instanceof Error && caughtError.message.toLowerCase().includes('invalidaccountid')
 			if (isMissingAccount) {
 				try {
 					setMode('signUp')

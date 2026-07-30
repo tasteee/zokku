@@ -179,9 +179,8 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 
 				const selectedText = editor.getModel()?.getValueInRange(selection) ?? ''
 				const labelText = selectedText || (kind === 'video' ? 'video' : 'image')
-				const markdown = kind === 'video'
-					? `<video controls preload="metadata" src="${url}"></video>`
-					: `![${labelText}](${url})`
+				const markdown =
+					kind === 'video' ? `<video controls preload="metadata" src="${url}"></video>` : `![${labelText}](${url})`
 
 				editor.executeEdits('insert-media', [{ range: selection, text: markdown, forceMoveMarkers: true }])
 				editor.focus()
@@ -356,12 +355,17 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 		if (model === null) return
 
 		const fullText = model.getValue()
-		const copyError = await navigator.clipboard.writeText(fullText).then(() => null, (error: unknown) => error)
+		const copyError = await navigator.clipboard.writeText(fullText).then(
+			() => null,
+			(error: unknown) => error
+		)
 		if (copyError !== null) return
 
 		if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current)
 		setIsCopied(true)
-		copyTimerRef.current = setTimeout(() => { setIsCopied(false) }, 1500)
+		copyTimerRef.current = setTimeout(() => {
+			setIsCopied(false)
+		}, 1500)
 	}
 
 	const handlePaste = async (): Promise<void> => {
