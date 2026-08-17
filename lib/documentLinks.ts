@@ -26,9 +26,39 @@ const normalizePathParts = (parts: string[]): string[] => {
 	return normalized
 }
 
+const getMarkdownDestination = (destinationWithTitle: string): string => {
+	const destination = destinationWithTitle.trim()
+	if (!destination.startsWith('<')) return destination.split(/\s+["']/)[0]
+	const closingBracketIndex = destination.indexOf('>')
+	if (closingBracketIndex < 0) return destination
+	return destination.slice(1, closingBracketIndex)
+}
+
 export const normalizeWorkspacePath = (path: string): string => {
 	const decodedPath = decodeURIComponent(path)
 	return normalizePathParts(decodedPath.split('/')).join('/')
+}
+
+export const getZokkuDocumentIdFromHref = (href: string): string | null => {
+	const trimmedHref = href.trim()
+	if (!trimmedHref) return null
+
+	let pathname = trimmedHref
+	try {
+		const parsedUrl = new URL(trimmedHref, 'https://zokku.local')
+		pathname = parsedUrl.pathname
+	} catch {
+		return null
+	}
+
+	const match = pathname.match(/^\/documents\/([^/]+)(?:\/preview)?\/?$/)
+	if (match === null) return null
+
+	try {
+		return decodeURIComponent(match[1])
+	} catch {
+		return match[1]
+	}
 }
 
 export const resolveDocumentHref = (currentDocumentPath: string, href: string): ResolvedDocumentLinkT | null => {
@@ -72,14 +102,24 @@ export const getLinkedDocumentPaths = (currentDocumentPath: string, markdown: st
 	const paths = new Set<string>()
 
 	for (const match of markdown.matchAll(DOCUMENT_LINK_PATTERN)) {
-		const destinationWithTitle = match[1].trim()
-		const destination = destinationWithTitle.startsWith('<')
-			? destinationWithTitle.slice(1, destinationWithTitle.indexOf('>'))
-			: destinationWithTitle.split(/\s+["']/)[0]
+		const destination = getMarkdownDestination(match[1])
 		const resolved = resolveDocumentHref(currentDocumentPath, destination)
 		if (resolved === null) continue
 		paths.add(resolved.path)
 	}
 
 	return [...paths]
+}
+
+export const getLinkedZokkuDocumentIds = (markdown: string): string[] => {
+	const ids = new Set<string>()
+
+	for (const match of markdown.matchAll(DOCUMENT_LINK_PATTERN)) {
+		const destination = getMarkdownDestination(match[1])
+		const documentId = getZokkuDocumentIdFromHref(destination)
+		if (documentId === null) continue
+		ids.add(documentId)
+	}
+
+	return [...ids]
 }
