@@ -4,7 +4,7 @@ import './DocumentEditor.css'
 
 import { CSSProperties, JSX, useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowSquareOut, CaretLeftIcon, Check, Export, FloppyDisk, SpinnerGap, Trash } from '@phosphor-icons/react'
+import { ArrowSquareOut, CaretLeftIcon, Check, Export, FloppyDisk, MoonStars, SpinnerGap, Sun, Trash } from '@phosphor-icons/react'
 import { useDatass } from 'datass'
 import { renderMarkdown } from '@/app/actions/renderMarkdown'
 import { exportLinkedHtml } from '@/app/actions/exportLinkedHtml'
@@ -24,6 +24,7 @@ type DocumentEditorPropsT = {
 }
 
 type SaveStateT = 'saved' | 'saving' | 'unsaved'
+type ThemeTransitionT = 'idle' | 'out' | 'in'
 
 const AUTOSAVE_DELAY_MS = 700
 const PREVIEW_DEBOUNCE_MS = 250
@@ -53,6 +54,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const [workspaceDocuments, setWorkspaceDocuments] = useState<LocalDocumentT[]>([])
 	const [previewHtml, setPreviewHtml] = useState('')
 	const [saveState, setSaveState] = useState<SaveStateT>('saved')
+	const [themeTransition, setThemeTransition] = useState<ThemeTransitionT>('idle')
 	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
 	const [isLoading, setIsLoading] = useState(true)
 	const [isMissing, setIsMissing] = useState(false)
@@ -60,6 +62,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const [mobilePaneView, setMobilePaneView] = useState<'editor' | 'preview'>('editor')
 	const activeIdRef = useRef(props.documentId)
 	const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+	const themeTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
 	const editorLayoutRef = useRef<HTMLDivElement | null>(null)
 	const isDraggingRef = useRef(false)
 
@@ -135,6 +138,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	useEffect(() => {
 		return () => {
 			if (saveTimerRef.current !== null) clearTimeout(saveTimerRef.current)
+			for (const timer of themeTimersRef.current) clearTimeout(timer)
 		}
 	}, [])
 
@@ -147,6 +151,26 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const handleContentChange = (nextContent: string): void => {
 		setContent(nextContent)
 		scheduleSave(title.state, nextContent)
+	}
+
+	const handlePreviewSettingsChange = (settings: PreviewSettingsT): void => {
+		$previewSettings.set.replace(settings)
+		savePreviewSettings(settings)
+	}
+
+	const handleThemeToggle = (): void => {
+		if (themeTransition !== 'idle') return
+		setThemeTransition('out')
+		const switchTimer = setTimeout(() => {
+			const nextTheme: PreviewThemeT = previewTheme === 'light' ? 'dark' : 'light'
+			const nextSettings = { ...previewSettings, theme: nextTheme }
+			handlePreviewSettingsChange(nextSettings)
+			setThemeTransition('in')
+
+			const finishTimer = setTimeout(() => setThemeTransition('idle'), 500)
+			themeTimersRef.current.push(finishTimer)
+		}, 300)
+		themeTimersRef.current.push(switchTimer)
 	}
 
 	const handleExport = async (): Promise<void> => {
@@ -222,13 +246,12 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const saveStatusLabel = isSaving ? 'Saving' : isSaved ? 'Saved' : 'Changes pending'
 	const previewSurfaceStyle = getPreviewSurfaceStyle(previewSettings)
 	const deleteButtonTitle = isConfirmingDelete ? 'Click again to delete' : 'Delete document'
+	const themeToggleTitle = previewTheme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
 
 	return (
 		<div className="EditorShell">
 			<div className="Topbar">
-				<div className="EditorTopbarBrand">
-					<ZokkuBrand isCompact />
-				</div>
+				<div className="EditorTopbarBrand"><ZokkuBrand isCompact /></div>
 				<button className="TopbarBackButton" onClick={() => router.push('/documents')} title="All documents"><CaretLeftIcon size={18} weight="bold" /></button>
 				<span className="EditorSaveStatus" data-state={saveState} title={saveStatusLabel} aria-label={saveStatusLabel}>
 					{isSaving ? <SpinnerGap className="EditorSaveSpinner" weight="bold" /> : <FloppyDisk weight="bold" />}
@@ -236,36 +259,29 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 				</span>
 				<input className="TopbarTitle" type="text" value={title.state} onChange={handleTitleChange} placeholder="Untitled" spellCheck={false} />
 				<div className="TopbarActions">
-					<ZButton isIcon isGhost title="Open full preview" aria-label="Open full preview" onClick={() => router.push(`/documents/${activeIdRef.current}/preview`)}>
-						<ArrowSquareOut weight="bold" />
-					</ZButton>
-					<ZButton isIcon isGhost title="Export HTML" aria-label="Export HTML" onClick={() => void handleExport()}>
-						<Export weight="bold" />
-					</ZButton>
-					<ZButton
-						isIcon
-						isGhost
-						isRed
-						title={deleteButtonTitle}
-						aria-label={deleteButtonTitle}
-						data-confirm={isConfirmingDelete ? 'true' : 'false'}
-						onClick={() => void handleDelete()}
-						onBlur={() => setIsConfirmingDelete(false)}
-					>
-						<Trash weight={isConfirmingDelete ? 'fill' : 'bold'} />
-					</ZButton>
+					<ZButton isIcon isGhost title="Open full preview" aria-label="Open full preview" onClick={() => router.push(`/documents/${activeIdRef.current}/preview`)}><ArrowSquareOut weight="bold" /></ZButton>
+					<ZButton isIcon isGhost title="Export HTML" aria-label="Export HTML" onClick={() => void handleExport()}><Export weight="bold" /></ZButton>
+					<ZButton isIcon isGhost isRed title={deleteButtonTitle} aria-label={deleteButtonTitle} data-confirm={isConfirmingDelete ? 'true' : 'false'} onClick={() => void handleDelete()} onBlur={() => setIsConfirmingDelete(false)}><Trash weight={isConfirmingDelete ? 'fill' : 'bold'} /></ZButton>
 				</div>
 			</div>
 
 			<div ref={editorLayoutRef} className="EditorLayout" data-mobile-view={mobilePaneView} style={{ gridTemplateColumns: `${splitPercent}% auto 1fr` } as CSSProperties}>
-				<div className="EditorPane">
-					<MarkdownEditor value={content} onChange={handleContentChange} onMediaUpload={(blob, onProgress) => blobToDataUrl(blob, onProgress)} />
-				</div>
+				<div className="EditorPane"><MarkdownEditor value={content} onChange={handleContentChange} onMediaUpload={(blob, onProgress) => blobToDataUrl(blob, onProgress)} /></div>
 				<div className="EditorResizeHandle" onPointerDown={handleResizePointerDown} onPointerMove={handleResizePointerMove} onPointerUp={handleResizePointerUp} />
 				<div className="PreviewPane">
-					<div className="PreviewPaneLabel"><span className="PreviewPaneLabelText">Preview</span><PreviewSettings settings={previewSettings} onChange={(settings) => { $previewSettings.set.replace(settings); savePreviewSettings(settings) }} /></div>
+					<div className="PreviewPaneLabel">
+						<span className="PreviewPaneLabelText">Preview</span>
+						<div className="PreviewPaneLabelActions">
+							<button className="PreviewThemeToggle" onClick={handleThemeToggle} disabled={themeTransition !== 'idle'} title={themeToggleTitle} aria-label={themeToggleTitle}>
+								{previewTheme === 'light' ? <MoonStars size={16} weight="bold" /> : <Sun size={16} weight="bold" />}
+							</button>
+							<PreviewSettings settings={previewSettings} onChange={handlePreviewSettingsChange} />
+						</div>
+					</div>
 					<div className="PreviewPaneContent" data-preview-theme={previewSettings.theme} data-preview-font={previewSettings.font} data-preview-scale={previewSettings.scale} style={previewSurfaceStyle} onClick={handlePreviewClick}>
-						<div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} />
+						<div className="PreviewThemeContent" data-theme-transition={themeTransition}>
+							<div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} />
+						</div>
 					</div>
 				</div>
 			</div>
