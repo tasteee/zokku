@@ -1,5 +1,6 @@
 import './base.css'
 import './main.css'
+import './zText.css'
 
 import { JSX } from 'react'
 import type { Metadata } from 'next'
