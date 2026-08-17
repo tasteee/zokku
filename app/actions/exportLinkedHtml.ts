@@ -3,7 +3,7 @@
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { renderMarkdown } from '@/app/actions/renderMarkdown'
-import { resolveDocumentHref } from '@/lib/documentLinks'
+import { getZokkuDocumentIdFromHref, resolveDocumentHref } from '@/lib/documentLinks'
 import type { PreviewSettingsT } from '@/components/previewSettings'
 import type { ExportDocumentT } from '@/lib/localDocumentExport'
 
@@ -41,11 +41,23 @@ const getExportHref = (path: string, anchor: string): string => {
 	return `${route}?anchor=${encodeURIComponent(anchor)}`
 }
 
-const rewriteLinkedDocumentHrefs = (html: string, currentDocumentPath: string): string => {
+const rewriteLinkedDocumentHrefs = (
+	html: string,
+	currentDocumentPath: string,
+	documentsById: Map<string, ExportDocumentT>
+): string => {
 	return html.replace(/href="([^"]+)"/g, (fullMatch, href: string): string => {
 		const resolved = resolveDocumentHref(currentDocumentPath, href)
-		if (resolved === null) return fullMatch
-		return `href="${getExportHref(resolved.path, resolved.anchor)}" data-zokku-document-path="${escapeHtml(resolved.path)}"`
+		if (resolved !== null) {
+			return `href="${getExportHref(resolved.path, resolved.anchor)}" data-zokku-document-path="${escapeHtml(resolved.path)}"`
+		}
+
+		const linkedDocumentId = getZokkuDocumentIdFromHref(href)
+		if (linkedDocumentId === null) return fullMatch
+		const linkedDocument = documentsById.get(linkedDocumentId)
+		if (linkedDocument === undefined) return fullMatch
+
+		return `href="${getExportHref(linkedDocument.path, '')}" data-zokku-document-path="${escapeHtml(linkedDocument.path)}"`
 	})
 }
 
@@ -53,10 +65,13 @@ const stripTodoElements = (html: string): string => {
 	return html.replace(/<[^>]*class="[^"]*\bzTodo\b[^"]*"[^>]*>[\s\S]*?<\/[^>]+>/g, '')
 }
 
-const renderExportDocument = async (document: ExportDocumentT): Promise<{ title: string; html: string }> => {
+const renderExportDocument = async (
+	document: ExportDocumentT,
+	documentsById: Map<string, ExportDocumentT>
+): Promise<{ title: string; html: string }> => {
 	const rendered = await renderMarkdown(document.content)
 	const withoutTodos = stripTodoElements(rendered)
-	const html = rewriteLinkedDocumentHrefs(withoutTodos, document.path)
+	const html = rewriteLinkedDocumentHrefs(withoutTodos, document.path, documentsById)
 	return { title: document.title, html }
 }
 
@@ -71,8 +86,11 @@ export const exportLinkedHtml = async (
 	const rootDocument = documents[0]
 	if (rootDocument === undefined) throw new Error('No documents were supplied for export')
 
+	const documentsById = new Map<string, ExportDocumentT>()
+	for (const document of documents) documentsById.set(document.id, document)
+
 	const renderedDocuments: Record<string, { title: string; html: string }> = {}
-	for (const document of documents) renderedDocuments[document.path] = await renderExportDocument(document)
+	for (const document of documents) renderedDocuments[document.path] = await renderExportDocument(document, documentsById)
 
 	const baseCss = await readFile(join(process.cwd(), 'app', 'base.css'), 'utf-8')
 	const mainCss = await readFile(join(process.cwd(), 'app', 'main.css'), 'utf-8')
