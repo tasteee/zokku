@@ -115,17 +115,26 @@ export const exportLinkedHtml = async (
     :root { --font-fraunces: 'Fraunces'; }
     body { padding: 3rem clamp(1.5rem, 8vw, 6rem); }
     .Prose { max-width: 52rem; margin: 0 auto; padding-bottom: 64px; }
+    .zokkuExportNav { max-width: 52rem; margin: 0 auto 1.5rem; }
+    .zokkuBackButton { display: inline-flex; align-items: center; gap: 0.45rem; border: 0; padding: 0; background: transparent; color: var(--muted); font: inherit; font-size: 0.875rem; cursor: pointer; }
+    .zokkuBackButton:hover { color: var(--primary); }
+    .zokkuBackButton[hidden] { display: none; }
     .zokkuMissingDocument { max-width: 52rem; margin: 0 auto; padding: 4rem 0; }
     .zokkuMissingDocument p { color: var(--muted); }
   </style>
 </head>
 <body ${surfaceAttributes} style="${surfaceStyle}">
+  <nav class="zokkuExportNav"><button id="zokkuBackButton" class="zokkuBackButton" type="button" hidden aria-label="Back">← Back</button></nav>
   <main id="zokkuApp"><div id="zokkuContent" class="Prose"></div></main>
   <script>
     (() => {
       const documents = ${serializedDocuments};
       const rootPath = ${serializedRootPath};
       const contentElement = document.getElementById('zokkuContent');
+      const backButton = document.getElementById('zokkuBackButton');
+      const routeHistory = [];
+      let currentPath = rootPath;
+      let isNavigatingBack = false;
 
       const getRoute = () => {
         const hash = window.location.hash;
@@ -140,6 +149,13 @@ export const exportLinkedHtml = async (
 
       const render = () => {
         const route = getRoute();
+        if (route.path !== currentPath) {
+          if (!isNavigatingBack) routeHistory.push(currentPath);
+          currentPath = route.path;
+        }
+        isNavigatingBack = false;
+        backButton.hidden = routeHistory.length === 0;
+
         const nextDocument = documents[route.path];
         if (!nextDocument) {
           document.title = 'Document not found';
@@ -162,6 +178,13 @@ export const exportLinkedHtml = async (
           if (anchorElement) anchorElement.scrollIntoView();
         });
       };
+
+      backButton.addEventListener('click', () => {
+        const previousPath = routeHistory.pop();
+        if (!previousPath) return;
+        isNavigatingBack = true;
+        window.location.hash = '#/document/' + encodeURIComponent(previousPath);
+      });
 
       window.addEventListener('hashchange', render);
       render();
