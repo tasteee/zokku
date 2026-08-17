@@ -81,7 +81,7 @@ Continue :icon[arrow-right-line]:
 Saved :icon[check-circle-line]: successfully.
 \`\`\`
 
-Use inline icons sparingly when a small visual cue makes a label or sentence easier to scan. They work well for actions, statuses, directions, and compact UI-like explanations. The collection is intentionally restricted to MingCute so documents keep a consistent icon style. If a MingCute icon name does not exist, Zokku leaves the original syntax visible so the mistake is easy to spot.
+Use inline icons sparingly when a small visual cue makes a label or sentence easier to scan. They work well for actions, statuses, directions, and compact UI-like explanations. The collection is intentionally restricted to MingCute so documents keep a consistent icon style. If a MingCute icon name does not exist, Zokku renders a warning-colored question icon so the mistake is visible without exposing the raw marker syntax.
 
 ### Blockquotes
 
