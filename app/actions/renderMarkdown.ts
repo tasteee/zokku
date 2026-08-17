@@ -15,7 +15,8 @@ import { getIconData, iconToHTML, iconToSVG, replaceIDs } from '@iconify/utils'
 import { customMarkers, matchDynamicMarkerDefinition } from '@/lib/markers'
 import type { MarkerDefinitionT } from '@/lib/markers'
 import { codeTheme } from '@/lib/codeTheme'
-import type { PreviewSettingsT } from '@/components/previewSettings'
+import { lightCodeTheme } from '@/lib/lightCodeTheme'
+import type { PreviewSettingsT, PreviewThemeT } from '@/components/previewSettings'
 
 type HastTextNodeT = { type: 'text'; value: string }
 type HastElementT = {
@@ -208,28 +209,22 @@ const tokensToCodeBlock = (result: { bg: string; fg: string; tokens: ShikiTokenT
 	return { bg: result.bg, fg: result.fg, lang, children: lineElements }
 }
 
-const highlightCode = async (code: string, lang: string) => {
-	const theme = codeTheme as unknown as ThemeRegistrationAny
+const getCodeTheme = (previewTheme: PreviewThemeT): ThemeRegistrationAny => {
+	if (previewTheme === 'light') return lightCodeTheme as unknown as ThemeRegistrationAny
+	return codeTheme as unknown as ThemeRegistrationAny
+}
+
+const highlightCode = async (code: string, lang: string, previewTheme: PreviewThemeT) => {
+	const theme = getCodeTheme(previewTheme)
+	const background = (theme as { colors?: { 'editor.background'?: string } }).colors?.['editor.background'] ?? '#0F1110'
+	const foreground = (theme as { colors?: { 'editor.foreground'?: string } }).colors?.['editor.foreground'] ?? '#9D9F9E'
+
 	try {
 		const result = await codeToTokensBase(code, { lang: lang as never, theme })
-		return tokensToCodeBlock(
-			{
-				bg: (theme as { colors?: { 'editor.background'?: string } }).colors?.['editor.background'] ?? '#0F1110',
-				fg: (theme as { colors?: { 'editor.foreground'?: string } }).colors?.['editor.foreground'] ?? '#9D9F9E',
-				tokens: result as unknown as ShikiTokenT[][]
-			},
-			lang
-		)
+		return tokensToCodeBlock({ bg: background, fg: foreground, tokens: result as unknown as ShikiTokenT[][] }, lang)
 	} catch {
 		const result = await codeToTokensBase(code, { lang: 'text', theme })
-		return tokensToCodeBlock(
-			{
-				bg: (theme as { colors?: { 'editor.background'?: string } }).colors?.['editor.background'] ?? '#0F1110',
-				fg: (theme as { colors?: { 'editor.foreground'?: string } }).colors?.['editor.foreground'] ?? '#9D9F9E',
-				tokens: result as unknown as ShikiTokenT[][]
-			},
-			'text'
-		)
+		return tokensToCodeBlock({ bg: background, fg: foreground, tokens: result as unknown as ShikiTokenT[][] }, 'text')
 	}
 }
 
@@ -238,44 +233,46 @@ const visitAsync = async (node: HastNodeT, type: string, visitor: (node: HastEle
 	for (const child of (node as HastElementT).children ?? []) await visitAsync(child as HastNodeT, type, visitor)
 }
 
-const rehypeHighlightCodeBlocks = () => {
-	return async (tree: HastNodeT): Promise<void> => {
-		await visitAsync(tree, 'element', async (node) => {
-			if (node.tagName !== 'pre') return
+const rehypeHighlightCodeBlocks = (previewTheme: PreviewThemeT) => {
+	return () => {
+		return async (tree: HastNodeT): Promise<void> => {
+			await visitAsync(tree, 'element', async (node) => {
+				if (node.tagName !== 'pre') return
 
-			const codeNode = node.children.find(
-				(child): child is HastElementT =>
-					(child as HastElementT).type === 'element' && (child as HastElementT).tagName === 'code'
-			)
-			if (!codeNode) return
+				const codeNode = node.children.find(
+					(child): child is HastElementT =>
+						(child as HastElementT).type === 'element' && (child as HastElementT).tagName === 'code'
+				)
+				if (!codeNode) return
 
-			const code = toText(codeNode).replace(/\r?\n$/, '')
-			const lang = getCodeLanguage(codeNode)
-			const filename = codeNode.properties?.dataFilename as string | undefined
-			const highlighted = await highlightCode(code, lang)
+				const code = toText(codeNode).replace(/\r?\n$/, '')
+				const lang = getCodeLanguage(codeNode)
+				const filename = codeNode.properties?.dataFilename as string | undefined
+				const highlighted = await highlightCode(code, lang, previewTheme)
 
-			node.properties = {
-				...node.properties,
-				className: ['zCodeBlock'],
-				style: `--code-bg: ${highlighted.bg}; --code-fg: ${highlighted.fg};`
-			}
+				node.properties = {
+					...node.properties,
+					className: ['zCodeBlock'],
+					style: `--code-bg: ${highlighted.bg}; --code-fg: ${highlighted.fg};`
+				}
 
-			const filenameEl: HastElementT = {
-				type: 'element',
-				tagName: 'div',
-				properties: { className: ['zCodeFilename'] },
-				children: [{ type: 'text', value: filename ?? '' }]
-			}
+				const filenameEl: HastElementT = {
+					type: 'element',
+					tagName: 'div',
+					properties: { className: ['zCodeFilename'] },
+					children: [{ type: 'text', value: filename ?? '' }]
+				}
 
-			const highlightedCodeEl: HastElementT = {
-				type: 'element',
-				tagName: 'code',
-				properties: { className: ['zCode', `language-${highlighted.lang}`], 'data-language': highlighted.lang },
-				children: highlighted.children as (HastElementT | HastTextNodeT)[]
-			}
+				const highlightedCodeEl: HastElementT = {
+					type: 'element',
+					tagName: 'code',
+					properties: { className: ['zCode', `language-${highlighted.lang}`], 'data-language': highlighted.lang },
+					children: highlighted.children as (HastElementT | HastTextNodeT)[]
+				}
 
-			node.children = [...(filename ? [filenameEl] : []), highlightedCodeEl]
-		})
+				node.children = [...(filename ? [filenameEl] : []), highlightedCodeEl]
+			})
+		}
 	}
 }
 
@@ -295,26 +292,26 @@ const rehypeStripTodos = () => {
 	}
 }
 
-const createProcessor = (stripTodos: boolean) => {
+const createProcessor = (stripTodos: boolean, previewTheme: PreviewThemeT) => {
 	const processor = unified()
 		.use(remarkParse)
 		.use(remarkGfm)
 		.use(remarkCustomParagraphs)
 		.use(remarkRehype, { allowDangerousHtml: true, handlers: { code: codeHandler as never } })
-		.use(rehypeHighlightCodeBlocks as never)
+		.use(rehypeHighlightCodeBlocks(previewTheme) as never)
 		.use(rehypeSlug)
 
 	if (stripTodos) processor.use(rehypeStripTodos as never)
 	return processor.use(rehypeStringify, { allowDangerousHtml: true })
 }
 
-export const renderMarkdown = async (content: string): Promise<string> => {
-	const result = await createProcessor(false).process(expandInlineIcons(content))
+export const renderMarkdown = async (content: string, previewTheme: PreviewThemeT = 'dark'): Promise<string> => {
+	const result = await createProcessor(false, previewTheme).process(expandInlineIcons(content))
 	return String(result)
 }
 
-const renderMarkdownForExport = async (content: string): Promise<string> => {
-	const result = await createProcessor(true).process(expandInlineIcons(content))
+const renderMarkdownForExport = async (content: string, previewTheme: PreviewThemeT): Promise<string> => {
+	const result = await createProcessor(true, previewTheme).process(expandInlineIcons(content))
 	return String(result)
 }
 
@@ -340,7 +337,7 @@ const buildSurfaceStyle = (settings: PreviewSettingsT): string => {
 }
 
 export const exportHtml = async (title: string, content: string, settings: PreviewSettingsT): Promise<string> => {
-	const bodyHtml = await renderMarkdownForExport(content)
+	const bodyHtml = await renderMarkdownForExport(content, settings.theme)
 	const baseCss = await readFile(join(process.cwd(), 'app', 'base.css'), 'utf-8')
 	const mainCss = await readFile(join(process.cwd(), 'app', 'main.css'), 'utf-8')
 	const previewCss = await readFile(join(process.cwd(), 'components', 'PreviewSettings.css'), 'utf-8')
