@@ -108,10 +108,10 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 
 	useEffect(() => {
 		const timer = window.setTimeout(() => {
-			void renderMarkdown(content).then(setPreviewHtml)
+			void renderMarkdown(content, previewTheme).then(setPreviewHtml)
 		}, PREVIEW_DEBOUNCE_MS)
 		return () => window.clearTimeout(timer)
-	}, [content])
+	}, [content, previewTheme])
 
 	const scheduleSave = useCallback((nextTitle: string, nextContent: string): void => {
 		if (saveTimerRef.current !== null) clearTimeout(saveTimerRef.current)
