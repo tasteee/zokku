@@ -35,11 +35,6 @@ const buildSurfaceStyle = (settings: PreviewSettingsT): string => {
 	return variables.join('; ')
 }
 
-const getInternalLinkAttributes = (path: string, anchor: string): string => {
-	const anchorAttribute = anchor ? ` data-zokku-document-anchor="${escapeHtml(anchor)}"` : ''
-	return `href="#" data-zokku-document-path="${escapeHtml(path)}"${anchorAttribute}`
-}
-
 const rewriteLinkedDocumentHrefs = (
 	html: string,
 	currentDocumentPath: string,
@@ -47,14 +42,17 @@ const rewriteLinkedDocumentHrefs = (
 ): string => {
 	return html.replace(/href="([^"]+)"/g, (fullMatch, href: string): string => {
 		const resolved = resolveDocumentHref(currentDocumentPath, href)
-		if (resolved !== null) return getInternalLinkAttributes(resolved.path, resolved.anchor)
+		if (resolved !== null) {
+			const anchorAttribute = resolved.anchor ? ` data-zokku-anchor="${escapeHtml(resolved.anchor)}"` : ''
+			return `href="#" data-zokku-document-path="${escapeHtml(resolved.path)}"${anchorAttribute}`
+		}
 
 		const linkedDocumentId = getZokkuDocumentIdFromHref(href)
 		if (linkedDocumentId === null) return fullMatch
 		const linkedDocument = documentsById.get(linkedDocumentId)
 		if (linkedDocument === undefined) return fullMatch
 
-		return getInternalLinkAttributes(linkedDocument.path, '')
+		return `href="#" data-zokku-document-path="${escapeHtml(linkedDocument.path)}"`
 	})
 }
 
@@ -92,7 +90,8 @@ export const exportLinkedHtml = async (
 	const baseCss = await readFile(join(process.cwd(), 'app', 'base.css'), 'utf-8')
 	const mainCss = await readFile(join(process.cwd(), 'app', 'main.css'), 'utf-8')
 	const previewCss = await readFile(join(process.cwd(), 'components', 'PreviewSettings.css'), 'utf-8')
-	const globalsCss = `${baseCss}\n${mainCss}\n${previewCss}`
+	const circularCss = await readFile(join(process.cwd(), 'components', 'Circular.css'), 'utf-8')
+	const globalsCss = `${baseCss}\n${mainCss}\n${previewCss}\n${circularCss}`
 	const surfaceAttributes = `data-preview-theme="${settings.theme}" data-preview-font="${settings.font}" data-preview-scale="${settings.scale}"`
 	const surfaceStyle = buildSurfaceStyle(settings)
 	const serializedDocuments = serializeForScript(renderedDocuments)
@@ -130,14 +129,10 @@ export const exportLinkedHtml = async (
       const contentElement = document.getElementById('zokkuContent');
       const backButton = document.getElementById('zokkuBackButton');
       const routeHistory = [];
-      let currentRoute = { path: rootPath, anchor: '' };
+      let currentPath = rootPath;
 
-      const renderDocument = (route, pushHistory) => {
-        if (pushHistory && route.path !== currentRoute.path) routeHistory.push(currentRoute);
-        currentRoute = route;
-        backButton.hidden = routeHistory.length === 0;
-
-        const nextDocument = documents[route.path];
+      const renderDocument = (path, anchor = '', addToHistory = true) => {
+        const nextDocument = documents[path];
         if (!nextDocument) {
           document.title = 'Document not found';
           contentElement.className = 'zokkuMissingDocument';
@@ -145,17 +140,20 @@ export const exportLinkedHtml = async (
           return;
         }
 
+        if (addToHistory && path !== currentPath) routeHistory.push(currentPath);
+        currentPath = path;
+        backButton.hidden = routeHistory.length === 0;
         document.title = nextDocument.title;
         contentElement.className = 'Prose';
         contentElement.innerHTML = nextDocument.html;
 
-        if (!route.anchor) {
+        if (!anchor) {
           window.scrollTo({ top: 0, behavior: 'instant' });
           return;
         }
 
         requestAnimationFrame(() => {
-          const anchorElement = document.getElementById(route.anchor);
+          const anchorElement = document.getElementById(anchor);
           if (anchorElement) anchorElement.scrollIntoView();
         });
       };
@@ -163,23 +161,22 @@ export const exportLinkedHtml = async (
       contentElement.addEventListener('click', (event) => {
         const target = event.target;
         if (!(target instanceof Element)) return;
-        const anchor = target.closest('a[data-zokku-document-path]');
-        if (!(anchor instanceof HTMLAnchorElement)) return;
+        const link = target.closest('a[data-zokku-document-path]');
+        if (!(link instanceof HTMLAnchorElement)) return;
 
         event.preventDefault();
-        const path = anchor.dataset.zokkuDocumentPath || '';
-        const documentAnchor = anchor.dataset.zokkuDocumentAnchor || '';
+        const path = link.dataset.zokkuDocumentPath;
         if (!path) return;
-        renderDocument({ path, anchor: documentAnchor }, true);
+        renderDocument(path, link.dataset.zokkuAnchor || '');
       });
 
       backButton.addEventListener('click', () => {
-        const previousRoute = routeHistory.pop();
-        if (!previousRoute) return;
-        renderDocument(previousRoute, false);
+        const previousPath = routeHistory.pop();
+        if (!previousPath) return;
+        renderDocument(previousPath, '', false);
       });
 
-      renderDocument(currentRoute, false);
+      renderDocument(rootPath, '', false);
     })();
   </script>
 </body>
