@@ -4,15 +4,19 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { renderMarkdown } from '@/app/actions/renderMarkdown'
 import { getZokkuDocumentIdFromHref, resolveDocumentHref } from '@/lib/documentLinks'
-import type { PreviewSettingsT } from '@/components/previewSettings'
+import type { PreviewSettingsT, PreviewThemeT } from '@/components/previewSettings'
 import type { ExportDocumentT } from '@/lib/localDocumentExport'
 
 const FIXED_STEP_RATIOS = [0.579, 0.694, 0.833, 1] as const
-
 const SCALE_STEP_RATIOS: Record<PreviewSettingsT['scale'], readonly number[]> = {
 	compact: [1.2, 1.44, 1.728, 2.074, 2.488],
 	default: [1.25, 1.563, 1.953, 2.441, 3.052],
 	spacious: [1.333, 1.777, 2.369, 3.157, 4.209]
+}
+
+type RenderedExportDocumentT = {
+	title: string
+	html: Record<PreviewThemeT, string>
 }
 
 const escapeHtml = (text: string): string => {
@@ -23,15 +27,8 @@ const buildSurfaceStyle = (settings: PreviewSettingsT): string => {
 	const baseFontSize = settings.baseFontSize
 	const scaleRatios = SCALE_STEP_RATIOS[settings.scale]
 	const variables: string[] = [`--base-font-size: ${baseFontSize}px`]
-
-	for (const [index, ratio] of FIXED_STEP_RATIOS.entries()) {
-		variables.push(`--font-size-${index}: ${(baseFontSize * ratio).toFixed(3)}px`)
-	}
-
-	for (const [index, ratio] of scaleRatios.entries()) {
-		variables.push(`--font-size-${index + 4}: ${(baseFontSize * ratio).toFixed(3)}px`)
-	}
-
+	for (const [index, ratio] of FIXED_STEP_RATIOS.entries()) variables.push(`--font-size-${index}: ${(baseFontSize * ratio).toFixed(3)}px`)
+	for (const [index, ratio] of scaleRatios.entries()) variables.push(`--font-size-${index + 4}: ${(baseFontSize * ratio).toFixed(3)}px`)
 	return variables.join('; ')
 }
 
@@ -51,7 +48,6 @@ const rewriteLinkedDocumentHrefs = (
 		if (linkedDocumentId === null) return fullMatch
 		const linkedDocument = documentsById.get(linkedDocumentId)
 		if (linkedDocument === undefined) return fullMatch
-
 		return `href="#" data-zokku-document-path="${escapeHtml(linkedDocument.path)}"`
 	})
 }
@@ -60,15 +56,25 @@ const stripTodoElements = (html: string): string => {
 	return html.replace(/<[^>]*class="[^"]*\bzTodo\b[^"]*"[^>]*>[\s\S]*?<\/[^>]+>/g, '')
 }
 
-const renderExportDocument = async (
+const renderForTheme = async (
 	document: ExportDocumentT,
 	documentsById: Map<string, ExportDocumentT>,
-	settings: PreviewSettingsT
-): Promise<{ title: string; html: string }> => {
-	const rendered = await renderMarkdown(document.content, settings.theme)
+	theme: PreviewThemeT
+): Promise<string> => {
+	const rendered = await renderMarkdown(document.content, theme)
 	const withoutTodos = stripTodoElements(rendered)
-	const html = rewriteLinkedDocumentHrefs(withoutTodos, document.path, documentsById)
-	return { title: document.title, html }
+	return rewriteLinkedDocumentHrefs(withoutTodos, document.path, documentsById)
+}
+
+const renderExportDocument = async (
+	document: ExportDocumentT,
+	documentsById: Map<string, ExportDocumentT>
+): Promise<RenderedExportDocumentT> => {
+	const [light, dark] = await Promise.all([
+		renderForTheme(document, documentsById, 'light'),
+		renderForTheme(document, documentsById, 'dark')
+	])
+	return { title: document.title, html: { light, dark } }
 }
 
 const serializeForScript = (value: unknown): string => {
@@ -85,8 +91,8 @@ export const exportLinkedHtml = async (
 	const documentsById = new Map<string, ExportDocumentT>()
 	for (const document of documents) documentsById.set(document.id, document)
 
-	const renderedDocuments: Record<string, { title: string; html: string }> = {}
-	for (const document of documents) renderedDocuments[document.path] = await renderExportDocument(document, documentsById, settings)
+	const renderedDocuments: Record<string, RenderedExportDocumentT> = {}
+	for (const document of documents) renderedDocuments[document.path] = await renderExportDocument(document, documentsById)
 
 	const baseCss = await readFile(join(process.cwd(), 'app', 'base.css'), 'utf-8')
 	const mainCss = await readFile(join(process.cwd(), 'app', 'main.css'), 'utf-8')
@@ -97,6 +103,7 @@ export const exportLinkedHtml = async (
 	const surfaceStyle = buildSurfaceStyle(settings)
 	const serializedDocuments = serializeForScript(renderedDocuments)
 	const serializedRootPath = serializeForScript(rootDocument.path)
+	const serializedInitialTheme = serializeForScript(settings.theme)
 
 	return `<!DOCTYPE html>
 <html lang="en">
@@ -110,27 +117,50 @@ export const exportLinkedHtml = async (
   <style>${globalsCss}</style>
   <style>
     :root { --font-fraunces: 'Fraunces'; }
-    body { padding: 3rem clamp(1.5rem, 8vw, 6rem); }
+    body { min-height: 100vh; padding: 3rem clamp(1.5rem, 8vw, 6rem); transition: background-color 0ms; }
     .Prose { max-width: 52rem; margin: 0 auto; padding-bottom: 64px; }
+    .zokkuExportToolbar { position: fixed; top: 18px; right: 18px; z-index: 30; }
     .zokkuExportNav { max-width: 52rem; margin: 0 auto 1.5rem; }
     .zokkuBackButton { display: inline-flex; align-items: center; gap: 0.45rem; border: 0; padding: 0; background: transparent; color: var(--muted); font: inherit; font-size: 0.875rem; cursor: pointer; }
     .zokkuBackButton:hover { color: var(--primary); }
     .zokkuBackButton[hidden] { display: none; }
     .zokkuMissingDocument { max-width: 52rem; margin: 0 auto; padding: 4rem 0; }
     .zokkuMissingDocument p { color: var(--muted); }
+    .zokkuPageContent { opacity: 1; }
+    .zokkuPageContent[data-theme-transition="out"] { opacity: 0; transition: opacity 300ms ease; }
+    .zokkuPageContent[data-theme-transition="in"] { opacity: 1; transition: opacity 500ms ease; }
+    .zokkuThemeToggle svg { width: 16px; height: 16px; }
   </style>
 </head>
 <body ${surfaceAttributes} style="${surfaceStyle}">
-  <nav class="zokkuExportNav"><button id="zokkuBackButton" class="zokkuBackButton" type="button" hidden aria-label="Back">← Back</button></nav>
-  <main id="zokkuApp"><div id="zokkuContent" class="Prose"></div></main>
+  <div class="zokkuExportToolbar">
+    <button id="zokkuThemeToggle" class="zokkuThemeToggle" type="button" aria-label="Switch theme" title="Switch theme"></button>
+  </div>
+  <div id="zokkuPageContent" class="zokkuPageContent" data-theme-transition="idle">
+    <nav class="zokkuExportNav"><button id="zokkuBackButton" class="zokkuBackButton" type="button" hidden aria-label="Back">← Back</button></nav>
+    <main id="zokkuApp"><div id="zokkuContent" class="Prose"></div></main>
+  </div>
   <script>
     (() => {
       const documents = ${serializedDocuments};
       const rootPath = ${serializedRootPath};
       const contentElement = document.getElementById('zokkuContent');
+      const pageContent = document.getElementById('zokkuPageContent');
       const backButton = document.getElementById('zokkuBackButton');
+      const themeToggle = document.getElementById('zokkuThemeToggle');
       const routeHistory = [];
       let currentPath = rootPath;
+      let currentTheme = ${serializedInitialTheme};
+      let isThemeTransitioning = false;
+
+      const sunIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>';
+      const moonIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 15.4A8 8 0 0 1 8.6 3.6 8.5 8.5 0 1 0 20.4 15.4Z"></path></svg>';
+
+      const updateThemeToggle = () => {
+        themeToggle.innerHTML = currentTheme === 'light' ? moonIcon : sunIcon;
+        themeToggle.setAttribute('aria-label', currentTheme === 'light' ? 'Switch to dark theme' : 'Switch to light theme');
+        themeToggle.title = currentTheme === 'light' ? 'Switch to dark theme' : 'Switch to light theme';
+      };
 
       const renderDocument = (path, anchor = '', addToHistory = true) => {
         const nextDocument = documents[path];
@@ -146,7 +176,7 @@ export const exportLinkedHtml = async (
         backButton.hidden = routeHistory.length === 0;
         document.title = nextDocument.title;
         contentElement.className = 'Prose';
-        contentElement.innerHTML = nextDocument.html;
+        contentElement.innerHTML = nextDocument.html[currentTheme];
 
         if (!anchor) {
           window.scrollTo({ top: 0, behavior: 'instant' });
@@ -159,12 +189,30 @@ export const exportLinkedHtml = async (
         });
       };
 
+      const switchTheme = () => {
+        if (isThemeTransitioning) return;
+        isThemeTransitioning = true;
+        pageContent.dataset.themeTransition = 'out';
+
+        window.setTimeout(() => {
+          currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+          document.body.dataset.previewTheme = currentTheme;
+          renderDocument(currentPath, '', false);
+          updateThemeToggle();
+          pageContent.dataset.themeTransition = 'in';
+
+          window.setTimeout(() => {
+            pageContent.dataset.themeTransition = 'idle';
+            isThemeTransitioning = false;
+          }, 500);
+        }, 300);
+      };
+
       contentElement.addEventListener('click', (event) => {
         const target = event.target;
         if (!(target instanceof Element)) return;
         const link = target.closest('a[data-zokku-document-path]');
         if (!(link instanceof HTMLAnchorElement)) return;
-
         event.preventDefault();
         const path = link.dataset.zokkuDocumentPath;
         if (!path) return;
@@ -177,6 +225,8 @@ export const exportLinkedHtml = async (
         renderDocument(previousPath, '', false);
       });
 
+      themeToggle.addEventListener('click', switchTheme);
+      updateThemeToggle();
       renderDocument(rootPath, '', false);
     })();
   </script>
