@@ -3,7 +3,7 @@ import { JSX } from 'react'
 import { ZButton } from '@/components/zButton'
 
 type DocumentsHeaderPropsT = {
-	onSignOut: () => Promise<void>
+	onSignOut: () => void
 }
 
 export const DocumentsHeader = (props: DocumentsHeaderPropsT): JSX.Element => {
@@ -16,7 +16,7 @@ export const DocumentsHeader = (props: DocumentsHeaderPropsT): JSX.Element => {
 
 			<div className="documentsHeaderActions">
 				<ZButton isSmall isOutlined isNeutral onClick={props.onSignOut}>
-					Sign out
+					Change workspace
 				</ZButton>
 			</div>
 		</header>
