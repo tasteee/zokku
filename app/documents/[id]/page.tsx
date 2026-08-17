@@ -1,5 +1,4 @@
 import { DocumentEditor } from '@/components/DocumentEditor'
-import type { Id } from '@/convex/_generated/dataModel'
 import { JSX } from 'react'
 
 type DocumentPagePropsT = {
@@ -8,9 +7,7 @@ type DocumentPagePropsT = {
 
 const DocumentPage = async (props: DocumentPagePropsT): Promise<JSX.Element> => {
 	const params = await props.params
-	const documentId = params.id as Id<'documents'>
-
-	return <DocumentEditor documentId={documentId} />
+	return <DocumentEditor documentId={params.id} />
 }
 
 export default DocumentPage
