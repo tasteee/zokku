@@ -27,6 +27,11 @@ const eyebrow: MarkerDefinitionT = {
 	classes: 'zText isSmall isSmallCaps zEyebrow'
 }
 
+const subheading: MarkerDefinitionT = {
+	element: 'p',
+	classes: 'zSubheading'
+}
+
 const note: MarkerDefinitionT = {
 	element: 'p',
 	classes: 'zNoteCallout callout callout-note'
@@ -62,24 +67,12 @@ const todo: MarkerDefinitionT = {
 	classes: 'zTodo'
 }
 
-/**
- * Zokku extensions intentionally follow the GitHub/Obsidian callout shape.
- * Because remark parses the contents of `> ...` as ordinary paragraphs,
- * these markers are matched after Markdown has already handled the blockquote.
- *
- * Preferred syntax:
- *
- * > [!NOTE]
- * > Supporting information.
- *
- * Standard Markdown owns headings (#), rules (---), blockquotes (>), and
- * fenced code blocks (```bash). Zokku does not define competing markers.
- */
 export const customMarkers: Record<string, MarkerDefinitionT> = {
 	'[!BIG]': big,
 	'[!SMALL]': small,
 	'[!MUTED]': muted,
 	'[!EYEBROW]': eyebrow,
+	'[!SUBHEADING]': subheading,
 	'[!NOTE]': note,
 	'[!TIP]': tip,
 	'[!WARNING]': warning,
@@ -88,14 +81,13 @@ export const customMarkers: Record<string, MarkerDefinitionT> = {
 	'[!CAPTION]': caption,
 	'[!TODO]': todo,
 
-	// Transitional aliases for existing local documents. New documents should
-	// use the blockquote-directive syntax above. Deliberately no legacy H1-H6,
-	// LINE, BASH, or QUOTE aliases: standard Markdown replaces those directly.
+	// Transitional aliases for existing local documents.
 	'!BIG': big,
 	'!SMALL': small,
 	'!MUTED': muted,
 	'!CAPS': eyebrow,
 	'!EYEBROW': eyebrow,
+	'!SUBHEADING': subheading,
 	'!NOTE': note,
 	'!TIP': tip,
 	'!WARNING': warning,
@@ -106,13 +98,33 @@ export const customMarkers: Record<string, MarkerDefinitionT> = {
 }
 
 const SPACER_REGEX = /^\!SPACER(\d+)/
+const EYEBROW_FULL_REGEX = /^\[!EYEBROW\s+FULL\]/i
+const STAT_REGEX = /^\[!STAT(?:\s+(TOP|BOTTOM))?\]/i
 
 export const matchDynamicMarkerDefinition = (value: string): MarkerDefinitionT | null => {
+	const eyebrowFullMatch = value.match(EYEBROW_FULL_REGEX)
+	if (eyebrowFullMatch) {
+		return {
+			marker: eyebrowFullMatch[0],
+			classes: 'zText isSmall isSmallCaps zEyebrow isFullRule',
+			element: 'p'
+		}
+	}
+
+	const statMatch = value.match(STAT_REGEX)
+	if (statMatch) {
+		const position = statMatch[1]?.toUpperCase() === 'TOP' ? 'isLabelTop' : 'isLabelBottom'
+		return {
+			marker: statMatch[0],
+			classes: `zStat ${position}`,
+			element: 'p'
+		}
+	}
+
 	const spacerMatch = value.match(SPACER_REGEX)
 	if (!spacerMatch) return null
 
 	const units = Number.parseInt(spacerMatch[1], 10)
-
 	return {
 		marker: spacerMatch[0],
 		classes: `zSpacer-${units}`,
