@@ -62,9 +62,10 @@ const stripTodoElements = (html: string): string => {
 
 const renderExportDocument = async (
 	document: ExportDocumentT,
-	documentsById: Map<string, ExportDocumentT>
+	documentsById: Map<string, ExportDocumentT>,
+	settings: PreviewSettingsT
 ): Promise<{ title: string; html: string }> => {
-	const rendered = await renderMarkdown(document.content)
+	const rendered = await renderMarkdown(document.content, settings.theme)
 	const withoutTodos = stripTodoElements(rendered)
 	const html = rewriteLinkedDocumentHrefs(withoutTodos, document.path, documentsById)
 	return { title: document.title, html }
@@ -85,7 +86,7 @@ export const exportLinkedHtml = async (
 	for (const document of documents) documentsById.set(document.id, document)
 
 	const renderedDocuments: Record<string, { title: string; html: string }> = {}
-	for (const document of documents) renderedDocuments[document.path] = await renderExportDocument(document, documentsById)
+	for (const document of documents) renderedDocuments[document.path] = await renderExportDocument(document, documentsById, settings)
 
 	const baseCss = await readFile(join(process.cwd(), 'app', 'base.css'), 'utf-8')
 	const mainCss = await readFile(join(process.cwd(), 'app', 'main.css'), 'utf-8')
