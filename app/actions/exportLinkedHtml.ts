@@ -35,10 +35,9 @@ const buildSurfaceStyle = (settings: PreviewSettingsT): string => {
 	return variables.join('; ')
 }
 
-const getExportHref = (path: string, anchor: string): string => {
-	const route = `#/document/${encodeURIComponent(path)}`
-	if (!anchor) return route
-	return `${route}?anchor=${encodeURIComponent(anchor)}`
+const getInternalLinkAttributes = (path: string, anchor: string): string => {
+	const anchorAttribute = anchor ? ` data-zokku-document-anchor="${escapeHtml(anchor)}"` : ''
+	return `href="#" data-zokku-document-path="${escapeHtml(path)}"${anchorAttribute}`
 }
 
 const rewriteLinkedDocumentHrefs = (
@@ -48,16 +47,14 @@ const rewriteLinkedDocumentHrefs = (
 ): string => {
 	return html.replace(/href="([^"]+)"/g, (fullMatch, href: string): string => {
 		const resolved = resolveDocumentHref(currentDocumentPath, href)
-		if (resolved !== null) {
-			return `href="${getExportHref(resolved.path, resolved.anchor)}" data-zokku-document-path="${escapeHtml(resolved.path)}"`
-		}
+		if (resolved !== null) return getInternalLinkAttributes(resolved.path, resolved.anchor)
 
 		const linkedDocumentId = getZokkuDocumentIdFromHref(href)
 		if (linkedDocumentId === null) return fullMatch
 		const linkedDocument = documentsById.get(linkedDocumentId)
 		if (linkedDocument === undefined) return fullMatch
 
-		return `href="${getExportHref(linkedDocument.path, '')}" data-zokku-document-path="${escapeHtml(linkedDocument.path)}"`
+		return getInternalLinkAttributes(linkedDocument.path, '')
 	})
 }
 
@@ -133,27 +130,11 @@ export const exportLinkedHtml = async (
       const contentElement = document.getElementById('zokkuContent');
       const backButton = document.getElementById('zokkuBackButton');
       const routeHistory = [];
-      let currentPath = rootPath;
-      let isNavigatingBack = false;
+      let currentRoute = { path: rootPath, anchor: '' };
 
-      const getRoute = () => {
-        const hash = window.location.hash;
-        if (!hash.startsWith('#/document/')) return { path: rootPath, anchor: '' };
-        const routeValue = hash.slice('#/document/'.length);
-        const queryIndex = routeValue.indexOf('?');
-        const encodedPath = queryIndex >= 0 ? routeValue.slice(0, queryIndex) : routeValue;
-        const query = queryIndex >= 0 ? routeValue.slice(queryIndex + 1) : '';
-        const parameters = new URLSearchParams(query);
-        return { path: decodeURIComponent(encodedPath), anchor: parameters.get('anchor') || '' };
-      };
-
-      const render = () => {
-        const route = getRoute();
-        if (route.path !== currentPath) {
-          if (!isNavigatingBack) routeHistory.push(currentPath);
-          currentPath = route.path;
-        }
-        isNavigatingBack = false;
+      const renderDocument = (route, pushHistory) => {
+        if (pushHistory && route.path !== currentRoute.path) routeHistory.push(currentRoute);
+        currentRoute = route;
         backButton.hidden = routeHistory.length === 0;
 
         const nextDocument = documents[route.path];
@@ -179,15 +160,26 @@ export const exportLinkedHtml = async (
         });
       };
 
-      backButton.addEventListener('click', () => {
-        const previousPath = routeHistory.pop();
-        if (!previousPath) return;
-        isNavigatingBack = true;
-        window.location.hash = '#/document/' + encodeURIComponent(previousPath);
+      contentElement.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const anchor = target.closest('a[data-zokku-document-path]');
+        if (!(anchor instanceof HTMLAnchorElement)) return;
+
+        event.preventDefault();
+        const path = anchor.dataset.zokkuDocumentPath || '';
+        const documentAnchor = anchor.dataset.zokkuDocumentAnchor || '';
+        if (!path) return;
+        renderDocument({ path, anchor: documentAnchor }, true);
       });
 
-      window.addEventListener('hashchange', render);
-      render();
+      backButton.addEventListener('click', () => {
+        const previousRoute = routeHistory.pop();
+        if (!previousRoute) return;
+        renderDocument(previousRoute, false);
+      });
+
+      renderDocument(currentRoute, false);
     })();
   </script>
 </body>
