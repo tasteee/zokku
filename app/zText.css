@@ -1,0 +1,5 @@
+.Prose .zText.isLarge {
+	font-size: var(--font-size-3) !important;
+	line-height: var(--line-height-h4) !important;
+	margin-top: 0.5rem !important;
+}
