@@ -71,6 +71,18 @@ Zokku understands these links in preview and bundles linked documents into self-
 
 You can also paste or drag images into the editor and let Zokku insert them for you.
 
+### Inline icons
+
+Zokku can render an inline icon from the MingCute collection in Iconify. Use \`:icon[name]:\`, where the icon name is written in lowercase hyphenated form.
+
+\`\`\`md
+Continue :icon[arrow-right-line]:
+
+Saved :icon[check-circle-line]: successfully.
+\`\`\`
+
+Use inline icons sparingly when a small visual cue makes a label or sentence easier to scan. They work well for actions, statuses, directions, and compact UI-like explanations. The collection is intentionally restricted to MingCute so documents keep a consistent icon style. If a MingCute icon name does not exist, Zokku leaves the original syntax visible so the mistake is easy to spot.
+
 ### Blockquotes
 
 \`\`\`md
@@ -214,7 +226,7 @@ A clean Zokku document often looks something like this:
 > [!EYEBROW]
 > PROJECT BRIEF
 
-# Local-first workspace
+# Local-first workspace :icon[folder-open-line]:
 
 A short introduction to the document.
 
