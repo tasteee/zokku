@@ -11,39 +11,101 @@
 	color: var(--foreground);
 }
 
-/* Light theme: remap semantic tokens onto the high end of the
-   neutral scale (9 = lightest) for surfaces and the low end for text.
-   Accent colors swap to US Bank brand colors: purple → blue, pink → red. */
+/* Light theme: U.S. Bank-inspired document surface. */
 [data-preview-theme='light'] {
 	--color-purple: #0c2074;
 	--color-pink: #d22630;
 
-	--bg: var(--color-neutral-9);
-	--paper: var(--color-neutral-8);
-	--paper-soft: var(--color-neutral-7);
-	--line: var(--color-neutral-7);
-	--primary: var(--color-neutral-0);
-	--foreground: var(--color-neutral-2);
-	--muted: var(--color-neutral-4);
-	--secondary: var(--color-neutral-5);
+	--bg: #ffffff;
+	--paper: #f7f8fa;
+	--paper-soft: #f1f3f6;
+	--line: #d6d9df;
+	--primary: #0c2074;
+	--foreground: #202124;
+	--muted: #5f6368;
+	--secondary: #72767d;
 
-	--accent: var(--color-purple);
-	--accent-alt: var(--color-pink);
-	--warning: var(--color-pink);
+	--accent: #0c2074;
+	--accent-alt: #d22630;
+	--warning: #d22630;
+	--pink: #d22630;
+	--purple: #0c2074;
+}
 
-	--pink: var(--color-pink);
-	--purple: var(--color-purple);
+[data-preview-theme='light'] .Prose {
+	color: #202124;
+}
+
+[data-preview-theme='light'] .Prose h1,
+[data-preview-theme='light'] .Prose h2,
+[data-preview-theme='light'] .Prose h3,
+[data-preview-theme='light'] .Prose h4,
+[data-preview-theme='light'] .Prose h5,
+[data-preview-theme='light'] .Prose h6 {
+	color: #0c2074;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+}
+
+[data-preview-theme='light'] .Prose a {
+	color: #0c2074;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.14em;
+}
+
+[data-preview-theme='light'] .Prose a:hover {
+	color: #d22630;
+}
+
+[data-preview-theme='light'] .Prose hr {
+	border-color: #d6d9df;
+}
+
+[data-preview-theme='light'] .Prose blockquote {
+	border-left-color: #0c2074;
+	color: #4c5157;
+}
+
+/* Zokku directives are written with Markdown blockquote syntax but render as
+   presentation blocks, so neutralize the ordinary quote chrome around them. */
+.Prose blockquote:has(> .callout),
+.Prose blockquote:has(> .zEyebrow),
+.Prose blockquote:has(> .zText.isLarge),
+.Prose blockquote:has(> .zText.isSmall),
+.Prose blockquote:has(> .zTextCaption),
+.Prose blockquote:has(> .zText.isCenteredBlock),
+.Prose blockquote:has(> .zTodo) {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	color: inherit;
+}
+
+[data-preview-theme='light'] .zEyebrow {
+	color: #0c2074;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
+
+[data-preview-theme='light'] .callout {
+	border-color: #d6d9df;
+	background: #f7f8fa;
+	color: #202124;
+}
+
+[data-preview-theme='light'] .callout-note,
+[data-preview-theme='light'] .callout-tip {
+	border-left-color: #0c2074;
+}
+
+[data-preview-theme='light'] .callout-warning,
+[data-preview-theme='light'] .callout-important {
+	border-left-color: #d22630;
 }
 
 /* ─── Font presets ───────────────────────────────────────── */
 
-/*
-	Setting font-family here (not just --font-sans) is required because
-	descendants inherit font-family as a computed value from body (DM Sans),
-	not as a var() reference. Declaring font-family: var(--font-sans) on
-	this container forces re-evaluation using the locally-scoped --font-sans,
-	which descendant elements then inherit.
-*/
 [data-preview-font] {
 	font-family: var(--font-sans);
 }
@@ -57,13 +119,6 @@
 }
 
 /* ─── Type scale presets ─────────────────────────────────── */
-
-/*
-	Scale ratios and base font size are applied as computed inline styles
-	via getPreviewSurfaceStyle() in previewSettings.ts, which sets
-	--font-size-0 through --font-size-8 directly. CSS selectors here are
-	kept as documentation but are superseded by the inline style values.
-*/
 
 /* ─── Settings popover ───────────────────────────────────── */
 
