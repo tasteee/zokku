@@ -77,11 +77,20 @@ Zokku can render an inline icon from the MingCute collection in Iconify. Use \`:
 
 \`\`\`md
 Continue :icon[arrow-right-line]:
-
 Saved :icon[check-circle-line]: successfully.
 \`\`\`
 
-Use inline icons sparingly when a small visual cue makes a label or sentence easier to scan. They work well for actions, statuses, directions, and compact UI-like explanations. The collection is intentionally restricted to MingCute so documents keep a consistent icon style. If a MingCute icon name does not exist, Zokku renders a warning-colored question icon in its place.
+Use inline icons sparingly when a small visual cue makes a label or sentence easier to scan. The collection is intentionally restricted to MingCute so documents keep a consistent icon style. Invalid names render as a warning-colored question icon.
+
+### Inline separators
+
+Use \`:separator:\` between short pieces of inline content when you want a subtle one-pixel vertical hairline.
+
+\`\`\`md
+Design :separator: Engineering :separator: Product
+\`\`\`
+
+Use separators for compact metadata, labels, or short navigation-like rows. Do not use them as a replacement for normal sentence punctuation.
 
 ### Blockquotes
 
@@ -124,17 +133,33 @@ export const value = 42
 
 ## Zokku custom blocks
 
-Zokku extensions use the same blockquote-style callout syntax familiar from GitHub and Obsidian. Each custom block starts with \`> [!TYPE]\` followed by the content on the next quoted line.
+Zokku extensions use the same blockquote-style callout syntax familiar from GitHub and Obsidian. Each custom block starts with \`> [!TYPE]\` followed by its content.
 
 ### Eyebrow
 
-Use an eyebrow immediately above a heading when you want a small, all-caps contextual label such as a category, section label, or product area.
+Use an eyebrow immediately above a heading when you want a compact category, section label, or product-area identifier. A standard eyebrow ends with an 80px hairline rule.
 
 \`\`\`md
 > [!EYEBROW]
 > PRODUCT STRATEGY
 
 ## Where we are going
+\`\`\`
+
+Use the \`FULL\` variant when the rule should consume all remaining horizontal space after the label, with a 16px gap:
+
+\`\`\`md
+> [!EYEBROW FULL]
+> PRODUCT STRATEGY
+\`\`\`
+
+### Subheading
+
+Use a subheading to introduce a section with more weight than an eyebrow but without adding another level to the document's semantic heading hierarchy.
+
+\`\`\`md
+> [!SUBHEADING]
+> What changed this quarter
 \`\`\`
 
 ### Note
@@ -193,7 +218,7 @@ Use small text for supporting detail, secondary explanations, disclaimers, or lo
 
 ### Muted
 
-Use muted text when the normal body size is appropriate but the content should have less visual emphasis, such as tertiary context or low-priority supporting information.
+Use muted text when the normal body size is appropriate but the content should have less visual emphasis.
 
 \`\`\`md
 > [!MUTED]
@@ -211,12 +236,34 @@ Use center for short standalone content that benefits from centered presentation
 
 ### Caption
 
-Use caption for compact metadata or explanatory text tied to an image, table, example, or other nearby piece of content. Captions are intentionally smaller and tighter than small prose.
+Use caption for compact metadata or explanatory text tied to an image, table, example, or other nearby piece of content.
 
 \`\`\`md
 > [!CAPTION]
 > Figure 1. Workspace architecture overview.
 \`\`\`
+
+### Stats
+
+Use a stat block to make a key number scannable. Bold the value so Zokku can distinguish it from the smaller label.
+
+For a label below the value:
+
+\`\`\`md
+> [!STAT]
+> **73%**
+> Adoption rate
+\`\`\`
+
+For a label above the value:
+
+\`\`\`md
+> [!STAT TOP]
+> Adoption rate
+> **73%**
+\`\`\`
+
+Stats work best for concise metrics such as percentages, counts, currency values, durations, or scores rather than long prose.
 
 ### Todo
 
@@ -232,23 +279,30 @@ Use todo for an author-facing reminder that is useful while drafting but should 
 A clean Zokku document often looks something like this:
 
 \`\`\`md
-> [!EYEBROW]
+> [!EYEBROW FULL]
 > PROJECT BRIEF
 
 # Local-first workspace :icon[folder-open-line]:
 
 A short introduction to the document.
 
+Product :separator: Design :separator: Engineering
+
 > [!IMPORTANT]
 > The workspace folder is the source of truth.
+
+> [!SUBHEADING]
+> Current adoption
+
+> [!STAT]
+> **73%**
+> Adoption rate
 
 ## Goals
 
 - Keep files portable
 - Keep editing fast
 - Make exports self-contained
-
-## Implementation notes
 
 | Area | Decision |
 | --- | --- |
