@@ -7,6 +7,7 @@ import { JSX, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ZokkuBrand } from '@/components/ZokkuBrand'
 import { chooseWorkspace, isFileSystemWorkspaceSupported, restoreWorkspace } from '@/lib/localWorkspace'
+import { ensureWorkspaceGuide } from '@/lib/ensureWorkspaceGuide'
 import {
 	activateRecentWorkspace,
 	listRecentWorkspaces,
@@ -42,6 +43,7 @@ const HomePage = (): JSX.Element => {
 
 		try {
 			await chooseWorkspace()
+			await ensureWorkspaceGuide()
 			await rememberCurrentWorkspace()
 			router.push('/documents')
 		} catch (cause) {
