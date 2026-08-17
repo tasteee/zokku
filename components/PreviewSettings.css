@@ -104,6 +104,25 @@
 	border-left-color: #d22630;
 }
 
+/* ─── Inline icons ───────────────────────────────────────── */
+
+.zInlineIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1em;
+	height: 1em;
+	margin-inline: 0.08em;
+	vertical-align: -0.12em;
+	color: currentColor;
+}
+
+.zInlineIcon svg {
+	display: block;
+	width: 1em;
+	height: 1em;
+}
+
 /* ─── Font presets ───────────────────────────────────────── */
 
 [data-preview-font] {
