@@ -6,6 +6,7 @@ import { JSX } from 'react'
 import type { Metadata } from 'next'
 import { DM_Mono, DM_Sans, Fraunces } from 'next/font/google'
 import '@/components/zButton.css'
+import '@/components/Circular.css'
 
 export const metadata: Metadata = {
 	title: 'Zokku',
