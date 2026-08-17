@@ -1,8 +1,7 @@
-import { JSX } from 'react'
-import { SignInForm } from '@/components/SignInForm'
+import { redirect } from 'next/navigation'
 
-const SignInPage = (): JSX.Element => {
-	return <SignInForm />
+const SignInPage = (): never => {
+	redirect('/')
 }
 
 export default SignInPage
