@@ -17,6 +17,11 @@ const small: MarkerDefinitionT = {
 	classes: 'zText isSmall'
 }
 
+const muted: MarkerDefinitionT = {
+	element: 'p',
+	classes: 'zText isMuted'
+}
+
 const eyebrow: MarkerDefinitionT = {
 	element: 'p',
 	classes: 'zText isSmall isSmallCaps zEyebrow'
@@ -39,7 +44,7 @@ const warning: MarkerDefinitionT = {
 
 const important: MarkerDefinitionT = {
 	element: 'p',
-	classes: 'callout callout-warning callout-important'
+	classes: 'callout callout-important'
 }
 
 const center: MarkerDefinitionT = {
@@ -73,6 +78,7 @@ const todo: MarkerDefinitionT = {
 export const customMarkers: Record<string, MarkerDefinitionT> = {
 	'[!BIG]': big,
 	'[!SMALL]': small,
+	'[!MUTED]': muted,
 	'[!EYEBROW]': eyebrow,
 	'[!NOTE]': note,
 	'[!TIP]': tip,
@@ -87,11 +93,13 @@ export const customMarkers: Record<string, MarkerDefinitionT> = {
 	// LINE, BASH, or QUOTE aliases: standard Markdown replaces those directly.
 	'!BIG': big,
 	'!SMALL': small,
+	'!MUTED': muted,
 	'!CAPS': eyebrow,
 	'!EYEBROW': eyebrow,
 	'!NOTE': note,
 	'!TIP': tip,
 	'!WARNING': warning,
+	'!IMPORTANT': important,
 	'!CENTER': center,
 	'!CAPTION': caption,
 	'!TODO': todo
