@@ -4,11 +4,12 @@ import './DocumentEditor.css'
 
 import { CSSProperties, JSX, useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CaretLeftIcon } from '@phosphor-icons/react'
+import { ArrowSquareOut, CaretLeftIcon, Check, Export, FloppyDisk, SpinnerGap, Trash } from '@phosphor-icons/react'
 import { useDatass } from 'datass'
 import { renderMarkdown } from '@/app/actions/renderMarkdown'
 import { exportLinkedHtml } from '@/app/actions/exportLinkedHtml'
 import { ZButton } from '@/components/zButton'
+import { ZokkuBrand } from '@/components/ZokkuBrand'
 import { MarkdownEditor } from '@/components/MarkdownEditor'
 import { PreviewSettings } from '@/components/PreviewSettingsPanel'
 import { $previewSettings, getPreviewSurfaceStyle, loadPreviewSettings, savePreviewSettings } from '@/components/previewSettings'
@@ -216,19 +217,43 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	if (isLoading) return <div className="HomeEmpty"><p className="HomeEmptyBody">Opening local document…</p></div>
 	if (isMissing) return <div className="HomeEmpty"><h1 className="HomeEmptyTitle">Document not found</h1><p className="HomeEmptyBody">The file may have been moved or deleted outside Zokku.</p><ZButton label="Back to documents" onClick={() => router.push('/documents')} /></div>
 
-	const saveLabel = saveState === 'saving' ? 'Saving to disk…' : saveState === 'unsaved' ? 'Unsaved' : 'Saved locally'
+	const isSaving = saveState === 'saving'
+	const isSaved = saveState === 'saved'
+	const saveStatusLabel = isSaving ? 'Saving' : isSaved ? 'Saved' : 'Changes pending'
 	const previewSurfaceStyle = getPreviewSurfaceStyle(previewSettings)
+	const deleteButtonTitle = isConfirmingDelete ? 'Click again to delete' : 'Delete document'
 
 	return (
 		<div className="EditorShell">
 			<div className="Topbar">
+				<div className="EditorTopbarBrand">
+					<ZokkuBrand isCompact />
+				</div>
 				<button className="TopbarBackButton" onClick={() => router.push('/documents')} title="All documents"><CaretLeftIcon size={18} weight="bold" /></button>
+				<span className="EditorSaveStatus" data-state={saveState} title={saveStatusLabel} aria-label={saveStatusLabel}>
+					{isSaving ? <SpinnerGap className="EditorSaveSpinner" weight="bold" /> : <FloppyDisk weight="bold" />}
+					{isSaved && <Check className="EditorSaveCheck" weight="bold" />}
+				</span>
 				<input className="TopbarTitle" type="text" value={title.state} onChange={handleTitleChange} placeholder="Untitled" spellCheck={false} />
-				<span className="TopbarSaveState" data-saving={saveState === 'saving' ? 'true' : 'false'}>{saveLabel}</span>
 				<div className="TopbarActions">
-					<ZButton isSmall isGhost label="Preview" onClick={() => router.push(`/documents/${activeIdRef.current}/preview`)} />
-					<ZButton isSmall isGhost label="Export HTML" onClick={() => void handleExport()} />
-					<ZButton isRed isSmall isGhost label={isConfirmingDelete ? 'Sure?' : 'Delete'} data-confirm={isConfirmingDelete ? 'true' : 'false'} onClick={() => void handleDelete()} onBlur={() => setIsConfirmingDelete(false)} />
+					<ZButton isIcon isGhost title="Open full preview" aria-label="Open full preview" onClick={() => router.push(`/documents/${activeIdRef.current}/preview`)}>
+						<ArrowSquareOut weight="bold" />
+					</ZButton>
+					<ZButton isIcon isGhost title="Export HTML" aria-label="Export HTML" onClick={() => void handleExport()}>
+						<Export weight="bold" />
+					</ZButton>
+					<ZButton
+						isIcon
+						isGhost
+						isRed
+						title={deleteButtonTitle}
+						aria-label={deleteButtonTitle}
+						data-confirm={isConfirmingDelete ? 'true' : 'false'}
+						onClick={() => void handleDelete()}
+						onBlur={() => setIsConfirmingDelete(false)}
+					>
+						<Trash weight={isConfirmingDelete ? 'fill' : 'bold'} />
+					</ZButton>
 				</div>
 			</div>
 
