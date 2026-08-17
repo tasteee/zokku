@@ -46,6 +46,7 @@ type Root = { type: 'root'; children: MdastNode[] }
 type MdastNode = Root | Paragraph | { type: string; children?: MdastNode[]; data?: Record<string, unknown> }
 
 const INLINE_ICON_REGEX = /:icon\[([a-z0-9]+(?:-[a-z0-9]+)*)\]:/g
+const INLINE_SEPARATOR_REGEX = /:separator:/g
 const INVALID_ICON_FALLBACK = 'question-fill'
 
 const renderIconSvg = (name: string): string | null => {
@@ -72,8 +73,9 @@ const renderInlineIcon = (name: string): string => {
 	return `<span class="zInlineIcon isInvalid" data-icon="mingcute:${INVALID_ICON_FALLBACK}" data-invalid-icon="${name}" aria-hidden="true">${fallbackSvg}</span>`
 }
 
-const expandInlineIcons = (content: string): string => {
-	return content.replace(INLINE_ICON_REGEX, (_fullMatch, name: string): string => renderInlineIcon(name))
+const expandInlineSyntax = (content: string): string => {
+	const withIcons = content.replace(INLINE_ICON_REGEX, (_fullMatch, name: string): string => renderInlineIcon(name))
+	return withIcons.replace(INLINE_SEPARATOR_REGEX, '<span class="zInlineSeparator" aria-hidden="true"></span>')
 }
 
 const visitParagraphs = (node: MdastNode, visitor: (node: Paragraph) => void): void => {
@@ -122,10 +124,8 @@ const remarkCustomParagraphs = () => {
 
 const getCodeFilename = (meta: string | null | undefined): string => {
 	if (!meta) return ''
-
 	const filenameMatch = meta.match(/(?:^|\s)(?:filename|file|title)=("([^"]+)"|'([^']+)'|(\S+))/)
 	if (filenameMatch) return filenameMatch[2] ?? filenameMatch[3] ?? filenameMatch[4] ?? ''
-
 	const firstToken = meta.trim().split(/\s+/)[0]
 	const looksLikeFilename = firstToken.includes('.') || firstToken.includes('/') || firstToken.includes('\\')
 	return looksLikeFilename ? firstToken : ''
@@ -135,7 +135,6 @@ const codeHandler = (state: HandlerStateT, node: Code): HastElementT => {
 	const properties: Record<string, unknown> = {}
 	const language = node.lang ? node.lang.split(/\s+/) : []
 	const filename = getCodeFilename(node.meta)
-
 	if (language.length > 0) properties.className = [`language-${language[0]}`]
 	if (filename) properties.dataFilename = filename
 
@@ -145,7 +144,6 @@ const codeHandler = (state: HandlerStateT, node: Code): HastElementT => {
 		properties,
 		children: [{ type: 'text', value: node.value ?? '' }]
 	}
-
 	if (node.meta) codeEl.data = { meta: node.meta }
 	state.patch(node, codeEl)
 	codeEl = state.applyData(node, codeEl)
@@ -156,7 +154,6 @@ const codeHandler = (state: HandlerStateT, node: Code): HastElementT => {
 		properties: {},
 		children: [codeEl]
 	}
-
 	state.patch(node, preEl)
 	return preEl
 }
@@ -192,20 +189,16 @@ const tokensToCodeBlock = (result: { bg: string; fg: string; tokens: ShikiTokenT
 			type: 'element',
 			tagName: 'span',
 			properties: { className: ['line'] },
-			children: line.map(
-				(token): HastElementT => ({
-					type: 'element',
-					tagName: 'span',
-					properties: { className: ['token'], style: tokenStyle(token) },
-					children: [{ type: 'text', value: token.content }]
-				})
-			)
+			children: line.map((token): HastElementT => ({
+				type: 'element',
+				tagName: 'span',
+				properties: { className: ['token'], style: tokenStyle(token) },
+				children: [{ type: 'text', value: token.content }]
+			}))
 		}
-
 		if (index === nonEmptyTokens.length - 1) return [lineEl]
 		return [lineEl, { type: 'text', value: '\n' }]
 	})
-
 	return { bg: result.bg, fg: result.fg, lang, children: lineElements }
 }
 
@@ -218,7 +211,6 @@ const highlightCode = async (code: string, lang: string, previewTheme: PreviewTh
 	const theme = getCodeTheme(previewTheme)
 	const background = (theme as { colors?: { 'editor.background'?: string } }).colors?.['editor.background'] ?? '#0F1110'
 	const foreground = (theme as { colors?: { 'editor.foreground'?: string } }).colors?.['editor.foreground'] ?? '#9D9F9E'
-
 	try {
 		const result = await codeToTokensBase(code, { lang: lang as never, theme })
 		return tokensToCodeBlock({ bg: background, fg: foreground, tokens: result as unknown as ShikiTokenT[][] }, lang)
@@ -238,18 +230,13 @@ const rehypeHighlightCodeBlocks = (previewTheme: PreviewThemeT) => {
 		return async (tree: HastNodeT): Promise<void> => {
 			await visitAsync(tree, 'element', async (node) => {
 				if (node.tagName !== 'pre') return
-
-				const codeNode = node.children.find(
-					(child): child is HastElementT =>
-						(child as HastElementT).type === 'element' && (child as HastElementT).tagName === 'code'
-				)
+				const codeNode = node.children.find((child): child is HastElementT => (child as HastElementT).type === 'element' && (child as HastElementT).tagName === 'code')
 				if (!codeNode) return
 
 				const code = toText(codeNode).replace(/\r?\n$/, '')
 				const lang = getCodeLanguage(codeNode)
 				const filename = codeNode.properties?.dataFilename as string | undefined
 				const highlighted = await highlightCode(code, lang, previewTheme)
-
 				node.properties = {
 					...node.properties,
 					className: ['zCodeBlock'],
@@ -262,14 +249,12 @@ const rehypeHighlightCodeBlocks = (previewTheme: PreviewThemeT) => {
 					properties: { className: ['zCodeFilename'] },
 					children: [{ type: 'text', value: filename ?? '' }]
 				}
-
 				const highlightedCodeEl: HastElementT = {
 					type: 'element',
 					tagName: 'code',
 					properties: { className: ['zCode', `language-${highlighted.lang}`], 'data-language': highlighted.lang },
 					children: highlighted.children as (HastElementT | HastTextNodeT)[]
 				}
-
 				node.children = [...(filename ? [filenameEl] : []), highlightedCodeEl]
 			})
 		}
@@ -300,18 +285,17 @@ const createProcessor = (stripTodos: boolean, previewTheme: PreviewThemeT) => {
 		.use(remarkRehype, { allowDangerousHtml: true, handlers: { code: codeHandler as never } })
 		.use(rehypeHighlightCodeBlocks(previewTheme) as never)
 		.use(rehypeSlug)
-
 	if (stripTodos) processor.use(rehypeStripTodos as never)
 	return processor.use(rehypeStringify, { allowDangerousHtml: true })
 }
 
 export const renderMarkdown = async (content: string, previewTheme: PreviewThemeT = 'dark'): Promise<string> => {
-	const result = await createProcessor(false, previewTheme).process(expandInlineIcons(content))
+	const result = await createProcessor(false, previewTheme).process(expandInlineSyntax(content))
 	return String(result)
 }
 
 const renderMarkdownForExport = async (content: string, previewTheme: PreviewThemeT): Promise<string> => {
-	const result = await createProcessor(true, previewTheme).process(expandInlineIcons(content))
+	const result = await createProcessor(true, previewTheme).process(expandInlineSyntax(content))
 	return String(result)
 }
 
@@ -330,7 +314,6 @@ const buildSurfaceStyle = (settings: PreviewSettingsT): string => {
 	const base = settings.baseFontSize
 	const scaleRatios = SCALE_STEP_RATIOS[settings.scale]
 	const vars: string[] = [`--base-font-size: ${base}px`]
-
 	for (const [index, ratio] of FIXED_STEP_RATIOS.entries()) vars.push(`--font-size-${index}: ${(base * ratio).toFixed(3)}px`)
 	for (const [index, ratio] of scaleRatios.entries()) vars.push(`--font-size-${index + 4}: ${(base * ratio).toFixed(3)}px`)
 	return vars.join('; ')
