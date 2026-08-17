@@ -45,25 +45,34 @@ type Root = { type: 'root'; children: MdastNode[] }
 type MdastNode = Root | Paragraph | { type: string; children?: MdastNode[]; data?: Record<string, unknown> }
 
 const INLINE_ICON_REGEX = /:icon\[([a-z0-9]+(?:-[a-z0-9]+)*)\]:/g
+const INVALID_ICON_FALLBACK = 'question-fill'
 
-const renderInlineIcon = (name: string): string | null => {
+const renderIconSvg = (name: string): string | null => {
 	const iconData = getIconData(mingcuteIcons, name)
 	if (iconData === null) return null
 
 	const rendered = iconToSVG(iconData, { height: '1em', width: '1em' })
-	const svg = iconToHTML(replaceIDs(rendered.body), {
+	return iconToHTML(replaceIDs(rendered.body), {
 		...rendered.attributes,
 		'aria-hidden': 'true',
 		focusable: 'false'
 	})
+}
 
-	return `<span class="zInlineIcon" data-icon="mingcute:${name}" aria-hidden="true">${svg}</span>`
+const renderInlineIcon = (name: string): string => {
+	const requestedSvg = renderIconSvg(name)
+	if (requestedSvg !== null) {
+		return `<span class="zInlineIcon" data-icon="mingcute:${name}" aria-hidden="true">${requestedSvg}</span>`
+	}
+
+	const fallbackSvg = renderIconSvg(INVALID_ICON_FALLBACK)
+	if (fallbackSvg === null) return ''
+
+	return `<span class="zInlineIcon isInvalid" data-icon="mingcute:${INVALID_ICON_FALLBACK}" data-invalid-icon="${name}" aria-hidden="true">${fallbackSvg}</span>`
 }
 
 const expandInlineIcons = (content: string): string => {
-	return content.replace(INLINE_ICON_REGEX, (fullMatch, name: string): string => {
-		return renderInlineIcon(name) ?? fullMatch
-	})
+	return content.replace(INLINE_ICON_REGEX, (_fullMatch, name: string): string => renderInlineIcon(name))
 }
 
 const visitParagraphs = (node: MdastNode, visitor: (node: Paragraph) => void): void => {
