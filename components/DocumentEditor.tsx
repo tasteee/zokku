@@ -1,167 +1,123 @@
 'use client'
 
 import './DocumentEditor.css'
-import { useQuery, useMutation } from 'convex/react'
+
+import { CSSProperties, JSX, useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect, useRef, useCallback, CSSProperties, JSX } from 'react'
-import { api } from '@/convex/_generated/api'
-import type { Id } from '@/convex/_generated/dataModel'
+import { CaretLeftIcon } from '@phosphor-icons/react'
+import { useDatass } from 'datass'
 import { renderMarkdown, exportHtml } from '@/app/actions/renderMarkdown'
 import { ZButton } from '@/components/zButton'
-import { CaretLeftIcon, ChatCircleTextIcon } from '@phosphor-icons/react'
 import { MarkdownEditor } from '@/components/MarkdownEditor'
-import { ClaudeChat } from '@/components/ClaudeChat'
 import { PreviewSettings } from '@/components/PreviewSettingsPanel'
-import { $previewSettings, loadPreviewSettings, savePreviewSettings, getPreviewSurfaceStyle } from '@/components/previewSettings'
-import type { PreviewSettingsT, PreviewThemeT, PreviewFontT, PreviewScaleT } from '@/components/previewSettings'
+import { $previewSettings, getPreviewSurfaceStyle, loadPreviewSettings, savePreviewSettings } from '@/components/previewSettings'
+import type { PreviewFontT, PreviewScaleT, PreviewSettingsT, PreviewThemeT } from '@/components/previewSettings'
+import { getDocument, removeDocument, restoreWorkspace, saveDocument } from '@/lib/localWorkspace'
 
 type DocumentEditorPropsT = {
-	documentId: Id<'documents'>
+	documentId: string
 }
 
-type SaveState = 'saved' | 'saving' | 'unsaved'
+type SaveStateT = 'saved' | 'saving' | 'unsaved'
 
-const AUTOSAVE_DELAY_MS = 1000
-const PREVIEW_DEBOUNCE_MS = 300
+const AUTOSAVE_DELAY_MS = 700
+const PREVIEW_DEBOUNCE_MS = 250
 
-import { useDatass } from 'datass'
+const blobToDataUrl = (blob: Blob, onProgress: (percent: number) => void): Promise<string> => {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader()
+		reader.onloadstart = () => onProgress(10)
+		reader.onprogress = (event) => {
+			if (!event.lengthComputable) return
+			onProgress(Math.max(10, Math.round((event.loaded / event.total) * 90)))
+		}
+		reader.onload = () => {
+			onProgress(100)
+			resolve(String(reader.result))
+		}
+		reader.onerror = () => reject(reader.error)
+		reader.readAsDataURL(blob)
+	})
+}
 
 export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
-	// const { user } = useUser()
-	const document = useQuery(api.documents.get, { id: props.documentId })
-	const updateDocument = useMutation(api.documents.update)
-	const removeDocument = useMutation(api.documents.remove)
-	const generateUploadUrl = useMutation(api.images.generateUploadUrl)
-	const getMediaUrl = useMutation(api.images.getMediaUrl)
 	const router = useRouter()
-
 	const title = useDatass.string('')
-
 	const [content, setContent] = useState('')
 	const [previewHtml, setPreviewHtml] = useState('')
-	const [saveState, setSaveState] = useState<SaveState>('saved')
+	const [saveState, setSaveState] = useState<SaveStateT>('saved')
 	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
+	const [isLoading, setIsLoading] = useState(true)
+	const [isMissing, setIsMissing] = useState(false)
+	const [splitPercent, setSplitPercent] = useState(50)
+	const [mobilePaneView, setMobilePaneView] = useState<'editor' | 'preview'>('editor')
+	const activeIdRef = useRef(props.documentId)
+	const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+	const editorLayoutRef = useRef<HTMLDivElement | null>(null)
+	const isDraggingRef = useRef(false)
 
 	const previewTheme = $previewSettings.use.lookup('theme') as PreviewThemeT
 	const previewFont = $previewSettings.use.lookup('font') as PreviewFontT
 	const previewScale = $previewSettings.use.lookup('scale') as PreviewScaleT
 	const previewBaseFontSize = $previewSettings.use.lookup('baseFontSize') as number
+	const previewSettings: PreviewSettingsT = { theme: previewTheme, font: previewFont, scale: previewScale, baseFontSize: previewBaseFontSize }
 
-	const previewSettings: PreviewSettingsT = {
-		theme: previewTheme,
-		font: previewFont,
-		scale: previewScale,
-		baseFontSize: previewBaseFontSize
-	}
-
-	const isUserAllowed = true
-
-	const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-	const isMountedRef = useRef(false)
-
-	const [splitPercent, setSplitPercent] = useState(50)
-	const [chatPercent, setChatPercent] = useState(30)
-	const [isChatOpen, setIsChatOpen] = useState(false)
-	const [mobilePaneView, setMobilePaneView] = useState<'editor' | 'preview'>('editor')
-	const editorLayoutRef = useRef<HTMLDivElement | null>(null)
-	const isDraggingRef = useRef(false)
-	const isDraggingChatRef = useRef(false)
-
-	const handleResizePointerDown = (event: React.PointerEvent<HTMLDivElement>): void => {
-		isDraggingRef.current = true
-		event.currentTarget.setPointerCapture(event.pointerId)
-	}
-
-	const handleResizePointerMove = (event: React.PointerEvent<HTMLDivElement>): void => {
-		const isNotDragging = !isDraggingRef.current
-		if (isNotDragging) return
-
-		const layoutElement = editorLayoutRef.current
-		if (layoutElement === null) return
-
-		const layoutRect = layoutElement.getBoundingClientRect()
-		const offsetX = event.clientX - layoutRect.left
-		const rawPercent = (offsetX / layoutRect.width) * 100
-		const clampedPercent = Math.min(80, Math.max(20, rawPercent))
-		setSplitPercent(clampedPercent)
-	}
-
-	const handleResizePointerUp = (event: React.PointerEvent<HTMLDivElement>): void => {
-		isDraggingRef.current = false
-		event.currentTarget.releasePointerCapture(event.pointerId)
-	}
-
-	const handleChatResizePointerDown = (event: React.PointerEvent<HTMLDivElement>): void => {
-		isDraggingChatRef.current = true
-		event.currentTarget.setPointerCapture(event.pointerId)
-	}
-
-	const handleChatResizePointerMove = (event: React.PointerEvent<HTMLDivElement>): void => {
-		const isNotDragging = !isDraggingChatRef.current
-		if (isNotDragging) return
-
-		const layoutElement = editorLayoutRef.current
-		if (layoutElement === null) return
-
-		const layoutRect = layoutElement.getBoundingClientRect()
-		const offsetFromRight = layoutRect.right - event.clientX
-		const rawPercent = (offsetFromRight / layoutRect.width) * 100
-		const clampedPercent = Math.min(60, Math.max(15, rawPercent))
-		setChatPercent(clampedPercent)
-	}
-
-	const handleChatResizePointerUp = (event: React.PointerEvent<HTMLDivElement>): void => {
-		isDraggingChatRef.current = false
-		event.currentTarget.releasePointerCapture(event.pointerId)
-	}
-
-	// Hydrate local state from Convex on first load
 	useEffect(() => {
-		const isLoaded = document !== undefined && document !== null
-		if (!isLoaded || isMountedRef.current) return
+		let isCurrent = true
+		const load = async (): Promise<void> => {
+			const workspace = await restoreWorkspace(false)
+			if (workspace === null) {
+				router.replace('/')
+				return
+			}
+			const document = await getDocument(props.documentId)
+			if (!isCurrent) return
+			if (document === null) {
+				setIsMissing(true)
+				setIsLoading(false)
+				return
+			}
+			activeIdRef.current = document._id
+			title.set(document.title)
+			setContent(document.content)
+			setIsLoading(false)
+		}
+		void load()
+		return () => {
+			isCurrent = false
+		}
+	}, [props.documentId, router])
 
-		isMountedRef.current = true
-		title.set(document.title)
-		setContent(document.content)
-	}, [document])
-
-	// Update preview whenever content changes, debounced to avoid a server
-	// round-trip on every keystroke (renderMarkdown is a server action).
-	useEffect(() => {
-		const previewTimer = setTimeout(async () => {
-			const html = await renderMarkdown(content)
-			setPreviewHtml(html)
-		}, PREVIEW_DEBOUNCE_MS)
-
-		return () => clearTimeout(previewTimer)
-	}, [content])
-
-	// Hydrate preview settings from localStorage after mount so the server
-	// and first client render agree on the default before applying choices.
 	useEffect(() => {
 		const storedSettings = loadPreviewSettings()
 		$previewSettings.set.replace(storedSettings)
 	}, [])
 
-	const handlePreviewSettingsChange = (nextSettings: PreviewSettingsT): void => {
-		$previewSettings.set.replace(nextSettings)
-		savePreviewSettings(nextSettings)
-	}
+	useEffect(() => {
+		const timer = window.setTimeout(() => {
+			void renderMarkdown(content).then(setPreviewHtml)
+		}, PREVIEW_DEBOUNCE_MS)
+		return () => window.clearTimeout(timer)
+	}, [content])
 
-	const scheduleSave = useCallback(
-		(nextTitle: string, nextContent: string): void => {
+	const scheduleSave = useCallback((nextTitle: string, nextContent: string): void => {
+		if (saveTimerRef.current !== null) clearTimeout(saveTimerRef.current)
+		setSaveState('unsaved')
+		saveTimerRef.current = setTimeout(async () => {
+			setSaveState('saving')
+			const previousId = activeIdRef.current
+			const nextId = await saveDocument(previousId, nextTitle, nextContent)
+			activeIdRef.current = nextId
+			if (nextId !== previousId) router.replace(`/documents/${nextId}`)
+			setSaveState('saved')
+		}, AUTOSAVE_DELAY_MS)
+	}, [router])
+
+	useEffect(() => {
+		return () => {
 			if (saveTimerRef.current !== null) clearTimeout(saveTimerRef.current)
-
-			setSaveState('unsaved')
-
-			saveTimerRef.current = setTimeout(async () => {
-				setSaveState('saving')
-				await updateDocument({ id: props.documentId, title: nextTitle, content: nextContent })
-				setSaveState('saved')
-			}, AUTOSAVE_DELAY_MS)
-		},
-		[props.documentId, updateDocument]
-	)
+		}
+	}, [])
 
 	const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
 		const nextTitle = event.target.value
@@ -178,7 +134,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		const html = await exportHtml(title.state, content, previewSettings)
 		const blob = new Blob([html], { type: 'text/html' })
 		const url = URL.createObjectURL(blob)
-		const anchor = globalThis.document.createElement('a')
+		const anchor = document.createElement('a')
 		const safeFilename = (title.state || 'document').replace(/[^a-z0-9\-_\s]/gi, '').trim() || 'document'
 		anchor.href = url
 		anchor.download = `${safeFilename}.html`
@@ -186,187 +142,67 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		URL.revokeObjectURL(url)
 	}
 
-	const handleDeleteClick = (): void => {
-		const isFirstClick = !isConfirmingDelete
-		if (isFirstClick) {
+	const handleDelete = async (): Promise<void> => {
+		if (!isConfirmingDelete) {
 			setIsConfirmingDelete(true)
 			return
 		}
-
-		handleConfirmDelete()
-	}
-
-	const handleConfirmDelete = async (): Promise<void> => {
-		await removeDocument({ id: props.documentId })
+		await removeDocument(activeIdRef.current)
 		router.push('/documents')
 	}
 
-	const handleDeleteBlur = (): void => {
-		setIsConfirmingDelete(false)
+	const handleResizePointerDown = (event: React.PointerEvent<HTMLDivElement>): void => {
+		isDraggingRef.current = true
+		event.currentTarget.setPointerCapture(event.pointerId)
 	}
 
-	const handleMediaUpload = async (blob: Blob, onProgress: (percent: number) => void): Promise<string | null> => {
-		const uploadUrl = await generateUploadUrl()
-		const uploadResult = await new Promise<{ storageId: Id<'_storage'> }>((resolve, reject) => {
-			const request = new XMLHttpRequest()
-			request.open('POST', uploadUrl)
-			request.setRequestHeader('Content-Type', blob.type || 'application/octet-stream')
-
-			request.upload.addEventListener('progress', (event) => {
-				if (!event.lengthComputable) return
-				onProgress(Math.round((event.loaded / event.total) * 100))
-			})
-
-			request.addEventListener('load', () => {
-				const isSuccessful = request.status >= 200 && request.status < 300
-				if (!isSuccessful) {
-					reject(new Error(`Media upload failed with status ${request.status}`))
-					return
-				}
-
-				try {
-					onProgress(100)
-					resolve(JSON.parse(request.responseText) as { storageId: Id<'_storage'> })
-				} catch {
-					reject(new Error('Media upload returned an invalid response'))
-				}
-			})
-
-			request.addEventListener('error', () => reject(new Error('Media upload failed')))
-			request.addEventListener('abort', () => reject(new Error('Media upload was cancelled')))
-			request.send(blob)
-		})
-		return await getMediaUrl({ storageId: uploadResult.storageId })
+	const handleResizePointerMove = (event: React.PointerEvent<HTMLDivElement>): void => {
+		if (!isDraggingRef.current || editorLayoutRef.current === null) return
+		const rect = editorLayoutRef.current.getBoundingClientRect()
+		const percent = ((event.clientX - rect.left) / rect.width) * 100
+		setSplitPercent(Math.min(80, Math.max(20, percent)))
 	}
 
-	const saveLabel = saveState === 'saving' ? 'Saving...' : saveState === 'unsaved' ? 'Unsaved' : 'Saved'
-	const deleteLabel = isConfirmingDelete ? 'Sure?' : 'Delete'
-	const isDocumentMissing = document === null
-
-	if (isDocumentMissing) {
-		return (
-			<div className="HomeEmpty">
-				<h1 className="HomeEmptyTitle">Document not found</h1>
-				<p className="HomeEmptyBody">This document may have been deleted.</p>
-				<ZButton label="Back to documents" onClick={() => router.push('/documents')} />
-			</div>
-		)
+	const handleResizePointerUp = (event: React.PointerEvent<HTMLDivElement>): void => {
+		isDraggingRef.current = false
+		event.currentTarget.releasePointerCapture(event.pointerId)
 	}
 
-	const isLoading = document === undefined
+	if (isLoading) return <div className="HomeEmpty"><p className="HomeEmptyBody">Opening local document…</p></div>
+	if (isMissing) return <div className="HomeEmpty"><h1 className="HomeEmptyTitle">Document not found</h1><p className="HomeEmptyBody">The file may have been moved or deleted outside Zokku.</p><ZButton label="Back to documents" onClick={() => router.push('/documents')} /></div>
 
-	if (isLoading) {
-		return (
-			<div className="HomeEmpty">
-				<p className="HomeEmptyBody">Loading...</p>
-			</div>
-		)
-	}
-
-	const gridTemplateColumns = isChatOpen ? `${splitPercent}% auto 1fr auto ${chatPercent}%` : `${splitPercent}% auto 1fr`
+	const saveLabel = saveState === 'saving' ? 'Saving to disk…' : saveState === 'unsaved' ? 'Unsaved' : 'Saved locally'
 	const previewSurfaceStyle = getPreviewSurfaceStyle(previewSettings)
 
 	return (
 		<div className="EditorShell">
 			<div className="Topbar">
-				<button className="TopbarBackButton" onClick={() => router.push('/documents')} title="All documents">
-					<CaretLeftIcon size={18} weight="bold" />
-				</button>
-				<input
-					className="TopbarTitle"
-					type="text"
-					value={title.state}
-					onChange={handleTitleChange}
-					placeholder="Untitled"
-					spellCheck={false}
-				/>
-				<span className="TopbarSaveState" data-saving={saveState === 'saving' ? 'true' : 'false'}>
-					{saveLabel}
-				</span>
+				<button className="TopbarBackButton" onClick={() => router.push('/documents')} title="All documents"><CaretLeftIcon size={18} weight="bold" /></button>
+				<input className="TopbarTitle" type="text" value={title.state} onChange={handleTitleChange} placeholder="Untitled" spellCheck={false} />
+				<span className="TopbarSaveState" data-saving={saveState === 'saving' ? 'true' : 'false'}>{saveLabel}</span>
 				<div className="TopbarActions">
-					{isUserAllowed && (
-						<button
-							className="ClaudeChatTrigger"
-							data-active={isChatOpen ? 'true' : 'false'}
-							onClick={() => setIsChatOpen(!isChatOpen)}
-						>
-							{/* only show this button if the user is shane@tasteee.ink or shanecolcleasure@gmail.com */}
-							<>
-								<ChatCircleTextIcon size={14} weight="bold" />
-								Ask Claude
-							</>
-						</button>
-					)}
-					<ZButton isSmall isGhost label="Preview" onClick={() => router.push(`/documents/${props.documentId}/preview`)} />
+					<ZButton isSmall isGhost label="Preview" onClick={() => router.push(`/documents/${activeIdRef.current}/preview`)} />
 					<ZButton isSmall isGhost label="Export HTML" onClick={handleExport} />
-					<ZButton
-						isRed
-						isSmall
-						isGhost
-						label={deleteLabel}
-						data-confirm={isConfirmingDelete ? 'true' : 'false'}
-						onClick={handleDeleteClick}
-						onBlur={handleDeleteBlur}
-					/>
+					<ZButton isRed isSmall isGhost label={isConfirmingDelete ? 'Sure?' : 'Delete'} data-confirm={isConfirmingDelete ? 'true' : 'false'} onClick={() => void handleDelete()} onBlur={() => setIsConfirmingDelete(false)} />
 				</div>
 			</div>
 
-			<div ref={editorLayoutRef} className="EditorLayout" data-mobile-view={mobilePaneView} style={{ gridTemplateColumns } as CSSProperties}>
+			<div ref={editorLayoutRef} className="EditorLayout" data-mobile-view={mobilePaneView} style={{ gridTemplateColumns: `${splitPercent}% auto 1fr` } as CSSProperties}>
 				<div className="EditorPane">
-					<MarkdownEditor value={content} onChange={handleContentChange} onMediaUpload={handleMediaUpload} />
+					<MarkdownEditor value={content} onChange={handleContentChange} onMediaUpload={(blob, onProgress) => blobToDataUrl(blob, onProgress)} />
 				</div>
-
-				<div
-					className="EditorResizeHandle"
-					onPointerDown={handleResizePointerDown}
-					onPointerMove={handleResizePointerMove}
-					onPointerUp={handleResizePointerUp}
-				/>
-
+				<div className="EditorResizeHandle" onPointerDown={handleResizePointerDown} onPointerMove={handleResizePointerMove} onPointerUp={handleResizePointerUp} />
 				<div className="PreviewPane">
-					<div className="PreviewPaneLabel">
-						<span className="PreviewPaneLabelText">Preview</span>
-						<PreviewSettings settings={previewSettings} onChange={handlePreviewSettingsChange} />
-					</div>
-					<div
-						className="PreviewPaneContent"
-						data-preview-theme={previewSettings.theme}
-						data-preview-font={previewSettings.font}
-						data-preview-scale={previewSettings.scale}
-						style={previewSurfaceStyle}
-					>
+					<div className="PreviewPaneLabel"><span className="PreviewPaneLabelText">Preview</span><PreviewSettings settings={previewSettings} onChange={(settings) => { $previewSettings.set.replace(settings); savePreviewSettings(settings) }} /></div>
+					<div className="PreviewPaneContent" data-preview-theme={previewSettings.theme} data-preview-font={previewSettings.font} data-preview-scale={previewSettings.scale} style={previewSurfaceStyle}>
 						<div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} />
 					</div>
 				</div>
-
-				{isChatOpen && (
-					<>
-						<div
-							className="EditorResizeHandle"
-							onPointerDown={handleChatResizePointerDown}
-							onPointerMove={handleChatResizePointerMove}
-							onPointerUp={handleChatResizePointerUp}
-						/>
-						<ClaudeChat documentTitle={title.state} documentContent={content} onClose={() => setIsChatOpen(false)} />
-					</>
-				)}
 			</div>
 
 			<div className="EditorMobileToggle" role="group" aria-label="Switch pane">
-				<button
-					className="EditorMobileToggleButton"
-					data-active={mobilePaneView === 'editor' ? 'true' : 'false'}
-					onClick={() => setMobilePaneView('editor')}
-				>
-					Editor
-				</button>
-				<button
-					className="EditorMobileToggleButton"
-					data-active={mobilePaneView === 'preview' ? 'true' : 'false'}
-					onClick={() => setMobilePaneView('preview')}
-				>
-					Preview
-				</button>
+				<button className="EditorMobileToggleButton" data-active={mobilePaneView === 'editor' ? 'true' : 'false'} onClick={() => setMobilePaneView('editor')}>Editor</button>
+				<button className="EditorMobileToggleButton" data-active={mobilePaneView === 'preview' ? 'true' : 'false'} onClick={() => setMobilePaneView('preview')}>Preview</button>
 			</div>
 		</div>
 	)
