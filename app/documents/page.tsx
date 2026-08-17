@@ -19,6 +19,7 @@ import {
 	restoreWorkspace,
 	searchDocuments
 } from '@/lib/localWorkspace'
+import type { LocalDocumentT } from '@/lib/localWorkspace'
 
 const DocumentsPage = (): JSX.Element => {
 	const router = useRouter()
@@ -94,8 +95,13 @@ const DocumentsPage = (): JSX.Element => {
 	}
 
 	const handleShareDocument = (documentId: string): void => {
-		const previewUrl = `${window.location.origin}/documents/${documentId}/preview`
-		navigator.clipboard.writeText(previewUrl)
+		const documents = $documents.state.list as LocalDocumentT[]
+		const document = documents.find((candidate) => candidate._id === documentId)
+		if (document === undefined) return
+
+		const escapedTitle = document.title.replaceAll('[', '\\[').replaceAll(']', '\\]') || 'Untitled'
+		const markdownLink = `[${escapedTitle}](</${document.path}>)`
+		void navigator.clipboard.writeText(markdownLink)
 		$folders.set.lookup('copiedId', documentId)
 		setTimeout(() => $folders.set.lookup('copiedId', ''), 2000)
 	}
