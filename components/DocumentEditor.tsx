@@ -6,13 +6,17 @@ import { CSSProperties, JSX, useCallback, useEffect, useRef, useState } from 're
 import { useRouter } from 'next/navigation'
 import { CaretLeftIcon } from '@phosphor-icons/react'
 import { useDatass } from 'datass'
-import { renderMarkdown, exportHtml } from '@/app/actions/renderMarkdown'
+import { renderMarkdown } from '@/app/actions/renderMarkdown'
+import { exportLinkedHtml } from '@/app/actions/exportLinkedHtml'
 import { ZButton } from '@/components/zButton'
 import { MarkdownEditor } from '@/components/MarkdownEditor'
 import { PreviewSettings } from '@/components/PreviewSettingsPanel'
 import { $previewSettings, getPreviewSurfaceStyle, loadPreviewSettings, savePreviewSettings } from '@/components/previewSettings'
 import type { PreviewFontT, PreviewScaleT, PreviewSettingsT, PreviewThemeT } from '@/components/previewSettings'
-import { getDocument, removeDocument, restoreWorkspace, saveDocument } from '@/lib/localWorkspace'
+import { getDocument, listWorkspace, removeDocument, restoreWorkspace, saveDocument } from '@/lib/localWorkspace'
+import type { LocalDocumentT } from '@/lib/localWorkspace'
+import { resolveDocumentHref } from '@/lib/documentLinks'
+import { getExportDocuments } from '@/lib/localDocumentExport'
 
 type DocumentEditorPropsT = {
 	documentId: string
@@ -44,6 +48,8 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const router = useRouter()
 	const title = useDatass.string('')
 	const [content, setContent] = useState('')
+	const [documentPath, setDocumentPath] = useState('')
+	const [workspaceDocuments, setWorkspaceDocuments] = useState<LocalDocumentT[]>([])
 	const [previewHtml, setPreviewHtml] = useState('')
 	const [saveState, setSaveState] = useState<SaveStateT>('saved')
 	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
@@ -70,16 +76,22 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 				router.replace('/')
 				return
 			}
-			const document = await getDocument(props.documentId)
+
+			const workspaceState = await listWorkspace()
+			const document = workspaceState.documents.find((candidate) => candidate._id === props.documentId) ?? null
 			if (!isCurrent) return
+			setWorkspaceDocuments(workspaceState.documents)
+
 			if (document === null) {
 				setIsMissing(true)
 				setIsLoading(false)
 				return
 			}
+
 			activeIdRef.current = document._id
 			title.set(document.title)
 			setContent(document.content)
+			setDocumentPath(document.path)
 			setIsLoading(false)
 		}
 		void load()
@@ -108,7 +120,13 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 			const previousId = activeIdRef.current
 			const nextId = await saveDocument(previousId, nextTitle, nextContent)
 			activeIdRef.current = nextId
-			if (nextId !== previousId) router.replace(`/documents/${nextId}`)
+
+			if (nextId !== previousId) {
+				const savedDocument = await getDocument(nextId)
+				if (savedDocument !== null) setDocumentPath(savedDocument.path)
+				router.replace(`/documents/${nextId}`)
+			}
+
 			setSaveState('saved')
 		}, AUTOSAVE_DELAY_MS)
 	}, [router])
@@ -131,7 +149,17 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	}
 
 	const handleExport = async (): Promise<void> => {
-		const html = await exportHtml(title.state, content, previewSettings)
+		if (saveTimerRef.current !== null) clearTimeout(saveTimerRef.current)
+		setSaveState('saving')
+		const previousId = activeIdRef.current
+		const nextId = await saveDocument(previousId, title.state, content)
+		activeIdRef.current = nextId
+		const exportDocuments = await getExportDocuments(nextId)
+		const html = await exportLinkedHtml(exportDocuments, previewSettings)
+		setSaveState('saved')
+
+		if (nextId !== previousId) router.replace(`/documents/${nextId}`)
+
 		const blob = new Blob([html], { type: 'text/html' })
 		const url = URL.createObjectURL(blob)
 		const anchor = document.createElement('a')
@@ -140,6 +168,23 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		anchor.download = `${safeFilename}.html`
 		anchor.click()
 		URL.revokeObjectURL(url)
+	}
+
+	const handlePreviewClick = (event: React.MouseEvent<HTMLDivElement>): void => {
+		const target = event.target
+		if (!(target instanceof Element)) return
+		const anchor = target.closest('a')
+		if (!(anchor instanceof HTMLAnchorElement)) return
+
+		const rawHref = anchor.getAttribute('href') ?? ''
+		const resolved = resolveDocumentHref(documentPath, rawHref)
+		if (resolved === null) return
+
+		event.preventDefault()
+		const linkedDocument = workspaceDocuments.find((document) => document.path === resolved.path)
+		if (linkedDocument === undefined) return
+		const anchorSuffix = resolved.anchor ? `#${resolved.anchor}` : ''
+		router.push(`/documents/${linkedDocument._id}${anchorSuffix}`)
 	}
 
 	const handleDelete = async (): Promise<void> => {
@@ -182,7 +227,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 				<span className="TopbarSaveState" data-saving={saveState === 'saving' ? 'true' : 'false'}>{saveLabel}</span>
 				<div className="TopbarActions">
 					<ZButton isSmall isGhost label="Preview" onClick={() => router.push(`/documents/${activeIdRef.current}/preview`)} />
-					<ZButton isSmall isGhost label="Export HTML" onClick={handleExport} />
+					<ZButton isSmall isGhost label="Export HTML" onClick={() => void handleExport()} />
 					<ZButton isRed isSmall isGhost label={isConfirmingDelete ? 'Sure?' : 'Delete'} data-confirm={isConfirmingDelete ? 'true' : 'false'} onClick={() => void handleDelete()} onBlur={() => setIsConfirmingDelete(false)} />
 				</div>
 			</div>
@@ -194,7 +239,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 				<div className="EditorResizeHandle" onPointerDown={handleResizePointerDown} onPointerMove={handleResizePointerMove} onPointerUp={handleResizePointerUp} />
 				<div className="PreviewPane">
 					<div className="PreviewPaneLabel"><span className="PreviewPaneLabelText">Preview</span><PreviewSettings settings={previewSettings} onChange={(settings) => { $previewSettings.set.replace(settings); savePreviewSettings(settings) }} /></div>
-					<div className="PreviewPaneContent" data-preview-theme={previewSettings.theme} data-preview-font={previewSettings.font} data-preview-scale={previewSettings.scale} style={previewSurfaceStyle}>
+					<div className="PreviewPaneContent" data-preview-theme={previewSettings.theme} data-preview-font={previewSettings.font} data-preview-scale={previewSettings.scale} style={previewSurfaceStyle} onClick={handlePreviewClick}>
 						<div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} />
 					</div>
 				</div>
