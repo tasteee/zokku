@@ -5,11 +5,9 @@
 	color: var(--foreground);
 }
 
-/* Light theme: U.S. Bank-inspired document surface. */
 [data-preview-theme='light'] {
 	--color-purple: #00004e;
 	--color-pink: #d22630;
-
 	--bg: #ffffff;
 	--paper: #f7f8fa;
 	--paper-soft: #f1f3f6;
@@ -18,7 +16,6 @@
 	--foreground: #484861;
 	--muted: #74758a;
 	--secondary: #8b8c9d;
-
 	--accent: #235ae4;
 	--accent-alt: #d22630;
 	--warning: #c45d00;
@@ -26,9 +23,7 @@
 	--purple: #00004e;
 }
 
-[data-preview-theme='light'] .Prose {
-	color: #484861;
-}
+[data-preview-theme='light'] .Prose { color: #484861; }
 
 [data-preview-theme='light'] .Prose h1,
 [data-preview-theme='light'] .Prose h2,
@@ -44,36 +39,18 @@
 [data-preview-theme='light'] .Prose p,
 [data-preview-theme='light'] .Prose li,
 [data-preview-theme='light'] .Prose td,
-[data-preview-theme='light'] .Prose em {
-	color: #484861;
-}
-
-[data-preview-theme='light'] .Prose strong {
-	color: #00004e;
-}
-
-[data-preview-theme='light'] .Prose a {
-	color: #235ae4;
-	text-decoration-thickness: 1px;
-	text-underline-offset: 0.14em;
-}
-
-[data-preview-theme='light'] .Prose a:hover {
-	color: #00004e;
-}
-
-[data-preview-theme='light'] .Prose hr {
-	border-color: #d8d9e0;
-}
-
-[data-preview-theme='light'] .Prose blockquote {
-	border-left-color: #235ae4;
-	color: #5d5e75;
-}
+[data-preview-theme='light'] .Prose em { color: #484861; }
+[data-preview-theme='light'] .Prose strong { color: #00004e; }
+[data-preview-theme='light'] .Prose a { color: #235ae4; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+[data-preview-theme='light'] .Prose a:hover { color: #00004e; }
+[data-preview-theme='light'] .Prose hr { border-color: #d8d9e0; }
+[data-preview-theme='light'] .Prose blockquote { border-left-color: #235ae4; color: #5d5e75; }
 
 /* Zokku directives use Markdown blockquote syntax but render as presentation blocks. */
 .Prose blockquote:has(> .callout),
 .Prose blockquote:has(> .zEyebrow),
+.Prose blockquote:has(> .zSubheading),
+.Prose blockquote:has(> .zStat),
 .Prose blockquote:has(> .zText.isLarge),
 .Prose blockquote:has(> .zText.isSmall),
 .Prose blockquote:has(> .zText.isMuted),
@@ -86,9 +63,7 @@
 	color: inherit;
 }
 
-.Prose .zText.isMuted {
-	color: var(--muted);
-}
+.Prose .zText.isMuted { color: var(--muted); }
 
 .Prose .zTextCaption {
 	color: var(--muted);
@@ -98,43 +73,86 @@
 	letter-spacing: 0.015em;
 }
 
-[data-preview-theme='light'] .zEyebrow {
-	color: #00004e;
+/* ─── Eyebrow and subheading ─────────────────────────────── */
+
+.Prose .zEyebrow {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	width: 100%;
+	color: var(--primary);
 	font-weight: 700;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
 }
 
-[data-preview-theme='light'] .callout {
-	color: #484861;
+.Prose .zEyebrow::after {
+	content: '';
+	flex: 0 0 80px;
+	height: 1px;
+	background: currentColor;
+	opacity: 0.35;
 }
 
-[data-preview-theme='light'] .callout-note {
-	border-color: #cbd8fb;
-	border-left-color: #235ae4;
-	background: #f3f6ff;
+.Prose .zEyebrow.isFullRule::after {
+	flex: 1 1 auto;
+	min-width: 32px;
 }
 
-[data-preview-theme='light'] .callout-tip {
-	border-color: #d8d9e0;
-	border-left-color: #8b8c9d;
-	background: #f5f5f7;
-	color: #484861;
+.Prose .zSubheading {
+	margin: 1.75rem 0 0.7rem;
+	color: var(--primary);
+	font-size: var(--font-size-2);
+	font-weight: 700;
+	line-height: 1.35;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
 }
 
-[data-preview-theme='light'] .callout-warning {
-	border-color: #efc79f;
-	border-left-color: #a94e00;
-	background: #fff2df;
-	color: #5d3a16;
+[data-preview-theme='light'] .zEyebrow,
+[data-preview-theme='light'] .zSubheading { color: #00004e; }
+
+/* ─── Callouts ───────────────────────────────────────────── */
+
+[data-preview-theme='light'] .callout { color: #484861; }
+[data-preview-theme='light'] .callout-note { border-color: #cbd8fb; border-left-color: #235ae4; background: #f3f6ff; }
+[data-preview-theme='light'] .callout-tip { border-color: #d8d9e0; border-left-color: #8b8c9d; background: #f5f5f7; color: #484861; }
+[data-preview-theme='light'] .callout-warning { border-color: #efc79f; border-left-color: #a94e00; background: #fff2df; color: #5d3a16; }
+[data-preview-theme='light'] .callout-important { border-color: #c6c6d5; border-left-color: #00004e; background: #eeeef5; color: #00004e; }
+
+/* ─── Stats ──────────────────────────────────────────────── */
+
+.Prose .zStat {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	margin: 1.5rem 0;
+	padding: 1.1rem 1.25rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--paper);
+	color: var(--muted);
+	font-size: var(--font-size-1);
+	font-weight: 600;
+	line-height: 1.35;
+	letter-spacing: 0.03em;
 }
 
-[data-preview-theme='light'] .callout-important {
-	border-color: #c6c6d5;
-	border-left-color: #00004e;
-	background: #eeeeF5;
-	color: #00004e;
+.Prose .zStat strong {
+	display: block;
+	color: var(--primary);
+	font-size: var(--font-size-5);
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: -0.035em;
 }
+
+.Prose .zStat.isLabelTop { padding-top: 1rem; }
+.Prose .zStat.isLabelTop strong { margin-top: 0.25rem; }
+.Prose .zStat.isLabelBottom strong { margin-bottom: 0.15rem; }
+
+[data-preview-theme='light'] .zStat { border-color: #d8d9e0; background: #f7f8fa; color: #74758a; }
+[data-preview-theme='light'] .zStat strong { color: #00004e; }
 
 /* Premium author-only TODO card. */
 .Prose .zTodo {
@@ -175,21 +193,11 @@
 	letter-spacing: 0.11em;
 }
 
-[data-preview-theme='light'] .zTodo {
-	border-color: #d8d9e0;
-	background: #f7f8fa;
-	color: #484861;
-}
+[data-preview-theme='light'] .zTodo { border-color: #d8d9e0; background: #f7f8fa; color: #484861; }
+[data-preview-theme='light'] .zTodo::before { border-color: #235ae4; }
+[data-preview-theme='light'] .zTodo::after { color: #00004e; }
 
-[data-preview-theme='light'] .zTodo::before {
-	border-color: #235ae4;
-}
-
-[data-preview-theme='light'] .zTodo::after {
-	color: #00004e;
-}
-
-/* ─── Inline icons ───────────────────────────────────────── */
+/* ─── Inline extensions ──────────────────────────────────── */
 
 .zInlineIcon {
 	display: inline-flex;
@@ -202,161 +210,74 @@
 	color: currentColor;
 }
 
-.zInlineIcon.isInvalid {
-	color: var(--warning);
-}
+.zInlineIcon.isInvalid { color: var(--warning); }
+.zInlineIcon svg { display: block; width: 1em; height: 1em; }
 
-.zInlineIcon svg {
-	display: block;
-	width: 1em;
+.zInlineSeparator {
+	display: inline-block;
+	width: 1px;
 	height: 1em;
+	margin-inline: 0.55em;
+	vertical-align: -0.14em;
+	background: currentColor;
+	opacity: 0.28;
 }
 
-/* ─── Font presets ───────────────────────────────────────── */
+/* ─── Theme toggle and fade choreography ─────────────────── */
 
-[data-preview-font] {
-	font-family: var(--font-sans);
-}
-
-[data-preview-font='serif'] {
-	--font-sans: var(--font-fraunces), 'Iowan Old Style', Georgia, serif;
-}
-
-[data-preview-font='mono'] {
-	--font-sans: var(--font-mono);
-}
-
-/* ─── Settings popover ───────────────────────────────────── */
-
-.PreviewSettingsRoot {
-	position: relative;
+.PreviewPaneLabelActions {
 	display: flex;
 	align-items: center;
+	gap: 0.25rem;
 }
 
-.PreviewSettingsTrigger {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 28px;
-	height: 28px;
-	border: 1px solid transparent;
-	border-radius: var(--small-button-radius);
-	background: transparent;
-	color: var(--muted);
-	cursor: pointer;
-	transition: color 120ms, background 120ms, border-color 120ms;
-}
-
-.PreviewSettingsTrigger:hover {
-	color: var(--primary);
-	background: var(--paper-soft);
-}
-
-.PreviewSettingsTrigger.isOpen {
-	color: var(--primary);
-	background: var(--paper-soft);
-	border-color: var(--line);
-}
-
-.PreviewSettingsPanel {
-	position: absolute;
-	top: calc(100% + var(--spacing-2));
-	right: 0;
-	z-index: 20;
-	display: flex;
-	flex-direction: column;
-	gap: var(--spacing-5);
-	width: 260px;
-	padding: var(--spacing-5);
-	border: 1px solid var(--line);
-	border-radius: var(--medium-button-radius);
-	background: var(--paper);
-}
-
-.PreviewSettingsGroup {
-	display: flex;
-	flex-direction: column;
-	gap: var(--spacing-2);
-}
-
-.PreviewSettingsGroupLabel {
-	font-size: var(--font-size-0);
-	font-weight: 700;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	color: var(--muted);
-}
-
-.PreviewSettingsSegmented {
-	display: flex;
-	padding: var(--spacing-1);
-	gap: var(--spacing-1);
-	border: 1px solid var(--line);
-	border-radius: var(--medium-button-radius);
-	background: var(--bg);
-}
-
-.PreviewSettingsSegment {
-	flex: 1;
-	padding: var(--spacing-2) 0;
-	border: none;
-	border-radius: var(--small-button-radius);
-	background: transparent;
-	color: var(--muted);
-	font-family: var(--font-sans);
-	font-size: var(--font-size-1);
-	font-weight: 500;
-	cursor: pointer;
-	transition: color 120ms, background 120ms;
-}
-
-.PreviewSettingsSegment:hover {
-	color: var(--primary);
-}
-
-.PreviewSettingsSegment.isActive {
-	background: var(--paper-soft);
-	color: var(--primary);
-}
-
-.PreviewSettingsStepper {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: var(--spacing-1);
-	border: 1px solid var(--line);
-	border-radius: var(--medium-button-radius);
-	background: var(--bg);
-}
-
-.PreviewSettingsStepperButton {
-	display: flex;
+.PreviewThemeToggle,
+.zokkuThemeToggle {
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	width: 30px;
 	height: 30px;
-	border: none;
-	border-radius: var(--small-button-radius);
-	background: transparent;
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	background: var(--paper);
 	color: var(--foreground);
 	cursor: pointer;
-	transition: color 120ms, background 120ms;
+	transition: background 140ms, color 140ms, border-color 140ms, transform 140ms;
 }
 
-.PreviewSettingsStepperButton:hover:not(:disabled) {
-	color: var(--primary);
+.PreviewThemeToggle:hover,
+.zokkuThemeToggle:hover {
 	background: var(--paper-soft);
-}
-
-.PreviewSettingsStepperButton:disabled {
-	color: var(--secondary);
-	cursor: not-allowed;
-}
-
-.PreviewSettingsStepperValue {
-	font-size: var(--font-size-2);
-	font-weight: 600;
-	font-variant-numeric: tabular-nums;
 	color: var(--primary);
+	transform: translateY(-1px);
 }
+
+.PreviewThemeContent { opacity: 1; }
+.PreviewThemeContent[data-theme-transition='out'] { opacity: 0; transition: opacity 300ms ease; }
+.PreviewThemeContent[data-theme-transition='in'] { opacity: 1; transition: opacity 500ms ease; }
+
+/* ─── Font presets ───────────────────────────────────────── */
+
+[data-preview-font] { font-family: var(--font-sans); }
+[data-preview-font='serif'] { --font-sans: var(--font-fraunces), 'Iowan Old Style', Georgia, serif; }
+[data-preview-font='mono'] { --font-sans: var(--font-mono); }
+
+/* ─── Settings popover ───────────────────────────────────── */
+
+.PreviewSettingsRoot { position: relative; display: flex; align-items: center; }
+.PreviewSettingsTrigger { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid transparent; border-radius: var(--small-button-radius); background: transparent; color: var(--muted); cursor: pointer; transition: color 120ms, background 120ms, border-color 120ms; }
+.PreviewSettingsTrigger:hover { color: var(--primary); background: var(--paper-soft); }
+.PreviewSettingsTrigger.isOpen { color: var(--primary); background: var(--paper-soft); border-color: var(--line); }
+.PreviewSettingsPanel { position: absolute; top: calc(100% + var(--spacing-2)); right: 0; z-index: 20; display: flex; flex-direction: column; gap: var(--spacing-5); width: 260px; padding: var(--spacing-5); border: 1px solid var(--line); border-radius: var(--medium-button-radius); background: var(--paper); }
+.PreviewSettingsGroup { display: flex; flex-direction: column; gap: var(--spacing-2); }
+.PreviewSettingsGroupLabel { font-size: var(--font-size-0); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.PreviewSettingsSegmented { display: flex; padding: var(--spacing-1); gap: var(--spacing-1); border: 1px solid var(--line); border-radius: var(--medium-button-radius); background: var(--bg); }
+.PreviewSettingsSegment { flex: 1; padding: var(--spacing-2) 0; border: none; border-radius: var(--small-button-radius); background: transparent; color: var(--muted); font-family: var(--font-sans); font-size: var(--font-size-1); font-weight: 500; cursor: pointer; transition: color 120ms, background 120ms; }
+.PreviewSettingsSegment:hover { color: var(--primary); }
+.PreviewSettingsSegment.isActive { background: var(--paper-soft); color: var(--primary); }
+.PreviewSettingsStepper { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-1); border: 1px solid var(--line); border-radius: var(--medium-button-radius); background: var(--bg); }
+.PreviewSettingsStepperButton { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: none; border-radius: var(--small-button-radius); background: transparent; color: var(--foreground); cursor: pointer; transition: color 120ms, background 120ms; }
+.PreviewSettingsStepperButton:hover:not(:disabled) { color: var(--primary); background: var(--paper-soft); }
+.PreviewSettingsStepperButton:disabled { color: var(--secondary); cursor: not-allowed; }
+.PreviewSettingsStepperValue { font-size: var(--font-size-2); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--primary); }
