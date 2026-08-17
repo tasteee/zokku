@@ -81,7 +81,7 @@ Continue :icon[arrow-right-line]:
 Saved :icon[check-circle-line]: successfully.
 \`\`\`
 
-Use inline icons sparingly when a small visual cue makes a label or sentence easier to scan. They work well for actions, statuses, directions, and compact UI-like explanations. The collection is intentionally restricted to MingCute so documents keep a consistent icon style. If a MingCute icon name does not exist, Zokku renders a warning-colored question icon so the mistake is visible without exposing the raw marker syntax.
+Use inline icons sparingly when a small visual cue makes a label or sentence easier to scan. They work well for actions, statuses, directions, and compact UI-like explanations. The collection is intentionally restricted to MingCute so documents keep a consistent icon style. If a MingCute icon name does not exist, Zokku renders a warning-colored question icon in its place.
 
 ### Blockquotes
 
@@ -184,11 +184,20 @@ Use big text for a short statement that deserves more visual weight than body co
 
 ### Small
 
-Use small text for supporting detail, secondary explanations, disclaimers, or low-priority context.
+Use small text for supporting detail, secondary explanations, disclaimers, or low-priority context that still needs to read like prose.
 
 \`\`\`md
 > [!SMALL]
 > This setting is stored only in your browser.
+\`\`\`
+
+### Muted
+
+Use muted text when the normal body size is appropriate but the content should have less visual emphasis, such as tertiary context or low-priority supporting information.
+
+\`\`\`md
+> [!MUTED]
+> Last reviewed on August 17.
 \`\`\`
 
 ### Center
@@ -202,7 +211,7 @@ Use center for short standalone content that benefits from centered presentation
 
 ### Caption
 
-Use caption for explanatory text tied to an image, table, example, or other nearby piece of content.
+Use caption for compact metadata or explanatory text tied to an image, table, example, or other nearby piece of content. Captions are intentionally smaller and tighter than small prose.
 
 \`\`\`md
 > [!CAPTION]
