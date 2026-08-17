@@ -117,6 +117,10 @@
 	color: currentColor;
 }
 
+.zInlineIcon.isInvalid {
+	color: var(--warning);
+}
+
 .zInlineIcon svg {
 	display: block;
 	width: 1em;
