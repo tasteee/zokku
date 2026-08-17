@@ -2,29 +2,47 @@
 
 import './workspace.css'
 
-import { ArrowRightIcon, FolderOpenIcon } from '@phosphor-icons/react'
+import { ArrowRightIcon, FolderIcon, FolderOpenIcon } from '@phosphor-icons/react'
 import { JSX, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ZokkuBrand } from '@/components/ZokkuBrand'
 import { chooseWorkspace, isFileSystemWorkspaceSupported, restoreWorkspace } from '@/lib/localWorkspace'
+import {
+	activateRecentWorkspace,
+	listRecentWorkspaces,
+	rememberCurrentWorkspace
+} from '@/lib/recentWorkspaces'
+import type { RecentWorkspaceT } from '@/lib/recentWorkspaces'
 
 const HomePage = (): JSX.Element => {
 	const router = useRouter()
 	const [isOpening, setIsOpening] = useState(false)
-	const [recentWorkspace, setRecentWorkspace] = useState<string | null>(null)
+	const [recentWorkspaces, setRecentWorkspaces] = useState<RecentWorkspaceT[]>([])
 	const [error, setError] = useState('')
 	const isSupported = typeof window === 'undefined' || isFileSystemWorkspaceSupported()
+	const hasRecentWorkspaces = recentWorkspaces.length > 0
+
+	const refreshRecentWorkspaces = async (): Promise<void> => {
+		const workspaces = await listRecentWorkspaces()
+		setRecentWorkspaces(workspaces)
+	}
 
 	useEffect(() => {
-		restoreWorkspace(false)
-			.then(setRecentWorkspace)
-			.catch(() => setRecentWorkspace(null))
+		const load = async (): Promise<void> => {
+			const currentWorkspace = await restoreWorkspace(false).catch(() => null)
+			if (currentWorkspace !== null) await rememberCurrentWorkspace()
+			await refreshRecentWorkspaces()
+		}
+		void load()
 	}, [])
 
 	const handleChooseWorkspace = async (): Promise<void> => {
 		setError('')
 		setIsOpening(true)
+
 		try {
 			await chooseWorkspace()
+			await rememberCurrentWorkspace()
 			router.push('/documents')
 		} catch (cause) {
 			const isAbort = cause instanceof DOMException && cause.name === 'AbortError'
@@ -34,16 +52,17 @@ const HomePage = (): JSX.Element => {
 		}
 	}
 
-	const handleResumeWorkspace = async (): Promise<void> => {
+	const handleRecentWorkspace = async (workspace: RecentWorkspaceT): Promise<void> => {
 		setError('')
 		setIsOpening(true)
+
 		try {
-			const name = await restoreWorkspace(true)
-			if (name === null) {
-				setError('Zokku needs permission to reopen that folder. Choose it again to continue.')
+			const isActivated = await activateRecentWorkspace(workspace.id)
+			if (!isActivated) {
+				setError(`Zokku needs permission to reopen ${workspace.name}.`)
 				return
 			}
-			router.push('/documents')
+			window.location.assign('/documents')
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : 'Unable to reopen that workspace.')
 		} finally {
@@ -57,10 +76,7 @@ const HomePage = (): JSX.Element => {
 			<div className="WorkspaceSplashGlow isPink" />
 			<div className="WorkspaceSplashInner">
 				<header className="WorkspaceSplashHeader">
-					<div className="WorkspaceBrand">
-						<span className="WorkspaceBrandMark" />
-						Zokku
-					</div>
+					<ZokkuBrand />
 					<div className="WorkspaceLocalBadge">
 						<span className="WorkspaceLocalBadgeDot" />
 						Local workspace
@@ -69,7 +85,6 @@ const HomePage = (): JSX.Element => {
 
 				<section className="WorkspaceHero">
 					<div>
-						<p className="WorkspaceEyebrow">Your writing. Your disk.</p>
 						<h1 className="WorkspaceTitle">
 							A quieter place
 							<span className="WorkspaceTitleAccent">to make things.</span>
@@ -84,35 +99,38 @@ const HomePage = (): JSX.Element => {
 							<div className="WorkspaceFolderGlyph">
 								<FolderOpenIcon size={27} weight="duotone" />
 							</div>
-							<h2 className="WorkspaceCardTitle">Choose a workspace folder</h2>
-							<p className="WorkspaceCardBody">
-								Select any folder on your disk for Zokku to work from. Markdown files in that folder become documents, and folders you create in Zokku are created there too.
-							</p>
+							<h2 className="WorkspaceCardTitle">Open a workspace</h2>
 
 							<button className="WorkspacePickerButton" disabled={isOpening || !isSupported} onClick={handleChooseWorkspace}>
 								<span>{isOpening ? 'Opening workspace…' : 'Select folder'}</span>
 								<ArrowRightIcon size={16} weight="bold" />
 							</button>
 
-							{recentWorkspace !== null && (
-								<button className="WorkspaceRecentButton" disabled={isOpening} onClick={handleResumeWorkspace}>
-									Continue with {recentWorkspace}
-								</button>
+							{hasRecentWorkspaces && (
+								<div className="WorkspaceRecentSection">
+									<div className="WorkspaceRecentLabel">Recent workspaces</div>
+									<div className="WorkspaceRecentList">
+										{recentWorkspaces.map((workspace) => (
+											<button
+												key={workspace.id}
+												className="WorkspaceRecentButton"
+												disabled={isOpening}
+												onClick={() => void handleRecentWorkspace(workspace)}
+											>
+												<FolderIcon size={16} weight="bold" />
+												<span>{workspace.name}</span>
+												<ArrowRightIcon size={14} weight="bold" />
+											</button>
+										))}
+									</div>
+								</div>
 							)}
 
-							<p className="WorkspaceCardFootnote">
-								Your files stay on this device. Zokku only receives browser permission to read and write the folder you choose.
-							</p>
 							{!isSupported && <p className="WorkspaceError">Local workspaces require a Chromium browser such as Chrome or Edge.</p>}
 							{error && <p className="WorkspaceError">{error}</p>}
 						</div>
 					</div>
 				</section>
-
-				<footer className="WorkspaceSplashFooter">
-					<span>Plain Markdown underneath. Always.</span>
-					<span>No account · No Convex · No document upload</span>
-				</footer>
 			</div>
 		</main>
 	)
