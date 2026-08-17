@@ -5,6 +5,63 @@
 	overflow: hidden;
 }
 
+.EditorTopbarBrand {
+	display: flex;
+	align-items: center;
+	padding-right: var(--spacing-3);
+	border-right: 1px solid var(--line);
+	flex-shrink: 0;
+}
+
+.EditorSaveStatus {
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	color: var(--muted);
+	flex-shrink: 0;
+}
+
+.EditorSaveStatus > svg {
+	width: 1rem;
+	height: 1rem;
+}
+
+.EditorSaveStatus[data-state='saved'] {
+	color: var(--color-purple);
+}
+
+.EditorSaveStatus[data-state='saving'] {
+	color: var(--color-pink);
+}
+
+.EditorSaveCheck {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: 0.625rem !important;
+	height: 0.625rem !important;
+	padding: 1px;
+	border-radius: 999px;
+	background: var(--bg);
+	color: var(--color-purple);
+}
+
+.EditorSaveSpinner {
+	animation: editorSaveSpin 0.7s linear infinite;
+}
+
+@keyframes editorSaveSpin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.TopbarActions .zButton.isIcon[data-confirm='true'] {
+	background: color-mix(in srgb, var(--destructive) 12%, transparent);
+}
+
 /* ─── Editor Layout ─────────────────────────────────────── */
 
 .EditorLayout {
@@ -96,6 +153,10 @@
 }
 
 @media (max-width: 768px) {
+	.EditorTopbarBrand {
+		display: none;
+	}
+
 	.EditorLayout {
 		grid-template-columns: 1fr !important;
 		grid-template-rows: 1fr;
