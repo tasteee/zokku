@@ -3,6 +3,16 @@
 	background: var(--bg);
 	display: flex;
 	flex-direction: column;
+	opacity: 1;
+}
+
+.documentsPage[data-visibility='hidden'] {
+	opacity: 0;
+}
+
+.documentsPage[data-visibility='visible'] {
+	opacity: 1;
+	transition: opacity 500ms ease;
 }
 
 .documentsPageBody {
