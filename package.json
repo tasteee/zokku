@@ -5,6 +5,8 @@
 	"scripts": {
 		"dev": "next dev",
 		"build": "next build",
+		"preview:cloudflare": "npm run build && wrangler pages dev out",
+		"deploy": "npm run build && wrangler pages deploy out --project-name zokku",
 		"lint": "eslint"
 	},
 	"dependencies": {
@@ -43,6 +45,7 @@
 		"@types/react-dom": "^19",
 		"eslint": "^9",
 		"eslint-config-next": "16.2.7",
-		"typescript": "^5"
+		"typescript": "^5",
+		"wrangler": "^4.32.0"
 	}
 }
