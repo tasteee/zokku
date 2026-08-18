@@ -119,7 +119,7 @@ const getMediaExtension = (blob: Blob): string => {
 		'x-m4v': 'm4v'
 	}
 	const normalizedSubtype = subtype.replace(/[^a-z0-9]/g, '')
-	return knownExtensions[subtype] ?? normalizedSubtype || 'bin'
+	return knownExtensions[subtype] || normalizedSubtype || 'bin'
 }
 
 const getMediaStem = (blob: Blob): string => {
