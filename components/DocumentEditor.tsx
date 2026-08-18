@@ -46,6 +46,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const themeTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
 	const previewMediaUrlsRef = useRef<string[]>([])
 	const editorLayoutRef = useRef<HTMLDivElement | null>(null)
+	const previewPaneContentRef = useRef<HTMLDivElement | null>(null)
 	const isDraggingRef = useRef(false)
 	const previewTheme = $previewSettings.use.lookup('theme') as PreviewThemeT
 	const previewBaseFontSize = $previewSettings.use.lookup('baseFontSize') as number
@@ -88,6 +89,31 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		}, PREVIEW_DEBOUNCE_MS)
 		return () => { isCurrent = false; window.clearTimeout(timer) }
 	}, [content, previewTheme, documentPath])
+
+	useEffect(() => {
+		if (isLoading) return
+		const layout = editorLayoutRef.current
+		const preview = previewPaneContentRef.current
+		if (layout === null || preview === null) return
+
+		const editorScrollElement = layout.querySelector<HTMLElement>('.EditorPane .monaco-scrollable-element')
+		if (editorScrollElement === null) return
+
+		const syncPreviewScroll = (): void => {
+			const editorScrollRange = editorScrollElement.scrollHeight - editorScrollElement.clientHeight
+			const previewScrollRange = preview.scrollHeight - preview.clientHeight
+			if (editorScrollRange <= 0 || previewScrollRange <= 0) {
+				preview.scrollTop = 0
+				return
+			}
+			const progress = editorScrollElement.scrollTop / editorScrollRange
+			preview.scrollTop = progress * previewScrollRange
+		}
+
+		editorScrollElement.addEventListener('scroll', syncPreviewScroll, { passive: true })
+		syncPreviewScroll()
+		return () => editorScrollElement.removeEventListener('scroll', syncPreviewScroll)
+	}, [isLoading, previewHtml])
 
 	const scheduleSave = useCallback((nextTitle: string, nextContent: string): void => {
 		if (saveTimerRef.current !== null) clearTimeout(saveTimerRef.current)
@@ -187,7 +213,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		<div ref={editorLayoutRef} className="EditorLayout" data-mobile-view={mobilePaneView} style={{ gridTemplateColumns: `${splitPercent}% auto 1fr` } as CSSProperties}>
 			<div className="EditorPane"><MarkdownEditor value={content} onChange={handleContentChange} onMediaUpload={(blob, onProgress) => saveMedia(blob, documentPath, onProgress)} /></div>
 			<div className="EditorResizeHandle" onPointerDown={handleResizePointerDown} onPointerMove={handleResizePointerMove} onPointerUp={handleResizePointerUp} />
-			<div className="PreviewPane"><div className="PreviewPaneLabel"><span className="PreviewPaneLabelText">Preview</span><div className="PreviewPaneLabelActions"><button className="PreviewThemeToggle" onClick={handleThemeToggle} disabled={themeTransition !== 'idle'} title={themeToggleTitle} aria-label={themeToggleTitle}>{previewTheme === 'light' ? <MoonStars size={16} weight="bold" /> : <Sun size={16} weight="bold" />}</button><PreviewSettings settings={previewSettings} onChange={handlePreviewSettingsChange} /></div></div><div className="PreviewPaneContent" data-preview-theme={previewTheme} data-preview-font="sans" data-preview-scale="compact" style={previewSurfaceStyle} onClick={handlePreviewClick}><div className="PreviewThemeContent" data-theme-transition={themeTransition}><div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div></div></div>
+			<div className="PreviewPane"><div className="PreviewPaneLabel"><span className="PreviewPaneLabelText">Preview</span><div className="PreviewPaneLabelActions"><button className="PreviewThemeToggle" onClick={handleThemeToggle} disabled={themeTransition !== 'idle'} title={themeToggleTitle} aria-label={themeToggleTitle}>{previewTheme === 'light' ? <MoonStars size={16} weight="bold" /> : <Sun size={16} weight="bold" />}</button><PreviewSettings settings={previewSettings} onChange={handlePreviewSettingsChange} /></div></div><div ref={previewPaneContentRef} className="PreviewPaneContent" data-preview-theme={previewTheme} data-preview-font="sans" data-preview-scale="compact" style={previewSurfaceStyle} onClick={handlePreviewClick}><div className="PreviewThemeContent" data-theme-transition={themeTransition}><div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div></div></div>
 		</div>
 		<div className="EditorMobileToggle" role="group" aria-label="Switch pane"><button className="EditorMobileToggleButton" data-active={mobilePaneView === 'editor' ? 'true' : 'false'} onClick={() => setMobilePaneView('editor')}>Editor</button><button className="EditorMobileToggleButton" data-active={mobilePaneView === 'preview' ? 'true' : 'false'} onClick={() => setMobilePaneView('preview')}>Preview</button></div>
 	</div>
