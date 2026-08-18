@@ -192,11 +192,12 @@ const DocumentsPage = (): JSX.Element => {
 		try {
 			const isActivated = await activateRecentWorkspace(workspace.id)
 			if (!isActivated) return
-			$folders.set.lookup('selectedId', 'all')
-			await refreshWorkspace()
-			transitionMode('documents')
+			sessionStorage.setItem(WORKSPACE_TRANSITION_KEY, '1')
+			const root = document.querySelector<HTMLElement>('.documentsPage')
+			if (root !== null) root.dataset.transition = 'out'
+			window.setTimeout(() => window.location.assign('/documents'), 300)
 		} finally {
-			setIsOpeningWorkspace(false)
+			window.setTimeout(() => setIsOpeningWorkspace(false), 300)
 		}
 	}
 
