@@ -34,12 +34,12 @@ export const DocumentsWorkspace = (props: DocumentsWorkspacePropsT): JSX.Element
 	const hasDocuments = !isLoading && documents.length > 0
 	const isFilteredEmpty = !isLoading && filteredDocuments.length === 0
 	const newDocumentButtonLabel = isSpecificFolderSelected ? `New in ${selectedFolder?.name ?? 'folder'}` : 'New document'
-	const selectedTitle = selectedId === 'all' ? 'All documents' : selectedId === 'uncategorized' ? 'Uncategorized' : selectedFolder?.name
+	const selectedTitle = selectedId === 'all' ? 'All documents' : selectedId === 'uncategorized' ? 'Workspace root' : selectedFolder?.name
 	const selectedDescription = selectedId === 'all'
 		? `${folders.length} folders, ${documents.length} documents`
 		: selectedId === 'uncategorized'
-			? 'Documents in the workspace root'
-			: selectedFolder?.path || 'Folder'
+			? 'Documents stored directly in the workspace root.'
+			: selectedFolder?.description || 'No description'
 
 	return (
 		<main className="documentsWorkspace">
@@ -47,10 +47,10 @@ export const DocumentsWorkspace = (props: DocumentsWorkspacePropsT): JSX.Element
 				<div>
 					<div className="documentsWorkspaceKicker">Local workspace</div>
 					<h1 className="documentsWorkspaceTitle">{selectedTitle}</h1>
-					<p className="documentsWorkspaceDescription">{selectedDescription}</p>
+					<p className="documentsWorkspaceDescription" title={selectedDescription}>{selectedDescription}</p>
 				</div>
 				<div className="documentsWorkspaceActions">
-					<div className="documentsWorkspaceStats"><span>{filteredDocuments.length} shown</span><span>{folders.length} folders</span></div>
+					<div className="documentsWorkspaceStats"><span>{filteredDocuments.length} shown</span><span aria-hidden="true">·</span><span>{folders.length} folders</span></div>
 					<div className="documentsWorkspaceButtons">
 						<button className="documentsWorkspaceSearchTrigger" type="button" onClick={() => $search.set.lookup('isOpen', true)} title="Search documents (⌘K)" aria-label="Search documents">
 							<MagnifyingGlass weight="bold" /><span className="documentsWorkspaceSearchHint">⌘K</span>
