@@ -6,7 +6,7 @@
 		"dev": "next dev",
 		"build": "next build",
 		"preview:cloudflare": "npm run build && wrangler pages dev out",
-		"deploy": "npm run build && wrangler pages deploy out --project-name zokku",
+		"deploy": "wrangler pages deploy out --project-name zokku",
 		"lint": "eslint"
 	},
 	"dependencies": {
