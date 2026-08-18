@@ -51,8 +51,10 @@ const normalizeStoredSettings = (raw: unknown): PreviewSettingsT => {
 	if (typeof raw !== 'object' || raw === null) return defaultPreviewSettings
 	const stored = raw as Record<string, unknown>
 	const theme = isPreviewTheme(stored.theme) ? stored.theme : defaultPreviewSettings.theme
-	const isSizeValid = typeof stored.baseFontSize === 'number' && Number.isFinite(stored.baseFontSize)
-	const baseFontSize = isSizeValid ? clampBaseFontSize(stored.baseFontSize) : defaultPreviewSettings.baseFontSize
+	const rawBaseFontSize = stored.baseFontSize
+	const baseFontSize = typeof rawBaseFontSize === 'number' && Number.isFinite(rawBaseFontSize)
+		? clampBaseFontSize(rawBaseFontSize)
+		: defaultPreviewSettings.baseFontSize
 	return { theme, font: 'sans', scale: 'compact', baseFontSize }
 }
 
