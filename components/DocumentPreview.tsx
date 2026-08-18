@@ -9,10 +9,9 @@ import { CaretLeftIcon } from '@phosphor-icons/react'
 import { listWorkspace, restoreWorkspace } from '@/lib/localWorkspace'
 import type { LocalDocumentT } from '@/lib/localWorkspace'
 import { resolveDocumentHref } from '@/lib/documentLinks'
+import { getEditorHref, getPreviewHref } from '@/lib/documentRoutes'
 
-type DocumentPreviewPropsT = {
-	documentId: string
-}
+type DocumentPreviewPropsT = { documentId: string }
 
 export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
 	const router = useRouter()
@@ -22,24 +21,17 @@ export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
 
 	useEffect(() => {
 		let isCurrent = true
-		const load = async (): Promise<void> => {
+		void (async () => {
 			const workspace = await restoreWorkspace(false)
-			if (workspace === null) {
-				router.replace('/')
-				return
-			}
-
+			if (workspace === null) { router.replace('/'); return }
 			const workspaceState = await listWorkspace()
 			const nextDocument = workspaceState.documents.find((candidate) => candidate._id === props.documentId) ?? null
 			if (!isCurrent) return
 			setWorkspaceDocuments(workspaceState.documents)
 			setDocument(nextDocument)
 			if (nextDocument !== null) setPreviewHtml(await renderMarkdown(nextDocument.content))
-		}
-		void load()
-		return () => {
-			isCurrent = false
-		}
+		})()
+		return () => { isCurrent = false }
 	}, [props.documentId, router])
 
 	const handlePreviewClick = (event: React.MouseEvent<HTMLDivElement>): void => {
@@ -48,30 +40,22 @@ export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
 		if (!(target instanceof Element)) return
 		const anchor = target.closest('a')
 		if (!(anchor instanceof HTMLAnchorElement)) return
-
-		const rawHref = anchor.getAttribute('href') ?? ''
-		const resolved = resolveDocumentHref(document.path, rawHref)
+		const resolved = resolveDocumentHref(document.path, anchor.getAttribute('href') ?? '')
 		if (resolved === null) return
-
 		event.preventDefault()
 		const linkedDocument = workspaceDocuments.find((candidate) => candidate.path === resolved.path)
 		if (linkedDocument === undefined) return
-		const anchorSuffix = resolved.anchor ? `#${resolved.anchor}` : ''
-		router.push(`/documents/${linkedDocument._id}/preview${anchorSuffix}`)
+		router.push(getPreviewHref(linkedDocument._id, resolved.anchor))
 	}
 
-	if (document === null) {
-		return <div className="HomeEmpty"><h1 className="HomeEmptyTitle">Document not found</h1><p className="HomeEmptyBody">The Markdown file may have been moved or deleted.</p><ZButton label="Back to documents" onClick={() => router.push('/documents')} /></div>
-	}
+	if (document === null) return <div className="HomeEmpty"><h1 className="HomeEmptyTitle">Document not found</h1><p className="HomeEmptyBody">The Markdown file may have been moved or deleted.</p><ZButton label="Back to documents" onClick={() => router.push('/documents/')} /></div>
 	if (document === undefined) return <div className="HomeEmpty"><p className="HomeEmptyBody">Loading local preview…</p></div>
 
-	return (
-		<div className="DocumentPreviewShell">
-			<div className="Topbar">
-				<button className="TopbarBackButton" onClick={() => router.push(`/documents/${props.documentId}`)} title="Back to editor"><CaretLeftIcon size={18} weight="bold" /></button>
-				<span className="TopbarTitle">{document.title || 'Untitled'}</span>
-			</div>
-			<div className="DocumentPreviewContent" onClick={handlePreviewClick}><div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div>
+	return <div className="DocumentPreviewShell">
+		<div className="Topbar">
+			<button className="TopbarBackButton" onClick={() => router.push(getEditorHref(props.documentId))} title="Back to editor"><CaretLeftIcon size={18} weight="bold" /></button>
+			<span className="TopbarTitle">{document.title || 'Untitled'}</span>
 		</div>
-	)
+		<div className="DocumentPreviewContent" onClick={handlePreviewClick}><div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div>
+	</div>
 }
