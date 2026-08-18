@@ -21,9 +21,13 @@ import {
 } from '@/lib/localWorkspace'
 import type { LocalDocumentT } from '@/lib/localWorkspace'
 
+const WORKSPACE_TRANSITION_KEY = 'zokku-workspace-transition'
+
 const DocumentsPage = (): JSX.Element => {
 	const router = useRouter()
 	const [debouncedSearchInput, setDebouncedSearchInput] = useState('')
+	const [isReady, setIsReady] = useState(false)
+	const [shouldFadeIn] = useState(() => typeof window !== 'undefined' && sessionStorage.getItem(WORKSPACE_TRANSITION_KEY) === '1')
 	const searchInput = $search.use.lookup('input') as string
 	const searchTerm = debouncedSearchInput.trim()
 	const isComposerOpen = $composer.use.lookup('isOpen') as boolean
@@ -39,6 +43,7 @@ const DocumentsPage = (): JSX.Element => {
 			const snapshot = await listWorkspace()
 			$documents.set({ isLoading: false, list: snapshot.documents })
 			$folders.set({ isLoading: false, list: snapshot.folders })
+			setIsReady(true)
 		} catch {
 			router.replace('/')
 		}
@@ -47,6 +52,11 @@ const DocumentsPage = (): JSX.Element => {
 	useEffect(() => {
 		refreshWorkspace()
 	}, [refreshWorkspace])
+
+	useEffect(() => {
+		if (!isReady || !shouldFadeIn) return
+		sessionStorage.removeItem(WORKSPACE_TRANSITION_KEY)
+	}, [isReady, shouldFadeIn])
 
 	useEffect(() => {
 		const timeoutId = window.setTimeout(() => setDebouncedSearchInput(searchInput), 250)
@@ -143,8 +153,10 @@ const DocumentsPage = (): JSX.Element => {
 		router.push(`/documents/${documentId}`)
 	}
 
+	const visibilityState = !isReady ? 'hidden' : shouldFadeIn ? 'visible' : 'ready'
+
 	return (
-		<div className="documentsPage">
+		<div className="documentsPage" data-visibility={visibilityState}>
 			<DocumentsHeader onSignOut={handleLeaveWorkspace} />
 			<div className="documentsPageBody">
 				<FolderRail onDeleteFolder={handleDeleteFolder} />
