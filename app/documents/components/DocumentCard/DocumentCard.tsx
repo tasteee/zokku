@@ -4,6 +4,7 @@ import './DocumentCard.css'
 import { ChangeEvent, JSX, MouseEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { $folders, DocumentT, FolderT } from '../../stores'
+import { beginAppTransition } from '@/lib/appTransition'
 
 export const formatRelativeTime = (timestamp: number): string => {
 	const nowMs = Date.now()
@@ -12,23 +13,12 @@ export const formatRelativeTime = (timestamp: number): string => {
 	const diffHours = Math.floor(diffMs / 3_600_000)
 	const diffDays = Math.floor(diffMs / 86_400_000)
 
-	const isJustNow = diffMinutes < 1
-	if (isJustNow) return 'Just now'
+	if (diffMinutes < 1) return 'Just now'
+	if (diffMinutes < 60) return `${diffMinutes}m ago`
+	if (diffHours < 24) return `${diffHours}h ago`
+	if (diffDays < 7) return `${diffDays}d ago`
 
-	const isUnderAnHour = diffMinutes < 60
-	if (isUnderAnHour) return `${diffMinutes}m ago`
-
-	const isUnderADay = diffHours < 24
-	if (isUnderADay) return `${diffHours}h ago`
-
-	const isUnderAWeek = diffDays < 7
-	if (isUnderAWeek) return `${diffDays}d ago`
-
-	return new Date(timestamp).toLocaleDateString('en-US', {
-		month: 'short',
-		day: 'numeric',
-		year: 'numeric'
-	})
+	return new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 export const getContentPreview = (content: string): string => {
@@ -48,56 +38,32 @@ type DocumentCardPropsT = {
 export const DocumentCard = (props: DocumentCardPropsT): JSX.Element => {
 	const router = useRouter()
 	const copiedId = $folders.use.lookup('copiedId')
-
 	const relativeTime = formatRelativeTime(props.document.updatedAt)
 	const preview = getContentPreview(props.document.content)
-	const hasPreview = preview.length > 0
 	const titleLabel = props.document.title || 'Untitled'
 	const isCopied = copiedId === props.document._id
-	const shareLabel = isCopied ? 'Copied' : 'Copy link'
 	const folder = props.folders.find((item) => item._id === props.document.folderId)
-	const folderLabel = folder?.name ?? 'Uncategorized'
 
-	const handleCardClick = (): void => {
-		router.push(`/documents/${props.document._id}`)
-	}
-
-	const handleMoveChange = (event: ChangeEvent<HTMLSelectElement>): void => {
-		props.onMove(props.document._id, event.target.value)
-	}
-
-	const handleShareClick = (event: MouseEvent): void => {
-		event.stopPropagation()
-		props.onShare(props.document._id)
-	}
+	const handleCardClick = (): void => beginAppTransition(() => router.push(`/documents/${props.document._id}`))
+	const handleMoveChange = (event: ChangeEvent<HTMLSelectElement>): void => { void props.onMove(props.document._id, event.target.value) }
+	const handleShareClick = (event: MouseEvent): void => { event.stopPropagation(); props.onShare(props.document._id) }
 
 	return (
 		<article className="documentCard" onClick={handleCardClick}>
 			<div className="documentCardBody">
-				<div className="documentCardTopline">
-					<span>{folderLabel}</span>
-					<span>Edited {relativeTime}</span>
-				</div>
+				<div className="documentCardTopline"><span>{folder?.name ?? 'Uncategorized'}</span><span>Edited {relativeTime}</span></div>
 				<div className="documentCardTitle">{titleLabel}</div>
-				{hasPreview && <div className="documentCardPreview">{preview}</div>}
+				{preview.length > 0 && <div className="documentCardPreview">{preview}</div>}
 			</div>
-
 			<div className="documentCardActions">
 				<label className="documentMoveControl" onClick={(event) => event.stopPropagation()}>
 					<span>Move to</span>
 					<select value={props.document.folderId ?? 'uncategorized'} onChange={handleMoveChange}>
 						<option value="uncategorized">Uncategorized</option>
-						{props.folders.map((folderOption) => (
-							<option key={folderOption._id} value={folderOption._id}>
-								{folderOption.name}
-							</option>
-						))}
+						{props.folders.map((folderOption) => <option key={folderOption._id} value={folderOption._id}>{folderOption.name}</option>)}
 					</select>
 				</label>
-
-				<button className="documentCardShareButton" onClick={handleShareClick} data-copied={isCopied ? 'true' : 'false'}>
-					{shareLabel}
-				</button>
+				<button className="documentCardShareButton" onClick={handleShareClick} data-copied={isCopied ? 'true' : 'false'}>{isCopied ? 'Copied' : 'Copy link'}</button>
 			</div>
 		</article>
 	)
