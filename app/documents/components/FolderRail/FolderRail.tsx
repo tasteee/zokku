@@ -2,10 +2,14 @@
 
 import './FolderRail.css'
 import { JSX } from 'react'
-import { FileText, Folder, FolderPlus, Trash } from '@phosphor-icons/react'
+import { CaretLeft, FileText, Folder, FolderPlus, Plus, Trash } from '@phosphor-icons/react'
 import { $composer, $documents, $folders, DocumentT, FolderFilterT, FolderT } from '../../stores'
 
 type FolderRailPropsT = {
+	mode: 'documents' | 'workspaces'
+	workspaceCount: number
+	onShowWorkspaces: () => void
+	onCreateWorkspace: () => void
 	onDeleteFolder: (folderId: string) => Promise<void>
 }
 
@@ -26,8 +30,27 @@ export const FolderRail = (props: FolderRailPropsT): JSX.Element => {
 		$composer.set.lookup('confirmingFolderId', null)
 	}
 
+	if (props.mode === 'workspaces') {
+		return (
+			<aside className="folderRail">
+				<div className="folderRailHeader">
+					<span>Workspaces</span>
+					<div className="folderRailHeaderActions">
+						<span>{props.workspaceCount}</span>
+						<button className="folderRailAddButton" title="Create workspace" onClick={props.onCreateWorkspace}><Plus weight="bold" /></button>
+					</div>
+				</div>
+			</aside>
+		)
+	}
+
 	return (
 		<aside className="folderRail">
+			<button className="folderRailBackLink" onClick={props.onShowWorkspaces}>
+				<CaretLeft weight="bold" />
+				<span>Workspaces</span>
+			</button>
+			<div className="folderRailDivider" />
 			<div className="folderRailSection">
 				<button className="folderRailItem" data-active={selectedId === 'all' ? 'true' : 'false'} onClick={() => handleSelectFolder('all')}>
 					<span className="folderRailItemIcon"><FileText weight="bold" /></span><span className="folderRailItemText">All documents</span><span className="folderRailItemCount">{documents.length}</span>
