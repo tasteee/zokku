@@ -73,20 +73,15 @@ const DocumentsPage = (): JSX.Element => {
 		}
 	}, [refreshRecentWorkspaces, router])
 
-	useEffect(() => {
-		void refreshWorkspace()
-	}, [refreshWorkspace])
-
+	useEffect(() => { void refreshWorkspace() }, [refreshWorkspace])
 	useEffect(() => {
 		if (!isReady || !shouldFadeIn) return
 		sessionStorage.removeItem(WORKSPACE_TRANSITION_KEY)
 	}, [isReady, shouldFadeIn])
-
 	useEffect(() => {
 		const timeoutId = window.setTimeout(() => setDebouncedSearchInput(searchInput), 250)
 		return () => window.clearTimeout(timeoutId)
 	}, [searchInput])
-
 	useEffect(() => {
 		let isCurrent = true
 		if (!searchTerm) {
@@ -100,7 +95,6 @@ const DocumentsPage = (): JSX.Element => {
 		})
 		return () => { isCurrent = false }
 	}, [searchTerm])
-
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent): void => {
 			const isCommandK = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k'
@@ -167,7 +161,6 @@ const DocumentsPage = (): JSX.Element => {
 		await moveDocument(documentId, value === 'uncategorized' ? undefined : value)
 		await refreshWorkspace()
 	}
-
 	const handleNavigateToDocument = (documentId: string): void => {
 		$search.set.lookup('isOpen', false)
 		beginAppTransition(() => router.push(`/documents/${documentId}`))
@@ -210,8 +203,10 @@ const DocumentsPage = (): JSX.Element => {
 				<FolderRail
 					mode={mode}
 					workspaceCount={recentWorkspaces.length}
+					workspaces={recentWorkspaces}
 					onShowWorkspaces={() => transitionMode('workspaces')}
 					onCreateWorkspace={() => void handleCreateWorkspace()}
+					onOpenWorkspace={(workspace) => void handleOpenWorkspace(workspace)}
 					onDeleteFolder={handleDeleteFolder}
 				/>
 				<div className="documentsPageContent" data-transition={contentTransition}>
