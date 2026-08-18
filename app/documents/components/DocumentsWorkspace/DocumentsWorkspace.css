@@ -31,11 +31,15 @@
 }
 
 .documentsWorkspaceDescription {
+	display: -webkit-box;
 	margin-top: var(--spacing-2);
-	max-width: 34rem;
+	max-width: 36rem;
+	overflow: hidden;
 	font-size: var(--font-size-small);
 	line-height: var(--line-height-small);
 	color: var(--muted);
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
 }
 
 .documentsWorkspaceActions {
@@ -96,16 +100,9 @@
 	align-items: center;
 	gap: var(--spacing-2);
 	color: var(--muted);
-	font-size: var(--font-size-caption);
+	font-size: var(--font-size-0);
 	font-weight: var(--font-weight-medium);
 	white-space: nowrap;
-}
-
-.documentsWorkspaceStats span {
-	padding: var(--spacing-1) var(--spacing-2);
-	border: 1px solid var(--line);
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--paper) 62%, transparent);
 }
 
 .documentsWorkspaceGrid {
