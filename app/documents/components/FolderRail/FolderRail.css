@@ -14,6 +14,25 @@
 	overflow: hidden;
 }
 
+.folderRailBackLink {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--spacing-2);
+	width: fit-content;
+	padding: var(--spacing-2);
+	border: 0;
+	background: transparent;
+	color: var(--muted);
+	font: inherit;
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-semibold);
+	cursor: pointer;
+	transition: color 120ms ease;
+}
+
+.folderRailBackLink:hover { color: var(--primary); }
+.folderRailBackLink svg { width: 0.9rem; height: 0.9rem; }
+
 .folderRailSection,
 .folderRailList {
 	display: flex;
