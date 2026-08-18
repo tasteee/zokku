@@ -14,7 +14,7 @@ import { MarkdownEditor } from '@/components/MarkdownEditor'
 import { PreviewSettings } from '@/components/PreviewSettingsPanel'
 import { $previewSettings, getPreviewSurfaceStyle, loadPreviewSettings, savePreviewSettings } from '@/components/previewSettings'
 import type { PreviewSettingsT, PreviewThemeT } from '@/components/previewSettings'
-import { getDocument, listWorkspace, removeDocument, restoreWorkspace, saveDocument } from '@/lib/localWorkspace'
+import { getDocument, listWorkspace, removeDocument, resolveWorkspaceMediaInHtml, restoreWorkspace, saveDocument, saveMedia } from '@/lib/localWorkspace'
 import type { LocalDocumentT } from '@/lib/localWorkspace'
 import { resolveDocumentHref } from '@/lib/documentLinks'
 import { getExportDocuments } from '@/lib/localDocumentExport'
@@ -26,15 +26,6 @@ type ThemeTransitionT = 'idle' | 'out' | 'in'
 
 const AUTOSAVE_DELAY_MS = 700
 const PREVIEW_DEBOUNCE_MS = 250
-
-const blobToDataUrl = (blob: Blob, onProgress: (percent: number) => void): Promise<string> => new Promise((resolve, reject) => {
-	const reader = new FileReader()
-	reader.onloadstart = () => onProgress(10)
-	reader.onprogress = (event) => { if (event.lengthComputable) onProgress(Math.max(10, Math.round((event.loaded / event.total) * 90))) }
-	reader.onload = () => { onProgress(100); resolve(String(reader.result)) }
-	reader.onerror = () => reject(reader.error)
-	reader.readAsDataURL(blob)
-})
 
 export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const router = useRouter()
@@ -53,6 +44,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const activeIdRef = useRef(props.documentId)
 	const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 	const themeTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
+	const previewMediaUrlsRef = useRef<string[]>([])
 	const editorLayoutRef = useRef<HTMLDivElement | null>(null)
 	const isDraggingRef = useRef(false)
 	const previewTheme = $previewSettings.use.lookup('theme') as PreviewThemeT
@@ -80,9 +72,22 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 
 	useEffect(() => { $previewSettings.set.replace(loadPreviewSettings()) }, [])
 	useEffect(() => {
-		const timer = window.setTimeout(() => { void renderMarkdown(content, previewTheme).then(setPreviewHtml) }, PREVIEW_DEBOUNCE_MS)
-		return () => window.clearTimeout(timer)
-	}, [content, previewTheme])
+		let isCurrent = true
+		const timer = window.setTimeout(() => {
+			void (async () => {
+				const renderedHtml = await renderMarkdown(content, previewTheme)
+				const resolved = await resolveWorkspaceMediaInHtml(renderedHtml, documentPath)
+				if (!isCurrent) {
+					for (const url of resolved.objectUrls) URL.revokeObjectURL(url)
+					return
+				}
+				for (const url of previewMediaUrlsRef.current) URL.revokeObjectURL(url)
+				previewMediaUrlsRef.current = resolved.objectUrls
+				setPreviewHtml(resolved.html)
+			})()
+		}, PREVIEW_DEBOUNCE_MS)
+		return () => { isCurrent = false; window.clearTimeout(timer) }
+	}, [content, previewTheme, documentPath])
 
 	const scheduleSave = useCallback((nextTitle: string, nextContent: string): void => {
 		if (saveTimerRef.current !== null) clearTimeout(saveTimerRef.current)
@@ -104,6 +109,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	useEffect(() => () => {
 		if (saveTimerRef.current !== null) clearTimeout(saveTimerRef.current)
 		for (const timer of themeTimersRef.current) clearTimeout(timer)
+		for (const url of previewMediaUrlsRef.current) URL.revokeObjectURL(url)
 	}, [])
 
 	const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>): void => { title.set(event.target.value); scheduleSave(event.target.value, content) }
@@ -179,7 +185,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 			<div className="TopbarActions"><ZButton isIcon isGhost title="Open full preview" aria-label="Open full preview" onClick={() => router.push(getPreviewHref(activeIdRef.current))}><ArrowSquareOut weight="bold" /></ZButton><ZButton isIcon isGhost title="Export HTML" aria-label="Export HTML" onClick={() => void handleExport()}><Export weight="bold" /></ZButton><ZButton isIcon isGhost isRed title={isConfirmingDelete ? 'Click again to delete' : 'Delete document'} aria-label="Delete document" data-confirm={isConfirmingDelete ? 'true' : 'false'} onClick={() => void handleDelete()} onBlur={() => setIsConfirmingDelete(false)}><Trash weight={isConfirmingDelete ? 'fill' : 'bold'} /></ZButton></div>
 		</div>
 		<div ref={editorLayoutRef} className="EditorLayout" data-mobile-view={mobilePaneView} style={{ gridTemplateColumns: `${splitPercent}% auto 1fr` } as CSSProperties}>
-			<div className="EditorPane"><MarkdownEditor value={content} onChange={handleContentChange} onMediaUpload={(blob, onProgress) => blobToDataUrl(blob, onProgress)} /></div>
+			<div className="EditorPane"><MarkdownEditor value={content} onChange={handleContentChange} onMediaUpload={(blob, onProgress) => saveMedia(blob, documentPath, onProgress)} /></div>
 			<div className="EditorResizeHandle" onPointerDown={handleResizePointerDown} onPointerMove={handleResizePointerMove} onPointerUp={handleResizePointerUp} />
 			<div className="PreviewPane"><div className="PreviewPaneLabel"><span className="PreviewPaneLabelText">Preview</span><div className="PreviewPaneLabelActions"><button className="PreviewThemeToggle" onClick={handleThemeToggle} disabled={themeTransition !== 'idle'} title={themeToggleTitle} aria-label={themeToggleTitle}>{previewTheme === 'light' ? <MoonStars size={16} weight="bold" /> : <Sun size={16} weight="bold" />}</button><PreviewSettings settings={previewSettings} onChange={handlePreviewSettingsChange} /></div></div><div className="PreviewPaneContent" data-preview-theme={previewTheme} data-preview-font="sans" data-preview-scale="compact" style={previewSurfaceStyle} onClick={handlePreviewClick}><div className="PreviewThemeContent" data-theme-transition={themeTransition}><div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div></div></div>
 		</div>
