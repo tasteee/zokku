@@ -2,11 +2,11 @@
 
 import './DocumentPreview.css'
 import { useRouter } from 'next/navigation'
-import { JSX, useEffect, useState } from 'react'
+import { JSX, useEffect, useRef, useState } from 'react'
 import { renderMarkdown } from '@/app/actions/renderMarkdown'
 import { ZButton } from '@/components/zButton'
 import { CaretLeftIcon } from '@phosphor-icons/react'
-import { listWorkspace, restoreWorkspace } from '@/lib/localWorkspace'
+import { listWorkspace, resolveWorkspaceMediaInHtml, restoreWorkspace } from '@/lib/localWorkspace'
 import type { LocalDocumentT } from '@/lib/localWorkspace'
 import { resolveDocumentHref } from '@/lib/documentLinks'
 import { getEditorHref, getPreviewHref } from '@/lib/documentRoutes'
@@ -18,6 +18,7 @@ export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
 	const [document, setDocument] = useState<LocalDocumentT | null | undefined>(undefined)
 	const [workspaceDocuments, setWorkspaceDocuments] = useState<LocalDocumentT[]>([])
 	const [previewHtml, setPreviewHtml] = useState('')
+	const previewMediaUrlsRef = useRef<string[]>([])
 
 	useEffect(() => {
 		let isCurrent = true
@@ -29,10 +30,24 @@ export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
 			if (!isCurrent) return
 			setWorkspaceDocuments(workspaceState.documents)
 			setDocument(nextDocument)
-			if (nextDocument !== null) setPreviewHtml(await renderMarkdown(nextDocument.content))
+			if (nextDocument === null) return
+
+			const renderedHtml = await renderMarkdown(nextDocument.content)
+			const resolved = await resolveWorkspaceMediaInHtml(renderedHtml, nextDocument.path)
+			if (!isCurrent) {
+				for (const url of resolved.objectUrls) URL.revokeObjectURL(url)
+				return
+			}
+			for (const url of previewMediaUrlsRef.current) URL.revokeObjectURL(url)
+			previewMediaUrlsRef.current = resolved.objectUrls
+			setPreviewHtml(resolved.html)
 		})()
 		return () => { isCurrent = false }
 	}, [props.documentId, router])
+
+	useEffect(() => () => {
+		for (const url of previewMediaUrlsRef.current) URL.revokeObjectURL(url)
+	}, [])
 
 	const handlePreviewClick = (event: React.MouseEvent<HTMLDivElement>): void => {
 		if (document === null || document === undefined) return
