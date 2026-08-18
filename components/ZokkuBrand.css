@@ -21,6 +21,9 @@
 	height: 0.6875rem;
 	border-radius: var(--small-button-radius);
 	background: linear-gradient(135deg, var(--color-pink), var(--color-purple));
+	box-shadow:
+		0 0 10px color-mix(in srgb, var(--color-pink) 52%, transparent),
+		0 0 20px color-mix(in srgb, var(--color-purple) 34%, transparent);
 	transform: rotate(45deg);
 	flex-shrink: 0;
 }
