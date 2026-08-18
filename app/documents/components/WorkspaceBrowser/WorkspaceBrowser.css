@@ -6,67 +6,205 @@
 }
 
 .workspaceBrowserHeader {
-	padding-bottom: var(--spacing-5);
-	border-bottom: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: var(--spacing-6);
+	padding: var(--spacing-1) 0 var(--spacing-5);
+	border-bottom: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+}
+
+.workspaceBrowserKicker {
+	margin-bottom: var(--spacing-2);
+	color: var(--accent);
+	font-size: var(--font-size-0);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.13em;
+	text-transform: uppercase;
+}
+
+.workspaceBrowserTitle {
+	color: var(--primary);
+	font-size: clamp(1.75rem, 2.4vw, 2.35rem);
+	font-weight: var(--font-weight-bold);
+	line-height: 1.05;
+	letter-spacing: -0.035em;
+}
+
+.workspaceBrowserDescription {
+	max-width: 34rem;
+	margin-top: var(--spacing-2);
+	color: var(--muted);
+	font-size: var(--font-size-small);
+	line-height: var(--line-height-small);
+}
+
+.workspaceBrowserEmpty {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-height: 27rem;
+	overflow: hidden;
+	padding: clamp(var(--spacing-8), 6vw, var(--spacing-16));
+	border: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
+	border-radius: calc(var(--medium-button-radius) + 4px);
+	background:
+		radial-gradient(circle at 32% 20%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 26rem),
+		radial-gradient(circle at 78% 72%, color-mix(in srgb, var(--accent-alt) 8%, transparent), transparent 24rem),
+		linear-gradient(145deg, color-mix(in srgb, var(--paper) 92%, transparent), color-mix(in srgb, var(--paper-soft) 70%, transparent));
+	box-shadow:
+		0 24px 80px color-mix(in srgb, black 15%, transparent),
+		inset 0 1px 0 color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.workspaceBrowserEmpty::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background-image:
+		linear-gradient(color-mix(in srgb, var(--foreground) 2.2%, transparent) 1px, transparent 1px),
+		linear-gradient(90deg, color-mix(in srgb, var(--foreground) 2.2%, transparent) 1px, transparent 1px);
+	background-size: 38px 38px;
+	mask-image: linear-gradient(to bottom right, black, transparent 72%);
+	pointer-events: none;
+}
+
+.workspaceBrowserEmptyGlow {
+	position: absolute;
+	top: 18%;
+	left: 10%;
+	width: 12rem;
+	height: 12rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--accent) 18%, transparent);
+	filter: blur(70px);
+	pointer-events: none;
+}
+
+.workspaceBrowserEmptyContent {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	gap: var(--spacing-5);
+	width: min(100%, 46rem);
+	margin: 0 auto;
+}
+
+.workspaceBrowserEmptyIcon {
+	display: grid;
+	place-items: center;
+	width: 4rem;
+	height: 4rem;
+	border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+	border-radius: calc(var(--medium-button-radius) + 2px);
+	background: color-mix(in srgb, var(--accent) 10%, var(--paper));
+	color: var(--accent);
+	box-shadow: 0 12px 35px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.workspaceBrowserEmptyIcon svg { width: 1.75rem; height: 1.75rem; }
+
+.workspaceBrowserEmptyCopy h2 {
+	color: var(--primary);
+	font-size: var(--font-size-4);
+	font-weight: var(--font-weight-bold);
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+}
+.workspaceBrowserEmptyCopy p {
+	max-width: 28rem;
+	margin-top: var(--spacing-2);
+	color: var(--muted);
+	font-size: var(--font-size-small);
+	line-height: var(--line-height-small);
+}
+
+.workspaceBrowserCreateButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--spacing-2);
+	min-height: 2.75rem;
+	padding: 0 var(--spacing-5);
+	border: 1px solid color-mix(in srgb, var(--color-pink) 88%, white 12%);
+	border-radius: var(--medium-button-radius);
+	background: var(--color-pink);
+	box-shadow: 0 10px 30px color-mix(in srgb, var(--color-pink) 22%, transparent);
+	color: var(--primary-foreground);
+	font: inherit;
+	font-size: var(--font-size-2);
+	font-weight: 700;
+	cursor: pointer;
+	transition: transform 130ms ease, box-shadow 130ms ease, filter 130ms ease;
+	white-space: nowrap;
+}
+.workspaceBrowserCreateButton svg { width: 1rem; height: 1rem; }
+.workspaceBrowserCreateButton:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.04); box-shadow: 0 14px 36px color-mix(in srgb, var(--color-pink) 28%, transparent); }
+.workspaceBrowserCreateButton:active:not(:disabled) { transform: translateY(0); }
+.workspaceBrowserCreateButton:disabled { opacity: 0.55; cursor: wait; }
+
+.workspaceBrowserEmptyFoot {
+	position: relative;
+	z-index: 1;
+	width: min(100%, 46rem);
+	margin: var(--spacing-6) auto 0;
+	padding-top: var(--spacing-4);
+	border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+	color: var(--secondary);
+	font-size: var(--font-size-0);
 }
 
 .workspaceBrowserGrid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(18.5rem, 1fr));
 	gap: var(--spacing-4);
 }
 
 .workspaceBrowserCard {
-	display: grid;
-	grid-template-columns: auto minmax(0, 1fr);
-	align-items: start;
-	gap: var(--spacing-4);
-	min-height: 9.5rem;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-height: 11rem;
+	overflow: hidden;
 	padding: var(--spacing-5);
-	border: 1px solid color-mix(in srgb, var(--line) 84%, transparent);
-	border-radius: var(--medium-button-radius);
-	background: color-mix(in srgb, var(--paper) 68%, transparent);
+	border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+	border-radius: calc(var(--medium-button-radius) + 2px);
+	background:
+		linear-gradient(145deg, color-mix(in srgb, var(--paper) 92%, transparent), color-mix(in srgb, var(--paper-soft) 74%, transparent));
+	box-shadow: 0 14px 42px color-mix(in srgb, black 12%, transparent);
 	color: var(--foreground);
 	font: inherit;
 	text-align: left;
 	cursor: pointer;
-	transition: transform 140ms ease, border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
+	transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
 }
-
+.workspaceBrowserCard::before {
+	content: '';
+	position: absolute;
+	inset: 0 0 auto;
+	height: 2px;
+	background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 88%, white 12%), color-mix(in srgb, var(--accent-alt) 72%, transparent));
+	opacity: 0.45;
+	transition: opacity 150ms ease;
+}
 .workspaceBrowserCard:hover {
-	transform: translateY(-2px);
-	border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
-	background: color-mix(in srgb, var(--paper) 88%, transparent);
-	box-shadow: 0 18px 50px color-mix(in srgb, black 16%, transparent);
+	transform: translateY(-3px);
+	border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+	box-shadow: 0 22px 58px color-mix(in srgb, black 18%, transparent);
 }
+.workspaceBrowserCard:hover::before { opacity: 1; }
+.workspaceBrowserCard:disabled { opacity: 0.55; cursor: wait; transform: none; }
 
-.workspaceBrowserCard:disabled { opacity: 0.55; cursor: wait; }
-
-.workspaceBrowserCardIcon {
-	display: grid;
-	place-items: center;
-	width: 2.6rem;
-	height: 2.6rem;
-	border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
-	border-radius: var(--medium-button-radius);
-	background: color-mix(in srgb, var(--accent) 9%, transparent);
-	color: var(--accent);
-}
-
+.workspaceBrowserCardTopline { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-4); }
+.workspaceBrowserCardIcon { display: grid; place-items: center; width: 2.65rem; height: 2.65rem; border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); border-radius: var(--medium-button-radius); background: color-mix(in srgb, var(--accent) 8%, transparent); color: var(--accent); }
 .workspaceBrowserCardIcon svg { width: 1.25rem; height: 1.25rem; }
-.workspaceBrowserCardBody { min-width: 0; }
-.workspaceBrowserCardTitle { color: var(--primary); font-size: var(--font-size-3); font-weight: var(--font-weight-bold); line-height: 1.25; }
-.workspaceBrowserCardMeta { display: flex; align-items: center; gap: var(--spacing-2); margin-top: var(--spacing-2); color: var(--muted); font-size: var(--font-size-caption); }
-.workspaceBrowserCardPath { margin-top: var(--spacing-4); overflow: hidden; color: var(--secondary); font-family: var(--font-mono); font-size: var(--font-size-0); text-overflow: ellipsis; white-space: nowrap; }
+.workspaceBrowserCardMeta { display: flex; align-items: center; gap: var(--spacing-2); color: var(--muted); font-size: var(--font-size-0); font-weight: var(--font-weight-medium); }
+.workspaceBrowserCardTitle { margin-top: auto; color: var(--primary); font-size: var(--font-size-3); font-weight: var(--font-weight-bold); line-height: 1.2; letter-spacing: -0.02em; }
+.workspaceBrowserCardPath { margin-top: var(--spacing-2); overflow: hidden; color: var(--secondary); font-family: var(--font-mono); font-size: var(--font-size-0); text-overflow: ellipsis; white-space: nowrap; }
 
-.workspaceBrowserCreateButton {
-	margin-top: var(--spacing-1);
-	padding: var(--spacing-3) var(--spacing-5);
-	border: 1px solid var(--color-pink);
-	border-radius: var(--medium-button-radius);
-	background: var(--color-pink);
-	color: var(--primary-foreground);
-	font: inherit;
-	font-weight: 700;
-	cursor: pointer;
+@media (max-width: 760px) {
+	.workspaceBrowserEmptyContent { grid-template-columns: 1fr; justify-items: start; }
+	.workspaceBrowserCreateButton { width: 100%; }
 }
