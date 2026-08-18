@@ -36,7 +36,7 @@ type WindowWithDirectoryPickerT = Window & {
 }
 
 const DB_NAME = 'zokku-local'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const STORE_NAME = 'workspace'
 const HANDLE_KEY = 'root'
 
