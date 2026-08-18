@@ -1,17 +1,167 @@
 export const WORKSPACE_GUIDE_FILENAME = 'Zokku Guide.md'
 
-export const workspaceGuideMarkdown = `# Welcome to Zokku
+export const workspaceGuideMarkdown = `# Zokku Guide
 
-This workspace is backed directly by this folder on your computer. Every document you create in Zokku is a normal Markdown file, so your content stays portable and readable outside the app.
+Zokku is a local-first Markdown workspace. Your workspace is an ordinary folder on disk and your documents are ordinary Markdown files.
 
 > [!TIP]
-> Keep this guide around as a quick reference. You can edit it, move it into a folder, or delete it whenever you no longer need it.
+> Keep this file as a reference while learning Zokku. It is a normal document, so you can edit, move, rename, or delete it.
 
-## Standard Markdown refresher
+## Zokku custom syntax
+
+Zokku's block extensions use familiar callout syntax: start a block with \`> [!TYPE]\`, then put its content on quoted lines below it.
+
+### Eyebrow
+
+Use an eyebrow immediately above a heading for a compact category or section label. The normal form includes an 80px hairline rule.
+
+\`\`\`md
+> [!EYEBROW]
+> PRODUCT STRATEGY
+
+## Where we are going
+\`\`\`
+
+Use \`FULL\` to let the rule fill the remaining width after a 16px gap.
+
+\`\`\`md
+> [!EYEBROW FULL]
+> PRODUCT STRATEGY
+\`\`\`
+
+### Subheading
+
+Use a subheading to introduce a section with more weight than an eyebrow without adding another semantic heading level.
+
+\`\`\`md
+> [!SUBHEADING]
+> What changed this quarter
+\`\`\`
+
+### Note, tip, warning, and important
+
+Use **note** for useful supporting context, **tip** for advice or shortcuts, **warning** for something that could cause a mistake, and **important** for information the reader should not miss.
+
+\`\`\`md
+> [!NOTE]
+> This behavior only applies to local workspaces.
+
+> [!TIP]
+> Link related documents instead of duplicating content.
+
+> [!WARNING]
+> Renaming a document also renames its Markdown file.
+
+> [!IMPORTANT]
+> The workspace folder is the source of truth.
+\`\`\`
+
+### Big, small, muted, caption, and center
+
+Use **big** for a short high-emphasis statement, **small** for secondary prose, **muted** for normal-sized low-emphasis text, **caption** for compact metadata, and **center** for short standalone content that benefits from centered presentation.
+
+\`\`\`md
+> [!BIG]
+> One workspace. Plain Markdown.
+
+> [!SMALL]
+> A secondary explanation.
+
+> [!MUTED]
+> Last reviewed August 17.
+
+> [!CAPTION]
+> Figure 1. Workspace architecture.
+
+> [!CENTER]
+> End of report
+\`\`\`
+
+### Stats
+
+Use a stat block for a concise metric. Bold the value; the other line becomes its label.
+
+\`\`\`md
+> [!STAT]
+> **73%**
+> Adoption rate
+
+> [!STAT TOP]
+> Adoption rate
+> **73%**
+\`\`\`
+
+### Todo
+
+Use todo for an author-only drafting reminder. TODO blocks are removed from exported HTML.
+
+\`\`\`md
+> [!TODO]
+> Add the final migration timeline.
+\`\`\`
+
+### Inline icons
+
+Use a MingCute Iconify icon inline with \`:icon[name]:\`. Icon names are lowercase and hyphenated. Invalid names render as a warning-colored question icon.
+
+\`\`\`md
+Saved :icon[check-circle-line]: successfully.
+Continue :icon[arrow-right-line]:
+\`\`\`
+
+### Inline separators
+
+Use \`:separator:\` for a subtle vertical hairline between compact pieces of inline content.
+
+\`\`\`md
+Design :separator: Engineering :separator: Product
+\`\`\`
+
+## Working in Zokku
+
+### Create or switch a workspace
+
+A workspace is a folder on your computer. From the Workspaces view, choose a folder to create/add a workspace. Inside a workspace, use the **← Workspaces** control in the left rail to return to the workspace grid and switch to another one. Zokku does not move your files into a backend; the selected folder remains the source of truth.
+
+### Create folders
+
+Use the folder-plus control beside **Folders** in the left rail. Give the folder a name and optional description. Selecting a folder scopes the document grid to that folder.
+
+### Create documents
+
+Use **New document**, or select a folder first and create a document there. New documents are Markdown files inside the workspace. You can also add \`.md\` files directly on disk and Zokku will read them.
+
+### Change a document title
+
+Edit the title directly in the editor's top bar. Zokku autosaves your work. Changing the title can rename the underlying Markdown file to match it.
+
+### Preview
+
+The editor shows a live rendered preview beside your Markdown. Use the external-preview icon to open the document in the dedicated preview view. Local links to other Zokku documents navigate within the workspace.
+
+### Preview settings
+
+Use the sliders icon in the preview toolbar. You can choose **Dark** or **Light** and adjust the base reading size. New settings start at **20px**. Zokku intentionally uses its sans-serif typeface and compact type scale for a consistent document system, so font family and type scale are not configurable.
+
+The sun/moon control switches themes directly. Theme changes fade the document content out, switch the theme, and fade it back in.
+
+### Export HTML
+
+Use the export icon in the editor to create a self-contained HTML document. Zokku resolves linked local documents and bundles them into the export, so those links route inside the exported file rather than opening Markdown files on the original computer. Exported documents also include the light/dark theme switcher. Author-only TODO blocks are omitted.
+
+### Link to another document
+
+Use a normal Markdown link to the other document's local Markdown path. The document card's copy-link action can create the correct Zokku link for you.
+
+\`\`\`md
+[Architecture notes](</Work/architecture-notes.md>)
+\`\`\`
+
+## Markdown refresher
+
+Zokku stays close to standard Markdown. These features work normally.
 
 ### Headings
-
-Use one to six hash characters:
 
 \`\`\`md
 # Heading 1
@@ -22,7 +172,9 @@ Use one to six hash characters:
 ###### Heading 6
 \`\`\`
 
-### Emphasis
+Use heading levels semantically: H1 for the document title, H2 for major sections, then descend through H3-H6 for nested sections.
+
+### Emphasis and inline code
 
 \`\`\`md
 **bold**
@@ -31,7 +183,7 @@ Use one to six hash characters:
 \`inline code\`
 \`\`\`
 
-### Lists
+### Lists and task lists
 
 \`\`\`md
 - First item
@@ -40,11 +192,7 @@ Use one to six hash characters:
 
 1. First step
 2. Second step
-\`\`\`
 
-### Task lists
-
-\`\`\`md
 - [ ] Not finished
 - [x] Finished
 \`\`\`
@@ -55,42 +203,13 @@ Use one to six hash characters:
 [OpenAI](https://openai.com)
 \`\`\`
 
-To link to another Zokku document, use a normal Markdown link to its local Markdown path:
-
-\`\`\`md
-[Architecture notes](</Work/architecture-notes.md>)
-\`\`\`
-
-Zokku understands these links in preview and bundles linked documents into self-contained HTML exports.
-
-### Images
+### Images and media
 
 \`\`\`md
 ![Alt text](https://example.com/image.png)
 \`\`\`
 
-You can also paste or drag images into the editor and let Zokku insert them for you.
-
-### Inline icons
-
-Zokku can render an inline icon from the MingCute collection in Iconify. Use \`:icon[name]:\`, where the icon name is written in lowercase hyphenated form.
-
-\`\`\`md
-Continue :icon[arrow-right-line]:
-Saved :icon[check-circle-line]: successfully.
-\`\`\`
-
-Use inline icons sparingly when a small visual cue makes a label or sentence easier to scan. The collection is intentionally restricted to MingCute so documents keep a consistent icon style. Invalid names render as a warning-colored question icon.
-
-### Inline separators
-
-Use \`:separator:\` between short pieces of inline content when you want a subtle one-pixel vertical hairline.
-
-\`\`\`md
-Design :separator: Engineering :separator: Product
-\`\`\`
-
-Use separators for compact metadata, labels, or short navigation-like rows. Do not use them as a replacement for normal sentence punctuation.
+You can also paste or drag media into the editor and let Zokku insert it.
 
 ### Blockquotes
 
@@ -115,7 +234,7 @@ Use separators for compact metadata, labels, or short navigation-like rows. Do n
 
 ### Code blocks
 
-Use fenced code blocks and optionally add a language for syntax highlighting:
+Use fenced code blocks and optionally name the language for syntax highlighting.
 
 \`\`\`md
 \`\`\`ts
@@ -123,7 +242,7 @@ const greeting = 'hello'
 \`\`\`
 \`\`\`
 
-You can also include a filename in the fence metadata:
+Add a filename when useful:
 
 \`\`\`md
 \`\`\`ts filename=example.ts
@@ -131,152 +250,7 @@ export const value = 42
 \`\`\`
 \`\`\`
 
-## Zokku custom blocks
-
-Zokku extensions use the same blockquote-style callout syntax familiar from GitHub and Obsidian. Each custom block starts with \`> [!TYPE]\` followed by its content.
-
-### Eyebrow
-
-Use an eyebrow immediately above a heading when you want a compact category, section label, or product-area identifier. A standard eyebrow ends with an 80px hairline rule.
-
-\`\`\`md
-> [!EYEBROW]
-> PRODUCT STRATEGY
-
-## Where we are going
-\`\`\`
-
-Use the \`FULL\` variant when the rule should consume all remaining horizontal space after the label, with a 16px gap:
-
-\`\`\`md
-> [!EYEBROW FULL]
-> PRODUCT STRATEGY
-\`\`\`
-
-### Subheading
-
-Use a subheading to introduce a section with more weight than an eyebrow but without adding another level to the document's semantic heading hierarchy.
-
-\`\`\`md
-> [!SUBHEADING]
-> What changed this quarter
-\`\`\`
-
-### Note
-
-Use a note for supporting context that is useful but not urgent or action-oriented.
-
-\`\`\`md
-> [!NOTE]
-> This behavior only applies to local workspaces.
-\`\`\`
-
-### Tip
-
-Use a tip for recommendations, shortcuts, best practices, or something that helps the reader work more effectively.
-
-\`\`\`md
-> [!TIP]
-> Use document links instead of duplicating the same explanation in multiple files.
-\`\`\`
-
-### Warning
-
-Use a warning when the reader should slow down because an action could cause a mistake, data loss, or an unexpected result.
-
-\`\`\`md
-> [!WARNING]
-> Renaming a document also renames the underlying Markdown file.
-\`\`\`
-
-### Important
-
-Use important for information the reader should not miss, especially when it affects a decision or the interpretation of the surrounding section.
-
-\`\`\`md
-> [!IMPORTANT]
-> Exported HTML includes linked documents only when Zokku can resolve their local links.
-\`\`\`
-
-### Big
-
-Use big text for a short statement that deserves more visual weight than body copy but should not become part of the document heading hierarchy.
-
-\`\`\`md
-> [!BIG]
-> One workspace. Plain Markdown. No backend required.
-\`\`\`
-
-### Small
-
-Use small text for supporting detail, secondary explanations, disclaimers, or low-priority context that still needs to read like prose.
-
-\`\`\`md
-> [!SMALL]
-> This setting is stored only in your browser.
-\`\`\`
-
-### Muted
-
-Use muted text when the normal body size is appropriate but the content should have less visual emphasis.
-
-\`\`\`md
-> [!MUTED]
-> Last reviewed on August 17.
-\`\`\`
-
-### Center
-
-Use center for short standalone content that benefits from centered presentation. Avoid it for long paragraphs because centered body copy is harder to read.
-
-\`\`\`md
-> [!CENTER]
-> End of report
-\`\`\`
-
-### Caption
-
-Use caption for compact metadata or explanatory text tied to an image, table, example, or other nearby piece of content.
-
-\`\`\`md
-> [!CAPTION]
-> Figure 1. Workspace architecture overview.
-\`\`\`
-
-### Stats
-
-Use a stat block to make a key number scannable. Bold the value so Zokku can distinguish it from the smaller label.
-
-For a label below the value:
-
-\`\`\`md
-> [!STAT]
-> **73%**
-> Adoption rate
-\`\`\`
-
-For a label above the value:
-
-\`\`\`md
-> [!STAT TOP]
-> Adoption rate
-> **73%**
-\`\`\`
-
-Stats work best for concise metrics such as percentages, counts, currency values, durations, or scores rather than long prose.
-
-### Todo
-
-Use todo for an author-facing reminder that is useful while drafting but should not appear in exported HTML.
-
-\`\`\`md
-> [!TODO]
-> Add the final migration timeline before publishing.
-\`\`\`
-
-## A good default structure
-
-A clean Zokku document often looks something like this:
+## Example document
 
 \`\`\`md
 > [!EYEBROW FULL]
@@ -313,8 +287,4 @@ Product :separator: Design :separator: Engineering
 > [!TODO]
 > Add rollout details.
 \`\`\`
-
----
-
-That is enough to get started. Zokku intentionally stays close to normal Markdown, so most Markdown knowledge transfers directly.
 `
