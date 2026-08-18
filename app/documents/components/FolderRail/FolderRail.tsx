@@ -2,14 +2,17 @@
 
 import './FolderRail.css'
 import { JSX } from 'react'
-import { CaretLeft, FileText, Folder, FolderPlus, Trash } from '@phosphor-icons/react'
+import { CaretLeft, FileText, Folder, FolderOpen, FolderPlus, Trash } from '@phosphor-icons/react'
 import { $composer, $documents, $folders, DocumentT, FolderFilterT, FolderT } from '../../stores'
+import type { RecentWorkspaceT } from '@/lib/recentWorkspaces'
 
 type FolderRailPropsT = {
 	mode: 'documents' | 'workspaces'
 	workspaceCount: number
+	workspaces?: RecentWorkspaceT[]
 	onShowWorkspaces: () => void
 	onCreateWorkspace: () => void
+	onOpenWorkspace?: (workspace: RecentWorkspaceT) => void
 	onDeleteFolder: (folderId: string) => Promise<void>
 }
 
@@ -31,15 +34,31 @@ export const FolderRail = (props: FolderRailPropsT): JSX.Element => {
 	}
 
 	if (props.mode === 'workspaces') {
+		const workspaces = props.workspaces ?? []
 		return (
-			<aside className="folderRail">
+			<aside className="folderRail isWorkspaceMode">
 				<div className="folderRailHeader">
 					<span>Workspaces</span>
 					<div className="folderRailHeaderActions">
 						<span>{props.workspaceCount}</span>
-						<button className="folderRailAddButton" title="Create workspace" onClick={props.onCreateWorkspace}><FolderPlus weight="bold" /></button>
+						<button className="folderRailAddButton" title="Add workspace" aria-label="Add workspace" onClick={props.onCreateWorkspace}><FolderPlus weight="bold" /></button>
 					</div>
 				</div>
+				{workspaces.length === 0 ? (
+					<div className="folderRailWorkspaceEmpty">Local folders you open in Zokku will appear here.</div>
+				) : (
+					<div className="folderRailList">
+						{workspaces.map((workspace) => (
+							<button key={workspace.id} className="folderRailWorkspaceItem" onClick={() => props.onOpenWorkspace?.(workspace)}>
+								<span className="folderRailItemIcon"><FolderOpen weight="duotone" /></span>
+								<span className="folderRailWorkspaceText">
+									<span className="folderRailWorkspaceName">{workspace.name}</span>
+									<span className="folderRailWorkspaceMeta">{workspace.noteCount} notes · {workspace.folderCount} folders</span>
+								</span>
+							</button>
+						))}
+					</div>
+				)}
 			</aside>
 		)
 	}
