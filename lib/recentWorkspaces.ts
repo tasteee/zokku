@@ -1,9 +1,14 @@
 'use client'
 
+import { listWorkspace } from '@/lib/localWorkspace'
+
 export type RecentWorkspaceT = {
 	id: string
 	name: string
 	lastOpenedAt: number
+	noteCount: number
+	folderCount: number
+	displayPath: string
 }
 
 type RecentWorkspaceRecordT = RecentWorkspaceT & {
@@ -69,6 +74,19 @@ const requestPermission = async (handle: FileSystemDirectoryHandle): Promise<boo
 	return nextPermission === 'granted'
 }
 
+const getCurrentWorkspaceMetadata = async (name: string): Promise<Pick<RecentWorkspaceT, 'noteCount' | 'folderCount' | 'displayPath'>> => {
+	try {
+		const snapshot = await listWorkspace()
+		return {
+			noteCount: snapshot.documents.length,
+			folderCount: snapshot.folders.length,
+			displayPath: `/${name}`
+		}
+	} catch {
+		return { noteCount: 0, folderCount: 0, displayPath: `/${name}` }
+	}
+}
+
 export const rememberCurrentWorkspace = async (): Promise<void> => {
 	const currentHandle = await readValue<FileSystemDirectoryHandle>(ROOT_KEY)
 	if (currentHandle === null) return
@@ -83,11 +101,13 @@ export const rememberCurrentWorkspace = async (): Promise<void> => {
 		break
 	}
 
+	const metadata = await getCurrentWorkspaceMetadata(currentHandle.name)
 	const nextRecord: RecentWorkspaceRecordT = {
 		id: existingRecord?.id ?? crypto.randomUUID(),
 		name: currentHandle.name,
 		lastOpenedAt: Date.now(),
-		handle: currentHandle
+		handle: currentHandle,
+		...metadata
 	}
 
 	const remainingRecords = records.filter((record) => record.id !== nextRecord.id)
@@ -99,7 +119,14 @@ export const listRecentWorkspaces = async (): Promise<RecentWorkspaceT[]> => {
 	return records
 		.slice()
 		.sort((left, right) => right.lastOpenedAt - left.lastOpenedAt)
-		.map((record) => ({ id: record.id, name: record.name, lastOpenedAt: record.lastOpenedAt }))
+		.map((record) => ({
+			id: record.id,
+			name: record.name,
+			lastOpenedAt: record.lastOpenedAt,
+			noteCount: record.noteCount ?? 0,
+			folderCount: record.folderCount ?? 0,
+			displayPath: record.displayPath ?? `/${record.name}`
+		}))
 }
 
 export const activateRecentWorkspace = async (id: string): Promise<boolean> => {
