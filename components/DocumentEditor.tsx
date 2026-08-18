@@ -4,7 +4,7 @@ import './DocumentEditor.css'
 
 import { CSSProperties, JSX, useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowSquareOut, CaretLeftIcon, Check, Export, FloppyDisk, MoonStars, SpinnerGap, Sun, Trash } from '@phosphor-icons/react'
+import { ArrowSquareOut, CaretLeftIcon, Check, Export, MoonStars, SpinnerGap, Sun, Trash } from '@phosphor-icons/react'
 import { useDatass } from 'datass'
 import { renderMarkdown } from '@/app/actions/renderMarkdown'
 import { exportLinkedHtml } from '@/app/actions/exportLinkedHtml'
@@ -251,13 +251,18 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	return (
 		<div className="EditorShell">
 			<div className="Topbar">
-				<div className="EditorTopbarBrand"><ZokkuBrand isCompact /></div>
-				<button className="TopbarBackButton" onClick={() => router.push('/documents')} title="All documents"><CaretLeftIcon size={18} weight="bold" /></button>
-				<span className="EditorSaveStatus" data-state={saveState} title={saveStatusLabel} aria-label={saveStatusLabel}>
-					{isSaving ? <SpinnerGap className="EditorSaveSpinner" weight="bold" /> : <FloppyDisk weight="bold" />}
-					{isSaved && <Check className="EditorSaveCheck" weight="bold" />}
-				</span>
-				<input className="TopbarTitle" type="text" value={title.state} onChange={handleTitleChange} placeholder="Untitled" spellCheck={false} />
+				<div className="EditorNavigationCluster">
+					<button className="TopbarBackButton" onClick={() => router.push('/documents')} title="All documents"><CaretLeftIcon size={18} weight="bold" /></button>
+					<div className="EditorTopbarBrand"><ZokkuBrand isCompact /></div>
+				</div>
+				<div className="EditorDocumentIdentity">
+					<input className="TopbarTitle" type="text" value={title.state} onChange={handleTitleChange} placeholder="Untitled" spellCheck={false} />
+					<span className="EditorSaveStatus" data-state={saveState} title={saveStatusLabel} aria-label={saveStatusLabel}>
+						{isSaving && <SpinnerGap className="EditorSaveSpinner" size={13} weight="bold" />}
+						{isSaved && <Check size={13} weight="bold" />}
+						<span>{saveStatusLabel}</span>
+					</span>
+				</div>
 				<div className="TopbarActions">
 					<ZButton isIcon isGhost title="Open full preview" aria-label="Open full preview" onClick={() => router.push(`/documents/${activeIdRef.current}/preview`)}><ArrowSquareOut weight="bold" /></ZButton>
 					<ZButton isIcon isGhost title="Export HTML" aria-label="Export HTML" onClick={() => void handleExport()}><Export weight="bold" /></ZButton>
