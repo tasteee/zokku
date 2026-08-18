@@ -8,28 +8,18 @@ import { DocumentsWorkspace } from './components/DocumentsWorkspace/DocumentsWor
 import { WorkspaceBrowser } from './components/WorkspaceBrowser/WorkspaceBrowser'
 import { FolderComposer } from './components/FolderComposer/FolderComposer'
 import { SearchPalette } from './components/SearchPalette/SearchPalette'
-
 import { JSX, useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-	chooseWorkspace,
-	createDocument,
-	createFolder,
-	listWorkspace,
-	moveDocument,
-	removeFolder,
-	restoreWorkspace,
-	searchDocuments
-} from '@/lib/localWorkspace'
+import { chooseWorkspace, createDocument, createFolder, listWorkspace, moveDocument, removeFolder, restoreWorkspace, searchDocuments } from '@/lib/localWorkspace'
 import type { LocalDocumentT, LocalFolderT } from '@/lib/localWorkspace'
 import { ensureWorkspaceGuide } from '@/lib/ensureWorkspaceGuide'
 import { getFolderDescriptions, saveFolderDescription } from '@/lib/folderDescriptions'
 import { activateRecentWorkspace, listRecentWorkspaces, rememberCurrentWorkspace } from '@/lib/recentWorkspaces'
 import type { RecentWorkspaceT } from '@/lib/recentWorkspaces'
 import { beginAppTransition } from '@/lib/appTransition'
+import { getEditorHref } from '@/lib/documentRoutes'
 
 const WORKSPACE_TRANSITION_KEY = 'zokku-workspace-transition'
-
 type BrowserModeT = 'documents' | 'workspaces'
 type ContentTransitionT = 'idle' | 'out' | 'in'
 
@@ -48,17 +38,11 @@ const DocumentsPage = (): JSX.Element => {
 	const isComposerOpen = $composer.use.lookup('isOpen') as boolean
 	const isSearchOpen = $search.use.lookup('isOpen') as boolean
 
-	const refreshRecentWorkspaces = useCallback(async (): Promise<void> => {
-		setRecentWorkspaces(await listRecentWorkspaces())
-	}, [])
-
+	const refreshRecentWorkspaces = useCallback(async (): Promise<void> => setRecentWorkspaces(await listRecentWorkspaces()), [])
 	const refreshWorkspace = useCallback(async (): Promise<void> => {
 		try {
 			const nextWorkspaceName = await restoreWorkspace(false)
-			if (nextWorkspaceName === null) {
-				router.replace('/')
-				return
-			}
+			if (nextWorkspaceName === null) { router.replace('/'); return }
 			const snapshot = await listWorkspace()
 			const descriptions = await getFolderDescriptions(nextWorkspaceName, snapshot.folders.map((folder) => folder.path))
 			const folders: LocalFolderT[] = snapshot.folders.map((folder) => ({ ...folder, description: descriptions.get(folder.path) || undefined }))
@@ -68,41 +52,22 @@ const DocumentsPage = (): JSX.Element => {
 			setIsReady(true)
 			await rememberCurrentWorkspace()
 			await refreshRecentWorkspaces()
-		} catch {
-			router.replace('/')
-		}
+		} catch { router.replace('/') }
 	}, [refreshRecentWorkspaces, router])
 
 	useEffect(() => { void refreshWorkspace() }, [refreshWorkspace])
-	useEffect(() => {
-		if (!isReady || !shouldFadeIn) return
-		sessionStorage.removeItem(WORKSPACE_TRANSITION_KEY)
-	}, [isReady, shouldFadeIn])
-	useEffect(() => {
-		const timeoutId = window.setTimeout(() => setDebouncedSearchInput(searchInput), 250)
-		return () => window.clearTimeout(timeoutId)
-	}, [searchInput])
+	useEffect(() => { if (isReady && shouldFadeIn) sessionStorage.removeItem(WORKSPACE_TRANSITION_KEY) }, [isReady, shouldFadeIn])
+	useEffect(() => { const id = window.setTimeout(() => setDebouncedSearchInput(searchInput), 250); return () => window.clearTimeout(id) }, [searchInput])
 	useEffect(() => {
 		let isCurrent = true
-		if (!searchTerm) {
-			$search.set({ isLoading: false, results: [] })
-			return
-		}
+		if (!searchTerm) { $search.set({ isLoading: false, results: [] }); return }
 		$search.set.lookup('isLoading', true)
-		searchDocuments(searchTerm).then((results) => {
-			if (!isCurrent) return
-			$search.set({ isLoading: false, results })
-		})
+		searchDocuments(searchTerm).then((results) => { if (isCurrent) $search.set({ isLoading: false, results }) })
 		return () => { isCurrent = false }
 	}, [searchTerm])
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent): void => {
-			const isCommandK = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k'
-			if (isCommandK && mode === 'documents') {
-				event.preventDefault()
-				$search.set.lookup('isOpen', true)
-				return
-			}
+			if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k' && mode === 'documents') { event.preventDefault(); $search.set.lookup('isOpen', true); return }
 			if (event.key === 'Escape' && $search.state.isOpen) $search.set.lookup('isOpen', false)
 		}
 		window.addEventListener('keydown', handleKeyDown)
@@ -112,42 +77,29 @@ const DocumentsPage = (): JSX.Element => {
 	const transitionMode = (nextMode: BrowserModeT): void => {
 		if (nextMode === mode || contentTransition !== 'idle') return
 		setContentTransition('out')
-		window.setTimeout(() => {
-			setMode(nextMode)
-			setContentTransition('in')
-			window.setTimeout(() => setContentTransition('idle'), 500)
-		}, 300)
+		window.setTimeout(() => { setMode(nextMode); setContentTransition('in'); window.setTimeout(() => setContentTransition('idle'), 500) }, 300)
 	}
-
 	const handleNew = async (): Promise<void> => {
 		const selectedId = $folders.state.selectedId
 		const folderId = selectedId !== 'all' && selectedId !== 'uncategorized' ? selectedId : undefined
 		const document = await createDocument(folderId)
-		beginAppTransition(() => router.push(`/documents/${document._id}`))
+		beginAppTransition(() => router.push(getEditorHref(document._id)))
 	}
-
 	const handleShareDocument = (documentId: string): void => {
-		const documents = $documents.state.list as LocalDocumentT[]
-		const document = documents.find((candidate) => candidate._id === documentId)
+		const document = ($documents.state.list as LocalDocumentT[]).find((candidate) => candidate._id === documentId)
 		if (document === undefined) return
 		const escapedTitle = document.title.replaceAll('[', '\\[').replaceAll(']', '\\]') || 'Untitled'
 		void navigator.clipboard.writeText(`[${escapedTitle}](</${document.path}>)`)
 		$folders.set.lookup('copiedId', documentId)
 		setTimeout(() => $folders.set.lookup('copiedId', ''), 2000)
 	}
-
 	const handleDeleteFolder = async (folderId: string): Promise<void> => {
-		const isConfirming = $composer.state.confirmingFolderId === folderId
-		if (!isConfirming) {
-			$composer.set.lookup('confirmingFolderId', folderId)
-			return
-		}
+		if ($composer.state.confirmingFolderId !== folderId) { $composer.set.lookup('confirmingFolderId', folderId); return }
 		await removeFolder(folderId)
 		$composer.set.lookup('confirmingFolderId', null)
 		if ($folders.state.selectedId === folderId) $folders.set.lookup('selectedId', 'uncategorized' as FolderFilterT)
 		await refreshWorkspace()
 	}
-
 	const handleCreateFolder = async (name: string, description: string): Promise<void> => {
 		$composer.set.lookup('isCreating', true)
 		const folder = await createFolder(name)
@@ -156,71 +108,34 @@ const DocumentsPage = (): JSX.Element => {
 		$composer.set.replace({ folderName: '', folderDescription: '', isCreating: false, isOpen: false, confirmingFolderId: null })
 		await refreshWorkspace()
 	}
-
-	const handleMoveDocument = async (documentId: string, value: string): Promise<void> => {
-		await moveDocument(documentId, value === 'uncategorized' ? undefined : value)
-		await refreshWorkspace()
-	}
-	const handleNavigateToDocument = (documentId: string): void => {
-		$search.set.lookup('isOpen', false)
-		beginAppTransition(() => router.push(`/documents/${documentId}`))
-	}
-
+	const handleMoveDocument = async (documentId: string, value: string): Promise<void> => { await moveDocument(documentId, value === 'uncategorized' ? undefined : value); await refreshWorkspace() }
+	const handleNavigateToDocument = (documentId: string): void => { $search.set.lookup('isOpen', false); beginAppTransition(() => router.push(getEditorHref(documentId))) }
 	const handleCreateWorkspace = async (): Promise<void> => {
 		setIsOpeningWorkspace(true)
-		try {
-			await chooseWorkspace()
-			await ensureWorkspaceGuide()
-			await rememberCurrentWorkspace()
-			$folders.set.lookup('selectedId', 'all')
-			await refreshWorkspace()
-			transitionMode('documents')
-		} finally {
-			setIsOpeningWorkspace(false)
-		}
+		try { await chooseWorkspace(); await ensureWorkspaceGuide(); await rememberCurrentWorkspace(); $folders.set.lookup('selectedId', 'all'); await refreshWorkspace(); transitionMode('documents') }
+		finally { setIsOpeningWorkspace(false) }
 	}
-
 	const handleOpenWorkspace = async (workspace: RecentWorkspaceT): Promise<void> => {
 		setIsOpeningWorkspace(true)
 		try {
-			const isActivated = await activateRecentWorkspace(workspace.id)
-			if (!isActivated) return
+			if (!(await activateRecentWorkspace(workspace.id))) return
 			sessionStorage.setItem(WORKSPACE_TRANSITION_KEY, '1')
 			const root = document.querySelector<HTMLElement>('.documentsPage')
 			if (root !== null) root.dataset.transition = 'out'
-			window.setTimeout(() => window.location.assign('/documents'), 300)
-		} finally {
-			window.setTimeout(() => setIsOpeningWorkspace(false), 300)
-		}
+			window.setTimeout(() => window.location.assign('/documents/'), 300)
+		} finally { window.setTimeout(() => setIsOpeningWorkspace(false), 300) }
 	}
 
 	const visibilityState = !isReady ? 'hidden' : shouldFadeIn ? 'visible' : 'ready'
-
-	return (
-		<div className="documentsPage" data-visibility={visibilityState} data-transition="idle">
-			<DocumentsHeader />
-			<div className="documentsPageBody">
-				<FolderRail
-					mode={mode}
-					workspaceCount={recentWorkspaces.length}
-					workspaces={recentWorkspaces}
-					onShowWorkspaces={() => transitionMode('workspaces')}
-					onCreateWorkspace={() => void handleCreateWorkspace()}
-					onOpenWorkspace={(workspace) => void handleOpenWorkspace(workspace)}
-					onDeleteFolder={handleDeleteFolder}
-				/>
-				<div className="documentsPageContent" data-transition={contentTransition}>
-					{mode === 'documents' ? (
-						<DocumentsWorkspace onNew={handleNew} onMoveDocument={handleMoveDocument} onShareDocument={handleShareDocument} />
-					) : (
-						<WorkspaceBrowser workspaces={recentWorkspaces} isOpening={isOpeningWorkspace} onOpen={(workspace) => void handleOpenWorkspace(workspace)} onCreate={() => void handleCreateWorkspace()} />
-					)}
-				</div>
-			</div>
-			{isComposerOpen && mode === 'documents' && <FolderComposer onSubmit={handleCreateFolder} />}
-			{isSearchOpen && mode === 'documents' && <SearchPalette onNavigate={handleNavigateToDocument} />}
+	return <div className="documentsPage" data-visibility={visibilityState} data-transition="idle">
+		<DocumentsHeader />
+		<div className="documentsPageBody">
+			<FolderRail mode={mode} workspaceCount={recentWorkspaces.length} workspaces={recentWorkspaces} onShowWorkspaces={() => transitionMode('workspaces')} onCreateWorkspace={() => void handleCreateWorkspace()} onOpenWorkspace={(workspace) => void handleOpenWorkspace(workspace)} onDeleteFolder={handleDeleteFolder} />
+			<div className="documentsPageContent" data-transition={contentTransition}>{mode === 'documents' ? <DocumentsWorkspace onNew={handleNew} onMoveDocument={handleMoveDocument} onShareDocument={handleShareDocument} /> : <WorkspaceBrowser workspaces={recentWorkspaces} isOpening={isOpeningWorkspace} onOpen={(workspace) => void handleOpenWorkspace(workspace)} onCreate={() => void handleCreateWorkspace()} />}</div>
 		</div>
-	)
+		{isComposerOpen && mode === 'documents' && <FolderComposer onSubmit={handleCreateFolder} />}
+		{isSearchOpen && mode === 'documents' && <SearchPalette onNavigate={handleNavigateToDocument} />}
+	</div>
 }
 
 export default DocumentsPage
