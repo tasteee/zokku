@@ -1,32 +1,12 @@
 'use client'
 
 import { datass } from 'datass'
-import { Id } from '@/convex/_generated/dataModel'
+import type { LocalDocumentT, LocalFolderT, LocalSearchResultT } from '@/lib/localWorkspace'
 
-export type FolderFilterT = 'all' | 'uncategorized' | Id<'folders'>
-
-export type DocumentT = {
-	_id: Id<'documents'>
-	title: string
-	content: string
-	folderId?: Id<'folders'>
-	updatedAt: number
-}
-
-export type FolderT = {
-	_id: Id<'folders'>
-	name: string
-	description?: string
-}
-
-export type SearchResultT = {
-	_id: Id<'documents'>
-	title: string
-	snippet: string
-	matchType: string
-	folderId?: Id<'folders'>
-	updatedAt: number
-}
+export type FolderFilterT = 'all' | 'uncategorized' | string
+export type DocumentT = LocalDocumentT
+export type FolderT = LocalFolderT
+export type SearchResultT = LocalSearchResultT
 
 type SearchStateT = {
 	input: string

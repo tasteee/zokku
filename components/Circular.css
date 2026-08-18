@@ -1,0 +1,44 @@
+@font-face {
+	font-family: 'US Bank Circular';
+	src: url('https://emp.usbank.com/etc.clientlibs/ecm-global/clientlibs/clientlib-resources/resources/fonts/U.S.BankCircular-Light.woff2') format('woff2');
+	font-style: normal;
+	font-weight: 300;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'US Bank Circular';
+	src: url('https://emp.usbank.com/etc.clientlibs/ecm-global/clientlibs/clientlib-resources/resources/fonts/U.S.BankCircular-Book.woff2') format('woff2');
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'US Bank Circular';
+	src: url('https://emp.usbank.com/etc.clientlibs/ecm-global/clientlibs/clientlib-resources/resources/fonts/U.S.BankCircular-Regular.woff2') format('woff2');
+	font-style: normal;
+	font-weight: 450;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'US Bank Circular';
+	src: url('https://emp.usbank.com/etc.clientlibs/ecm-global/clientlibs/clientlib-resources/resources/fonts/U.S.BankCircular-Medium.woff2') format('woff2');
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'US Bank Circular';
+	src: url('https://emp.usbank.com/etc.clientlibs/ecm-global/clientlibs/clientlib-resources/resources/fonts/U.S.BankCircular-Bold.woff2') format('woff2');
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+}
+
+[data-preview-theme='light'][data-preview-font='sans'] {
+	--font-sans: 'US Bank Circular', 'DM Sans', system-ui, sans-serif;
+	font-family: var(--font-sans);
+}

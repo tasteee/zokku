@@ -1,0 +1,34 @@
+.zokkuBrand {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--spacing-3);
+	font-size: var(--font-size-1);
+	font-weight: 800;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--primary);
+	user-select: none;
+	white-space: nowrap;
+}
+
+.zokkuBrand.isCompact {
+	gap: var(--spacing-2);
+	font-size: var(--font-size-0);
+}
+
+.zokkuBrandMark {
+	width: 0.6875rem;
+	height: 0.6875rem;
+	border-radius: var(--small-button-radius);
+	background: linear-gradient(135deg, var(--color-pink), var(--color-purple));
+	box-shadow:
+		0 0 10px color-mix(in srgb, var(--color-pink) 52%, transparent),
+		0 0 20px color-mix(in srgb, var(--color-purple) 34%, transparent);
+	transform: rotate(45deg);
+	flex-shrink: 0;
+}
+
+.zokkuBrand.isCompact .zokkuBrandMark {
+	width: 0.5625rem;
+	height: 0.5625rem;
+}

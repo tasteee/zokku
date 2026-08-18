@@ -1,208 +1,148 @@
 /* ─── Preview token overrides ────────────────────────────── */
 
-/*
-	Each control maps onto base design tokens. Any element carrying a
-	data-preview-theme attribute paints its own themed surface, so the
-	same rules drive the in-editor pane and the exported HTML body.
-*/
-
 [data-preview-theme] {
 	background: var(--bg);
 	color: var(--foreground);
+	font-family: var(--font-sans);
 }
 
-/* Light theme: remap semantic tokens onto the high end of the
-   neutral scale (9 = lightest) for surfaces and the low end for text.
-   Accent colors swap to US Bank brand colors: purple → blue, pink → red. */
+/* Dark document typography: only H1 reaches pure white. */
+[data-preview-theme='dark'] {
+	--primary: var(--color-neutral-8);
+	--foreground: var(--color-neutral-7);
+	--muted: var(--color-neutral-5);
+	--secondary: var(--color-neutral-4);
+}
+
+[data-preview-theme='dark'] .Prose { color: var(--color-neutral-7); }
+[data-preview-theme='dark'] .Prose h1 { color: var(--color-neutral-9); }
+[data-preview-theme='dark'] .Prose h2,
+[data-preview-theme='dark'] .Prose h3,
+[data-preview-theme='dark'] .Prose h4,
+[data-preview-theme='dark'] .Prose h5,
+[data-preview-theme='dark'] .Prose h6,
+[data-preview-theme='dark'] .Prose strong { color: var(--color-neutral-8); }
+[data-preview-theme='dark'] .Prose p,
+[data-preview-theme='dark'] .Prose li,
+[data-preview-theme='dark'] .Prose td,
+[data-preview-theme='dark'] .Prose em { color: var(--color-neutral-7); }
+[data-preview-theme='dark'] .Prose .zText.isMuted,
+[data-preview-theme='dark'] .Prose .zTextCaption,
+[data-preview-theme='dark'] .Prose blockquote { color: var(--color-neutral-5); }
+
 [data-preview-theme='light'] {
-	--color-purple: #0c2074;
+	--color-purple: #00004e;
 	--color-pink: #d22630;
-
-	--bg: var(--color-neutral-9);
-	--paper: var(--color-neutral-8);
-	--paper-soft: var(--color-neutral-7);
-	--line: var(--color-neutral-7);
-	--primary: var(--color-neutral-0);
-	--foreground: var(--color-neutral-2);
-	--muted: var(--color-neutral-4);
-	--secondary: var(--color-neutral-5);
-
-	--accent: var(--color-purple);
-	--accent-alt: var(--color-pink);
-	--warning: var(--color-pink);
-
-	--pink: var(--color-pink);
-	--purple: var(--color-purple);
+	--bg: #ffffff;
+	--paper: #f7f8fa;
+	--paper-soft: #f1f3f6;
+	--line: #d8d9e0;
+	--primary: #00004e;
+	--foreground: #484861;
+	--muted: #74758a;
+	--secondary: #8b8c9d;
+	--accent: #235ae4;
+	--accent-alt: #d22630;
+	--warning: #c45d00;
+	--pink: #d22630;
+	--purple: #00004e;
 }
 
-/* ─── Font presets ───────────────────────────────────────── */
+[data-preview-theme='light'] .Prose { color: #484861; }
+[data-preview-theme='light'] .Prose h1,
+[data-preview-theme='light'] .Prose h2,
+[data-preview-theme='light'] .Prose h3,
+[data-preview-theme='light'] .Prose h4,
+[data-preview-theme='light'] .Prose h5,
+[data-preview-theme='light'] .Prose h6 { color: #00004e; font-weight: 700; letter-spacing: -0.02em; }
+[data-preview-theme='light'] .Prose p,
+[data-preview-theme='light'] .Prose li,
+[data-preview-theme='light'] .Prose td,
+[data-preview-theme='light'] .Prose em { color: #484861; }
+[data-preview-theme='light'] .Prose strong { color: #00004e; }
+[data-preview-theme='light'] .Prose a { color: #235ae4; text-decoration-thickness: 1px; text-underline-offset: 0.14em; }
+[data-preview-theme='light'] .Prose a:hover { color: #00004e; }
+[data-preview-theme='light'] .Prose hr { border-color: #d8d9e0; }
+[data-preview-theme='light'] .Prose blockquote { border-left-color: #235ae4; color: #5d5e75; }
 
-/*
-	Setting font-family here (not just --font-sans) is required because
-	descendants inherit font-family as a computed value from body (DM Sans),
-	not as a var() reference. Declaring font-family: var(--font-sans) on
-	this container forces re-evaluation using the locally-scoped --font-sans,
-	which descendant elements then inherit.
-*/
-[data-preview-font] {
-	font-family: var(--font-sans);
-}
+/* H5/H6 remain semantic headings, not decorative purple labels. */
+.Prose h5 { font-size: var(--font-size-2); line-height: 1.4; font-weight: 650; letter-spacing: 0; text-transform: none; margin-top: var(--rhythm); margin-bottom: var(--rhythm-half); }
+.Prose h6 { font-size: var(--font-size-1); line-height: 1.45; font-weight: 650; letter-spacing: 0.01em; text-transform: none; margin-top: var(--rhythm); margin-bottom: var(--rhythm-half); }
 
-[data-preview-font='serif'] {
-	--font-sans: var(--font-fraunces), 'Iowan Old Style', Georgia, serif;
-}
+.Prose blockquote:has(> .callout),
+.Prose blockquote:has(> .zEyebrow),
+.Prose blockquote:has(> .zSubheading),
+.Prose blockquote:has(> .zStat),
+.Prose blockquote:has(> .zText.isLarge),
+.Prose blockquote:has(> .zText.isSmall),
+.Prose blockquote:has(> .zText.isMuted),
+.Prose blockquote:has(> .zTextCaption),
+.Prose blockquote:has(> .zText.isCenteredBlock),
+.Prose blockquote:has(> .zTodo) { margin: 0; padding: 0; border: 0; color: inherit; }
 
-[data-preview-font='mono'] {
-	--font-sans: var(--font-mono);
-}
+.Prose .zText.isMuted { color: var(--muted); }
+.Prose .zTextCaption { color: var(--muted); font-size: var(--font-size-0); font-weight: 500; line-height: var(--line-height-caption); letter-spacing: 0.015em; }
 
-/* ─── Type scale presets ─────────────────────────────────── */
+.Prose .zEyebrow { display: flex; align-items: center; gap: 16px; width: 100%; color: var(--primary); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.Prose .zEyebrow::after { content: ''; flex: 0 0 80px; height: 1px; background: currentColor; opacity: 0.35; }
+.Prose .zEyebrow.isFullRule::after { flex: 1 1 auto; min-width: 32px; }
+.Prose .zSubheading { margin: 1.75rem 0 0.7rem; color: var(--primary); font-size: var(--font-size-2); font-weight: 700; line-height: 1.35; letter-spacing: 0.07em; text-transform: uppercase; }
+[data-preview-theme='light'] .zEyebrow, [data-preview-theme='light'] .zSubheading { color: #00004e; }
 
-/*
-	Scale ratios and base font size are applied as computed inline styles
-	via getPreviewSurfaceStyle() in previewSettings.ts, which sets
-	--font-size-0 through --font-size-8 directly. CSS selectors here are
-	kept as documentation but are superseded by the inline style values.
-*/
+[data-preview-theme='light'] .callout { color: #484861; }
+[data-preview-theme='light'] .callout-note { border-color: #cbd8fb; border-left-color: #235ae4; background: #f3f6ff; }
+[data-preview-theme='light'] .callout-tip { border-color: #d8d9e0; border-left-color: #8b8c9d; background: #f5f5f7; color: #484861; }
+[data-preview-theme='light'] .callout-warning { border-color: #efc79f; border-left-color: #a94e00; background: #fff2df; color: #5d3a16; }
+[data-preview-theme='light'] .callout-important { border-color: #c6c6d5; border-left-color: #00004e; background: #eeeef5; color: #00004e; }
 
-/* ─── Settings popover ───────────────────────────────────── */
+.Prose .zStat { display: flex; flex-direction: column; gap: 0.2rem; margin: 1.5rem 0; padding: 1.1rem 1.25rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); color: var(--muted); font-size: var(--font-size-1); font-weight: 600; line-height: 1.35; letter-spacing: 0.03em; }
+.Prose .zStat strong { display: block; color: var(--primary); font-size: var(--font-size-5); font-weight: 700; line-height: 1; letter-spacing: -0.035em; }
+.Prose .zStat.isLabelTop { padding-top: 1rem; }
+.Prose .zStat.isLabelTop strong { margin-top: 0.25rem; }
+.Prose .zStat.isLabelBottom strong { margin-bottom: 0.15rem; }
+[data-preview-theme='light'] .zStat { border-color: #d8d9e0; background: #f7f8fa; color: #74758a; }
+[data-preview-theme='light'] .zStat strong { color: #00004e; }
 
-.PreviewSettingsRoot {
-	position: relative;
-	display: flex;
-	align-items: center;
-}
+.Prose .zTodo { position: relative; margin: 1.5rem 0; padding: 2.4rem 1.125rem 1rem 3.25rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); color: var(--foreground); font-size: var(--font-size-1); font-style: normal; line-height: var(--line-height-small); opacity: 1; }
+.Prose .zTodo::before { content: ''; position: absolute; top: 1rem; left: 1.125rem; width: 1rem; height: 1rem; border: 1.5px solid var(--muted); border-radius: 0.25rem; background: transparent; }
+.Prose .zTodo::after { content: 'TO-DO'; position: absolute; top: 0.95rem; left: 3.25rem; color: var(--muted); font-size: var(--font-size-0); font-weight: 700; line-height: 1rem; letter-spacing: 0.11em; }
+[data-preview-theme='light'] .zTodo { border-color: #d8d9e0; background: #f7f8fa; color: #484861; }
+[data-preview-theme='light'] .zTodo::before { border-color: #235ae4; }
+[data-preview-theme='light'] .zTodo::after { color: #00004e; }
 
-.PreviewSettingsTrigger {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 28px;
-	height: 28px;
-	border: 1px solid transparent;
-	border-radius: var(--small-button-radius);
-	background: transparent;
-	color: var(--muted);
-	cursor: pointer;
-	transition:
-		color 120ms,
-		background 120ms,
-		border-color 120ms;
-}
+.zInlineIcon { display: inline-flex; align-items: center; justify-content: center; width: 1em; height: 1em; margin-inline: 0.08em; vertical-align: -0.12em; color: currentColor; }
+.zInlineIcon.isInvalid { color: var(--warning); }
+.zInlineIcon svg { display: block; width: 1em; height: 1em; }
+.zInlineSeparator { display: inline-block; width: 1px; height: 1em; margin-inline: 0.55em; vertical-align: -0.14em; background: currentColor; opacity: 0.28; }
 
-.PreviewSettingsTrigger:hover {
-	color: var(--primary);
-	background: var(--paper-soft);
-}
+[data-preview-theme='light'] .Prose .zCodeBlock { border-color: #e2e3e9; background: #fbfbfd; box-shadow: 0 1px 1px rgba(0, 0, 78, 0.025), 0 8px 24px rgba(0, 0, 78, 0.045); }
+[data-preview-theme='light'] .Prose .zCodeBlock::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; border-radius: var(--radius) var(--radius) 0 0; background: linear-gradient(90deg, #235ae4 0%, #6547c8 52%, #d8d9e0 100%); }
+[data-preview-theme='light'] .Prose .zCodeFilename { color: #77788e; font-weight: 500; }
+[data-preview-theme='light'] .Prose .zCode { color: #2f3047; }
 
-.PreviewSettingsTrigger.isOpen {
-	color: var(--primary);
-	background: var(--paper-soft);
-	border-color: var(--line);
-}
+.PreviewPaneLabelActions { display: flex; align-items: center; gap: 0.25rem; }
+.PreviewThemeToggle, .zokkuThemeToggle { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--foreground); cursor: pointer; transition: background 140ms, color 140ms, border-color 140ms, transform 140ms; }
+.PreviewThemeToggle:hover, .zokkuThemeToggle:hover { background: var(--paper-soft); color: var(--primary); transform: translateY(-1px); }
+.PreviewThemeContent { opacity: 1; }
+.PreviewThemeContent[data-theme-transition='out'] { opacity: 0; transition: opacity 300ms ease; }
+.PreviewThemeContent[data-theme-transition='in'] { opacity: 1; transition: opacity 500ms ease; }
 
-.PreviewSettingsPanel {
-	position: absolute;
-	top: calc(100% + var(--spacing-2));
-	right: 0;
-	z-index: 20;
-	display: flex;
-	flex-direction: column;
-	gap: var(--spacing-5);
-	width: 260px;
-	padding: var(--spacing-5);
-	border: 1px solid var(--line);
-	border-radius: var(--medium-button-radius);
-	background: var(--paper);
-}
+/* Typography is deliberately fixed to the product sans face and compact scale. */
+[data-preview-font] { font-family: var(--font-sans); }
 
-.PreviewSettingsGroup {
-	display: flex;
-	flex-direction: column;
-	gap: var(--spacing-2);
-}
-
-.PreviewSettingsGroupLabel {
-	font-size: var(--font-size-0);
-	font-weight: 700;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	color: var(--muted);
-}
-
-.PreviewSettingsSegmented {
-	display: flex;
-	padding: var(--spacing-1);
-	gap: var(--spacing-1);
-	border: 1px solid var(--line);
-	border-radius: var(--medium-button-radius);
-	background: var(--bg);
-}
-
-.PreviewSettingsSegment {
-	flex: 1;
-	padding: var(--spacing-2) 0;
-	border: none;
-	border-radius: var(--small-button-radius);
-	background: transparent;
-	color: var(--muted);
-	font-family: var(--font-sans);
-	font-size: var(--font-size-1);
-	font-weight: 500;
-	cursor: pointer;
-	transition:
-		color 120ms,
-		background 120ms;
-}
-
-.PreviewSettingsSegment:hover {
-	color: var(--primary);
-}
-
-.PreviewSettingsSegment.isActive {
-	background: var(--paper-soft);
-	color: var(--primary);
-}
-
-.PreviewSettingsStepper {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: var(--spacing-1);
-	border: 1px solid var(--line);
-	border-radius: var(--medium-button-radius);
-	background: var(--bg);
-}
-
-.PreviewSettingsStepperButton {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 30px;
-	height: 30px;
-	border: none;
-	border-radius: var(--small-button-radius);
-	background: transparent;
-	color: var(--foreground);
-	cursor: pointer;
-	transition:
-		color 120ms,
-		background 120ms;
-}
-
-.PreviewSettingsStepperButton:hover:not(:disabled) {
-	color: var(--primary);
-	background: var(--paper-soft);
-}
-
-.PreviewSettingsStepperButton:disabled {
-	color: var(--secondary);
-	cursor: not-allowed;
-}
-
-.PreviewSettingsStepperValue {
-	font-size: var(--font-size-2);
-	font-weight: 600;
-	font-variant-numeric: tabular-nums;
-	color: var(--primary);
-}
+.PreviewSettingsRoot { position: relative; display: flex; align-items: center; }
+.PreviewSettingsTrigger { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid transparent; border-radius: var(--small-button-radius); background: transparent; color: var(--muted); cursor: pointer; transition: color 120ms, background 120ms, border-color 120ms; }
+.PreviewSettingsTrigger:hover { color: var(--primary); background: var(--paper-soft); }
+.PreviewSettingsTrigger.isOpen { color: var(--primary); background: var(--paper-soft); border-color: var(--line); }
+.PreviewSettingsPanel { position: absolute; top: calc(100% + var(--spacing-2)); right: 0; z-index: 20; display: flex; flex-direction: column; gap: var(--spacing-5); width: 260px; padding: var(--spacing-5); border: 1px solid var(--line); border-radius: var(--medium-button-radius); background: var(--paper); }
+.PreviewSettingsGroup { display: flex; flex-direction: column; gap: var(--spacing-2); }
+.PreviewSettingsGroupLabel { font-size: var(--font-size-0); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.PreviewSettingsSegmented { display: flex; padding: var(--spacing-1); gap: var(--spacing-1); border: 1px solid var(--line); border-radius: var(--medium-button-radius); background: var(--bg); }
+.PreviewSettingsSegment { flex: 1; padding: var(--spacing-2) 0; border: none; border-radius: var(--small-button-radius); background: transparent; color: var(--muted); font-family: var(--font-sans); font-size: var(--font-size-1); font-weight: 500; cursor: pointer; transition: color 120ms, background 120ms; }
+.PreviewSettingsSegment:hover { color: var(--primary); }
+.PreviewSettingsSegment.isActive { background: var(--paper-soft); color: var(--primary); }
+.PreviewSettingsStepper { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-1); border: 1px solid var(--line); border-radius: var(--medium-button-radius); background: var(--bg); }
+.PreviewSettingsStepperButton { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: none; border-radius: var(--small-button-radius); background: transparent; color: var(--foreground); cursor: pointer; transition: color 120ms, background 120ms; }
+.PreviewSettingsStepperButton:hover:not(:disabled) { color: var(--primary); background: var(--paper-soft); }
+.PreviewSettingsStepperButton:disabled { color: var(--secondary); cursor: not-allowed; }
+.PreviewSettingsStepperValue { font-size: var(--font-size-2); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--primary); }

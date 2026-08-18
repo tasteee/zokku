@@ -1,0 +1,322 @@
+'use client'
+
+export type LocalFolderT = {
+	_id: string
+	name: string
+	path: string
+	description?: string
+}
+
+export type LocalDocumentT = {
+	_id: string
+	title: string
+	content: string
+	path: string
+	folderId?: string
+	updatedAt: number
+}
+
+export type LocalSearchResultT = LocalDocumentT & {
+	snippet: string
+	matchType: 'title' | 'content'
+}
+
+type DirectoryHandleT = FileSystemDirectoryHandle & {
+	values: () => AsyncIterableIterator<FileSystemHandle>
+	entries: () => AsyncIterableIterator<[string, FileSystemHandle]>
+}
+
+type PermissionHandleT = FileSystemHandle & {
+	queryPermission: (options: { mode: 'readwrite' }) => Promise<PermissionState>
+	requestPermission: (options: { mode: 'readwrite' }) => Promise<PermissionState>
+}
+
+type WindowWithDirectoryPickerT = Window & {
+	showDirectoryPicker: (options?: { id?: string; mode?: 'read' | 'readwrite'; startIn?: string }) => Promise<FileSystemDirectoryHandle>
+}
+
+const DB_NAME = 'zokku-local'
+const DB_VERSION = 2
+const STORE_NAME = 'workspace'
+const HANDLE_KEY = 'root'
+
+let rootHandle: FileSystemDirectoryHandle | null = null
+
+const encodePath = (path: string): string => {
+	const bytes = new TextEncoder().encode(path)
+	let binary = ''
+	for (const byte of bytes) binary += String.fromCharCode(byte)
+	return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '')
+}
+
+const decodePath = (id: string): string => {
+	const base64 = id.replaceAll('-', '+').replaceAll('_', '/')
+	const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')
+	const binary = atob(padded)
+	const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0))
+	return new TextDecoder().decode(bytes)
+}
+
+const slugify = (value: string): string => {
+	const slug = value
+		.toLowerCase()
+		.trim()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '')
+	return slug || 'untitled'
+}
+
+const openDatabase = (): Promise<IDBDatabase> => {
+	return new Promise((resolve, reject) => {
+		const request = indexedDB.open(DB_NAME, DB_VERSION)
+		request.onupgradeneeded = () => {
+			const database = request.result
+			if (!database.objectStoreNames.contains(STORE_NAME)) database.createObjectStore(STORE_NAME)
+		}
+		request.onsuccess = () => resolve(request.result)
+		request.onerror = () => reject(request.error)
+	})
+}
+
+const persistHandle = async (handle: FileSystemDirectoryHandle): Promise<void> => {
+	const database = await openDatabase()
+	await new Promise<void>((resolve, reject) => {
+		const transaction = database.transaction(STORE_NAME, 'readwrite')
+		transaction.objectStore(STORE_NAME).put(handle, HANDLE_KEY)
+		transaction.oncomplete = () => resolve()
+		transaction.onerror = () => reject(transaction.error)
+	})
+	database.close()
+}
+
+const readPersistedHandle = async (): Promise<FileSystemDirectoryHandle | null> => {
+	const database = await openDatabase()
+	const handle = await new Promise<FileSystemDirectoryHandle | null>((resolve, reject) => {
+		const transaction = database.transaction(STORE_NAME, 'readonly')
+		const request = transaction.objectStore(STORE_NAME).get(HANDLE_KEY)
+		request.onsuccess = () => resolve((request.result as FileSystemDirectoryHandle | undefined) ?? null)
+		request.onerror = () => reject(request.error)
+	})
+	database.close()
+	return handle
+}
+
+const hasReadWritePermission = async (handle: FileSystemDirectoryHandle): Promise<boolean> => {
+	const permissionHandle = handle as PermissionHandleT
+	if (typeof permissionHandle.queryPermission !== 'function') return true
+	return (await permissionHandle.queryPermission({ mode: 'readwrite' })) === 'granted'
+}
+
+const requestReadWritePermission = async (handle: FileSystemDirectoryHandle): Promise<boolean> => {
+	const permissionHandle = handle as PermissionHandleT
+	if (typeof permissionHandle.requestPermission !== 'function') return true
+	return (await permissionHandle.requestPermission({ mode: 'readwrite' })) === 'granted'
+}
+
+export const isFileSystemWorkspaceSupported = (): boolean => {
+	return typeof window !== 'undefined' && 'showDirectoryPicker' in window
+}
+
+export const chooseWorkspace = async (): Promise<string> => {
+	if (!isFileSystemWorkspaceSupported()) throw new Error('This browser does not support local folder workspaces. Use Chrome or Edge.')
+	const pickerWindow = window as unknown as WindowWithDirectoryPickerT
+	const handle = await pickerWindow.showDirectoryPicker({ id: 'zokku-workspace', mode: 'readwrite' })
+	rootHandle = handle
+	await persistHandle(handle)
+	return handle.name
+}
+
+export const restoreWorkspace = async (requestPermission = false): Promise<string | null> => {
+	if (rootHandle !== null) return rootHandle.name
+	const persisted = await readPersistedHandle()
+	if (persisted === null) return null
+	const hasPermission = await hasReadWritePermission(persisted)
+	const permissionGranted = hasPermission || (requestPermission && (await requestReadWritePermission(persisted)))
+	if (!permissionGranted) return null
+	rootHandle = persisted
+	return persisted.name
+}
+
+export const getWorkspaceName = (): string | null => rootHandle?.name ?? null
+
+const requireWorkspace = async (): Promise<FileSystemDirectoryHandle> => {
+	if (rootHandle !== null) return rootHandle
+	const restored = await restoreWorkspace(false)
+	if (restored === null || rootHandle === null) throw new Error('NO_WORKSPACE')
+	return rootHandle
+}
+
+const getDirectory = async (path: string, create = false): Promise<FileSystemDirectoryHandle> => {
+	let directory = await requireWorkspace()
+	const parts = path.split('/').filter(Boolean)
+	for (const part of parts) directory = await directory.getDirectoryHandle(part, { create })
+	return directory
+}
+
+const getParentAndName = (path: string): { directoryPath: string; name: string } => {
+	const parts = path.split('/').filter(Boolean)
+	const name = parts.pop()
+	if (!name) throw new Error(`Invalid path: ${path}`)
+	return { directoryPath: parts.join('/'), name }
+}
+
+const readMarkdownFile = async (path: string): Promise<LocalDocumentT> => {
+	const { directoryPath, name } = getParentAndName(path)
+	const directory = await getDirectory(directoryPath)
+	const handle = await directory.getFileHandle(name)
+	const file = await handle.getFile()
+	const content = await file.text()
+	const title = name.replace(/\.md$/i, '').replaceAll('-', ' ')
+	return {
+		_id: encodePath(path),
+		title,
+		content,
+		path,
+		folderId: directoryPath ? encodePath(directoryPath) : undefined,
+		updatedAt: file.lastModified
+	}
+}
+
+const walk = async (directory: FileSystemDirectoryHandle, basePath = ''): Promise<{ folders: LocalFolderT[]; documents: LocalDocumentT[] }> => {
+	const folders: LocalFolderT[] = []
+	const documents: LocalDocumentT[] = []
+	const iterable = directory as DirectoryHandleT
+
+	for await (const handle of iterable.values()) {
+		const path = basePath ? `${basePath}/${handle.name}` : handle.name
+		if (handle.kind === 'directory') {
+			folders.push({ _id: encodePath(path), name: handle.name, path })
+			const nested = await walk(handle as FileSystemDirectoryHandle, path)
+			folders.push(...nested.folders)
+			documents.push(...nested.documents)
+			continue
+		}
+		if (!handle.name.toLowerCase().endsWith('.md')) continue
+		documents.push(await readMarkdownFile(path))
+	}
+
+	return { folders, documents }
+}
+
+export const listWorkspace = async (): Promise<{ folders: LocalFolderT[]; documents: LocalDocumentT[] }> => {
+	const root = await requireWorkspace()
+	return walk(root)
+}
+
+export const getDocument = async (id: string): Promise<LocalDocumentT | null> => {
+	try {
+		return await readMarkdownFile(decodePath(id))
+	} catch {
+		return null
+	}
+}
+
+export const createDocument = async (folderId?: string): Promise<LocalDocumentT> => {
+	const folderPath = folderId ? decodePath(folderId) : ''
+	const directory = await getDirectory(folderPath)
+	let index = 1
+	let filename = 'untitled.md'
+	while (true) {
+		try {
+			await directory.getFileHandle(filename)
+			index += 1
+			filename = `untitled-${index}.md`
+		} catch {
+			break
+		}
+	}
+	const handle = await directory.getFileHandle(filename, { create: true })
+	const writable = await handle.createWritable()
+	await writable.write('')
+	await writable.close()
+	const path = folderPath ? `${folderPath}/${filename}` : filename
+	return readMarkdownFile(path)
+}
+
+export const saveDocument = async (id: string, title: string, content: string): Promise<string> => {
+	const currentPath = decodePath(id)
+	const { directoryPath, name } = getParentAndName(currentPath)
+	const directory = await getDirectory(directoryPath)
+	const nextName = `${slugify(title)}.md`
+	const targetName = title.trim() ? nextName : name
+
+	if (targetName !== name) {
+		const target = await directory.getFileHandle(targetName, { create: true })
+		const targetWritable = await target.createWritable()
+		await targetWritable.write(content)
+		await targetWritable.close()
+		await directory.removeEntry(name)
+		const nextPath = directoryPath ? `${directoryPath}/${targetName}` : targetName
+		return encodePath(nextPath)
+	}
+
+	const handle = await directory.getFileHandle(name)
+	const writable = await handle.createWritable()
+	await writable.write(content)
+	await writable.close()
+	return id
+}
+
+export const removeDocument = async (id: string): Promise<void> => {
+	const { directoryPath, name } = getParentAndName(decodePath(id))
+	const directory = await getDirectory(directoryPath)
+	await directory.removeEntry(name)
+}
+
+export const createFolder = async (name: string): Promise<LocalFolderT> => {
+	const root = await requireWorkspace()
+	const safeName = name.trim()
+	if (!safeName) throw new Error('Folder name is required')
+	await root.getDirectoryHandle(safeName, { create: true })
+	return { _id: encodePath(safeName), name: safeName, path: safeName }
+}
+
+export const removeFolder = async (id: string): Promise<void> => {
+	const path = decodePath(id)
+	const { directoryPath, name } = getParentAndName(path)
+	const directory = await getDirectory(directoryPath)
+	await directory.removeEntry(name, { recursive: true })
+}
+
+export const moveDocument = async (documentId: string, folderId?: string): Promise<string> => {
+	const document = await getDocument(documentId)
+	if (document === null) throw new Error('Document not found')
+	const targetPath = folderId ? decodePath(folderId) : ''
+	const targetDirectory = await getDirectory(targetPath)
+	const filename = document.path.split('/').pop() ?? 'untitled.md'
+	const target = await targetDirectory.getFileHandle(filename, { create: true })
+	const writable = await target.createWritable()
+	await writable.write(document.content)
+	await writable.close()
+	await removeDocument(documentId)
+	return encodePath(targetPath ? `${targetPath}/${filename}` : filename)
+}
+
+export const searchDocuments = async (query: string): Promise<LocalSearchResultT[]> => {
+	const term = query.trim().toLowerCase()
+	if (!term) return []
+	const { documents } = await listWorkspace()
+	return documents
+		.map((document): LocalSearchResultT | null => {
+			const titleIndex = document.title.toLowerCase().indexOf(term)
+			const contentIndex = document.content.toLowerCase().indexOf(term)
+			if (titleIndex < 0 && contentIndex < 0) return null
+			const matchType = titleIndex >= 0 ? 'title' : 'content'
+			const start = Math.max(0, contentIndex - 60)
+			const snippet = matchType === 'title' ? document.content.slice(0, 140) : document.content.slice(start, start + 180)
+			return { ...document, matchType, snippet }
+		})
+		.filter((result): result is LocalSearchResultT => result !== null)
+}
+
+export const saveMedia = async (blob: Blob): Promise<string> => {
+	const root = await requireWorkspace()
+	const assets = await root.getDirectoryHandle('.zokku-assets', { create: true })
+	const extension = blob.type.split('/')[1]?.replace('jpeg', 'jpg') || 'bin'
+	const filename = `${crypto.randomUUID()}.${extension}`
+	const handle = await assets.getFileHandle(filename, { create: true })
+	const writable = await handle.createWritable()
+	await writable.write(blob)
+	await writable.close()
+	return `/.zokku-assets/${filename}`
+}

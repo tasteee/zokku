@@ -7,92 +7,124 @@ export type MarkerDefinitionT = {
 	marker?: string
 }
 
+const big: MarkerDefinitionT = {
+	element: 'p',
+	classes: 'zText isLarge'
+}
+
+const small: MarkerDefinitionT = {
+	element: 'p',
+	classes: 'zText isSmall'
+}
+
+const muted: MarkerDefinitionT = {
+	element: 'p',
+	classes: 'zText isMuted'
+}
+
+const eyebrow: MarkerDefinitionT = {
+	element: 'p',
+	classes: 'zText isSmall isSmallCaps zEyebrow'
+}
+
+const subheading: MarkerDefinitionT = {
+	element: 'p',
+	classes: 'zSubheading'
+}
+
+const note: MarkerDefinitionT = {
+	element: 'p',
+	classes: 'zNoteCallout callout callout-note'
+}
+
+const tip: MarkerDefinitionT = {
+	element: 'p',
+	classes: 'callout callout-tip'
+}
+
+const warning: MarkerDefinitionT = {
+	element: 'p',
+	classes: 'callout callout-warning'
+}
+
+const important: MarkerDefinitionT = {
+	element: 'p',
+	classes: 'callout callout-important'
+}
+
+const center: MarkerDefinitionT = {
+	element: 'p',
+	classes: 'zText isCenteredBlock'
+}
+
+const caption: MarkerDefinitionT = {
+	element: 'p',
+	classes: 'zTextCaption'
+}
+
+const todo: MarkerDefinitionT = {
+	element: 'p',
+	classes: 'zTodo'
+}
+
 export const customMarkers: Record<string, MarkerDefinitionT> = {
-	'!BIG': {
-		element: 'p',
-		classes: 'zText isLarge'
-	},
-	'!SMALL': {
-		element: 'p',
-		classes: 'zText isSmall'
-	},
-	'!CAPS': {
-		element: 'p',
-		classes: 'zText isSmall isSmallCaps'
-	},
-	'!NOTE': {
-		element: 'p',
-		classes: 'zNoteCallout callout callout-note'
-	},
-	'!LINE': {
-		element: 'hr',
-		classes: 'zDivider'
-	},
-	'!TIP': {
-		element: 'p',
-		classes: 'callout callout-tip'
-	},
-	'!WARNING': {
-		element: 'p',
-		classes: 'callout callout-warning'
-	},
-	'!CENTER': {
-		element: 'p',
-		classes: 'zText isCenteredBlock'
-	},
-	'!CAPTION': {
-		element: 'p',
-		classes: 'zTextCaption'
-	},
-	'!H1': {
-		element: 'h1',
-		classes: 'zTextH1'
-	},
-	'!H2': {
-		element: 'h2',
-		classes: 'zTextH2'
-	},
-	'!H3': {
-		element: 'h3',
-		classes: 'zTextH3'
-	},
-	'!H4': {
-		element: 'h4',
-		classes: 'zTextH4'
-	},
-	'!H5': {
-		element: 'h5',
-		classes: 'zTextH5'
-	},
-	'!H6': {
-		element: 'h6',
-		classes: 'zTextH6'
-	},
-	'!BASH': {
-		element: 'pre',
-		classes: 'zCodeBash',
-		attributes: {
-			'data-language': 'bash'
-		}
-	},
-	'!QUOTE': {
-		element: 'blockquote',
-		classes: 'zQuote'
-	},
-	'!TODO': {
-		element: 'p',
-		classes: 'zTodo'
-	}
+	'[!BIG]': big,
+	'[!SMALL]': small,
+	'[!MUTED]': muted,
+	'[!EYEBROW]': eyebrow,
+	'[!SUBHEADING]': subheading,
+	'[!NOTE]': note,
+	'[!TIP]': tip,
+	'[!WARNING]': warning,
+	'[!IMPORTANT]': important,
+	'[!CENTER]': center,
+	'[!CAPTION]': caption,
+	'[!TODO]': todo,
+
+	// Transitional aliases for existing local documents.
+	'!BIG': big,
+	'!SMALL': small,
+	'!MUTED': muted,
+	'!CAPS': eyebrow,
+	'!EYEBROW': eyebrow,
+	'!SUBHEADING': subheading,
+	'!NOTE': note,
+	'!TIP': tip,
+	'!WARNING': warning,
+	'!IMPORTANT': important,
+	'!CENTER': center,
+	'!CAPTION': caption,
+	'!TODO': todo
 }
 
 const SPACER_REGEX = /^\!SPACER(\d+)/
+const EYEBROW_FULL_REGEX = /^\[!EYEBROW\s+FULL\]/i
+const STAT_REGEX = /^\[!STAT(?:\s+(TOP|BOTTOM))?\]/i
 
 export const matchDynamicMarkerDefinition = (value: string): MarkerDefinitionT | null => {
+	const eyebrowFullMatch = value.match(EYEBROW_FULL_REGEX)
+	if (eyebrowFullMatch) {
+		return {
+			marker: eyebrowFullMatch[0],
+			classes: 'zText isSmall isSmallCaps zEyebrow isFullRule',
+			element: 'p'
+		}
+	}
+
+	const statMatch = value.match(STAT_REGEX)
+	if (statMatch) {
+		const position = statMatch[1]?.toUpperCase() === 'TOP' ? 'isLabelTop' : 'isLabelBottom'
+		return {
+			marker: statMatch[0],
+			classes: `zStat ${position}`,
+			element: 'p'
+		}
+	}
+
 	const spacerMatch = value.match(SPACER_REGEX)
 	if (!spacerMatch) return null
 
 	const units = Number.parseInt(spacerMatch[1], 10)
-
 	return {
 		marker: spacerMatch[0],
 		classes: `zSpacer-${units}`,

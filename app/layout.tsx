@@ -5,13 +5,12 @@ import './zText.css'
 import { JSX } from 'react'
 import type { Metadata } from 'next'
 import { DM_Mono, DM_Sans, Fraunces } from 'next/font/google'
-import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server'
-import { ConvexClientProvider } from '@/components/ConvexClientProvider'
 import '@/components/zButton.css'
+import '@/components/Circular.css'
 
 export const metadata: Metadata = {
 	title: 'Zokku',
-	description: 'A gorgeous markdown document editor.'
+	description: 'A local-first Markdown workspace.'
 }
 
 const dmSans = DM_Sans({
@@ -38,13 +37,9 @@ type RootLayoutPropsT = {
 
 const RootLayout = (props: RootLayoutPropsT): JSX.Element => {
 	return (
-		<ConvexAuthNextjsServerProvider>
-			<html lang="en" className={`${dmSans.className} ${dmMono.className} ${fraunces.variable}`}>
-				<body>
-					<ConvexClientProvider>{props.children}</ConvexClientProvider>
-				</body>
-			</html>
-		</ConvexAuthNextjsServerProvider>
+		<html lang="en" className={`${dmSans.className} ${dmMono.className} ${fraunces.variable}`}>
+			<body>{props.children}</body>
+		</html>
 	)
 }
 

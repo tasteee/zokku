@@ -1,22 +1,14 @@
 import type { NextConfig } from 'next'
 
+const isGitHubPages = process.env.DEPLOY_TARGET === 'github-pages'
+
 const nextConfig: NextConfig = {
-	output: 'standalone',
+	output: 'export',
+	trailingSlash: true,
+	basePath: isGitHubPages ? '/zokku' : '',
 
 	typescript: {
 		ignoreBuildErrors: true
-	},
-
-	async rewrites() {
-		const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
-		if (!convexUrl) return []
-
-		return [
-			{
-				source: '/api/auth/:path*',
-				destination: `${convexUrl.replace('.cloud', '.site')}/api/auth/:path*`
-			}
-		]
 	}
 }
 
