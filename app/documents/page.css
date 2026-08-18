@@ -27,9 +27,17 @@
 	box-sizing: border-box;
 }
 
+.documentsPageBodyWorkspaces {
+	grid-template-columns: minmax(0, 1fr);
+}
+
 .documentsPageContent {
 	min-width: 0;
 	opacity: 1;
+}
+
+.documentsPageContentFull {
+	width: 100%;
 }
 
 .documentsPageContent[data-transition='out'] {
