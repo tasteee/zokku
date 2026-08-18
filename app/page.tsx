@@ -19,13 +19,8 @@ const HomePage = (): JSX.Element => {
 	const [error, setError] = useState('')
 	const isSupported = typeof window === 'undefined' || isFileSystemWorkspaceSupported()
 
-	const refreshWorkspaces = async (): Promise<void> => {
-		setWorkspaces(await listRecentWorkspaces())
-	}
-
-	useEffect(() => {
-		void refreshWorkspaces()
-	}, [])
+	const refreshWorkspaces = async (): Promise<void> => setWorkspaces(await listRecentWorkspaces())
+	useEffect(() => { void refreshWorkspaces() }, [])
 
 	const enterDocuments = (): void => {
 		sessionStorage.setItem(WORKSPACE_TRANSITION_KEY, '1')
@@ -45,7 +40,7 @@ const HomePage = (): JSX.Element => {
 			enterDocuments()
 		} catch (cause) {
 			const isAbort = cause instanceof DOMException && cause.name === 'AbortError'
-			if (!isAbort) setError(cause instanceof Error ? cause.message : 'Unable to open that folder.')
+			if (!isAbort) setError('Zokku could not open that folder. Please try again.')
 			setIsOpening(false)
 		}
 	}
@@ -61,8 +56,8 @@ const HomePage = (): JSX.Element => {
 				return
 			}
 			enterDocuments()
-		} catch (cause) {
-			setError(cause instanceof Error ? cause.message : 'Unable to reopen that workspace.')
+		} catch {
+			setError('Zokku could not reopen that workspace. Please try again.')
 			setIsOpening(false)
 		}
 	}
@@ -74,8 +69,10 @@ const HomePage = (): JSX.Element => {
 				<FolderRail
 					mode="workspaces"
 					workspaceCount={workspaces.length}
+					workspaces={workspaces}
 					onShowWorkspaces={() => undefined}
 					onCreateWorkspace={() => void handleCreateWorkspace()}
+					onOpenWorkspace={(workspace) => void handleOpenWorkspace(workspace)}
 					onDeleteFolder={async () => undefined}
 				/>
 				<div className="documentsPageContent">
