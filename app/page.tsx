@@ -2,9 +2,8 @@
 
 import './workspace.css'
 
-import { ArrowRightIcon, FolderIcon, FolderOpenIcon } from '@phosphor-icons/react'
+import { FolderIcon, FolderOpenIcon, PlusIcon } from '@phosphor-icons/react'
 import { JSX, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { ZokkuBrand } from '@/components/ZokkuBrand'
 import { chooseWorkspace, isFileSystemWorkspaceSupported, restoreWorkspace } from '@/lib/localWorkspace'
 import { ensureWorkspaceGuide } from '@/lib/ensureWorkspaceGuide'
@@ -15,11 +14,19 @@ import {
 } from '@/lib/recentWorkspaces'
 import type { RecentWorkspaceT } from '@/lib/recentWorkspaces'
 
+type TransitionStateT = 'idle' | 'out'
+
+const WORKSPACE_TRANSITION_KEY = 'zokku-workspace-transition'
+
+const formatCount = (count: number, singular: string, plural: string): string => {
+	return `${count} ${count === 1 ? singular : plural}`
+}
+
 const HomePage = (): JSX.Element => {
-	const router = useRouter()
 	const [isOpening, setIsOpening] = useState(false)
 	const [recentWorkspaces, setRecentWorkspaces] = useState<RecentWorkspaceT[]>([])
 	const [error, setError] = useState('')
+	const [transitionState, setTransitionState] = useState<TransitionStateT>('idle')
 	const isSupported = typeof window === 'undefined' || isFileSystemWorkspaceSupported()
 	const hasRecentWorkspaces = recentWorkspaces.length > 0
 
@@ -37,6 +44,14 @@ const HomePage = (): JSX.Element => {
 		void load()
 	}, [])
 
+	const transitionToDocuments = (): void => {
+		setTransitionState('out')
+		window.setTimeout(() => {
+			sessionStorage.setItem(WORKSPACE_TRANSITION_KEY, '1')
+			window.location.assign('/documents')
+		}, 300)
+	}
+
 	const handleChooseWorkspace = async (): Promise<void> => {
 		setError('')
 		setIsOpening(true)
@@ -45,11 +60,10 @@ const HomePage = (): JSX.Element => {
 			await chooseWorkspace()
 			await ensureWorkspaceGuide()
 			await rememberCurrentWorkspace()
-			router.push('/documents')
+			transitionToDocuments()
 		} catch (cause) {
 			const isAbort = cause instanceof DOMException && cause.name === 'AbortError'
 			if (!isAbort) setError(cause instanceof Error ? cause.message : 'Unable to open that folder.')
-		} finally {
 			setIsOpening(false)
 		}
 	}
@@ -62,76 +76,72 @@ const HomePage = (): JSX.Element => {
 			const isActivated = await activateRecentWorkspace(workspace.id)
 			if (!isActivated) {
 				setError(`Zokku needs permission to reopen ${workspace.name}.`)
+				setIsOpening(false)
 				return
 			}
-			window.location.assign('/documents')
+			transitionToDocuments()
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : 'Unable to reopen that workspace.')
-		} finally {
 			setIsOpening(false)
 		}
 	}
 
 	return (
-		<main className="WorkspaceSplash">
+		<main className="WorkspaceSplash" data-transition={transitionState}>
 			<div className="WorkspaceSplashGlow isPurple" />
 			<div className="WorkspaceSplashGlow isPink" />
-			<div className="WorkspaceSplashInner">
+			<div className="WorkspaceAppContent">
 				<header className="WorkspaceSplashHeader">
 					<ZokkuBrand />
-					<div className="WorkspaceLocalBadge">
-						<span className="WorkspaceLocalBadgeDot" />
-						Local workspace
-					</div>
 				</header>
 
-				<section className="WorkspaceHero">
-					<div>
-						<h1 className="WorkspaceTitle">
-							A quieter place
-							<span className="WorkspaceTitleAccent">to make things.</span>
-						</h1>
-						<p className="WorkspaceLead">
-							Zokku works directly from a folder on your computer. No account, no cloud database, no sync layer between you and your Markdown.
-						</p>
-					</div>
-
-					<div className="WorkspaceCard">
-						<div className="WorkspaceCardInner">
-							<div className="WorkspaceFolderGlyph">
-								<FolderOpenIcon size={27} weight="duotone" />
-							</div>
-							<h2 className="WorkspaceCardTitle">Open a workspace</h2>
-
-							<button className="WorkspacePickerButton" disabled={isOpening || !isSupported} onClick={handleChooseWorkspace}>
-								<span>{isOpening ? 'Opening workspace…' : 'Select folder'}</span>
-								<ArrowRightIcon size={16} weight="bold" />
-							</button>
-
-							{hasRecentWorkspaces && (
-								<div className="WorkspaceRecentSection">
-									<div className="WorkspaceRecentLabel">Recent workspaces</div>
-									<div className="WorkspaceRecentList">
-										{recentWorkspaces.map((workspace) => (
-											<button
-												key={workspace.id}
-												className="WorkspaceRecentButton"
-												disabled={isOpening}
-												onClick={() => void handleRecentWorkspace(workspace)}
-											>
-												<FolderIcon size={16} weight="bold" />
-												<span>{workspace.name}</span>
-												<ArrowRightIcon size={14} weight="bold" />
-											</button>
-										))}
-									</div>
+				<section className="WorkspaceContent">
+					{hasRecentWorkspaces ? (
+						<>
+							<div className="WorkspaceSectionHeader">
+								<div>
+									<h1 className="WorkspaceSectionTitle">Workspaces</h1>
+									<p className="WorkspaceSectionDescription">Open a local workspace or select another folder.</p>
 								</div>
-							)}
+								<button className="WorkspaceAddButton" disabled={isOpening || !isSupported} onClick={handleChooseWorkspace}>
+									<PlusIcon size={15} weight="bold" />
+									<span>New workspace</span>
+								</button>
+							</div>
 
-							{!isSupported && <p className="WorkspaceError">Local workspaces require a Chromium browser such as Chrome or Edge.</p>}
-							{error && <p className="WorkspaceError">{error}</p>}
+							<div className="WorkspaceGrid">
+								{recentWorkspaces.map((workspace) => (
+									<button
+										key={workspace.id}
+										className="WorkspaceGridCard"
+										disabled={isOpening}
+										onClick={() => void handleRecentWorkspace(workspace)}
+									>
+										<div className="WorkspaceGridCardTopline">
+											<span className="WorkspaceGridIcon"><FolderIcon size={21} weight="duotone" /></span>
+											<div className="WorkspaceGridIdentity">
+												<strong>{workspace.name}</strong>
+												<span>{formatCount(workspace.noteCount, 'note', 'notes')} · {formatCount(workspace.folderCount, 'folder', 'folders')}</span>
+											</div>
+										</div>
+										<div className="WorkspaceGridPath" title="Browsers do not expose the full absolute disk path">{workspace.displayPath}</div>
+									</button>
+								))}
+							</div>
+						</>
+					) : (
+						<div className="WorkspaceEmptyState">
+							<div className="WorkspaceEmptyIcon"><FolderOpenIcon size={28} weight="duotone" /></div>
+							<h1>No workspaces</h1>
+							<p>Select a folder on disk to create a local Zokku workspace.</p>
+							<button className="WorkspacePickerButton" disabled={isOpening || !isSupported} onClick={handleChooseWorkspace}>
+								{isOpening ? 'Opening workspace…' : 'Select folder'}
+							</button>
 						</div>
-					</div>
+					)}
+
+					{!isSupported && <p className="WorkspaceError">Local workspaces require a Chromium browser such as Chrome or Edge.</p>}
+					{error && <p className="WorkspaceError">{error}</p>}
 				</section>
 			</div>
 		</main>
