@@ -5,6 +5,7 @@ import { ChangeEvent, JSX, MouseEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { $folders, DocumentT, FolderT } from '../../stores'
 import { beginAppTransition } from '@/lib/appTransition'
+import { getEditorHref } from '@/lib/documentRoutes'
 
 export const formatRelativeTime = (timestamp: number): string => {
 	const nowMs = Date.now()
@@ -12,20 +13,17 @@ export const formatRelativeTime = (timestamp: number): string => {
 	const diffMinutes = Math.floor(diffMs / 60_000)
 	const diffHours = Math.floor(diffMs / 3_600_000)
 	const diffDays = Math.floor(diffMs / 86_400_000)
-
 	if (diffMinutes < 1) return 'Just now'
 	if (diffMinutes < 60) return `${diffMinutes}m ago`
 	if (diffHours < 24) return `${diffHours}h ago`
 	if (diffDays < 7) return `${diffDays}d ago`
-
 	return new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 export const getContentPreview = (content: string): string => {
 	const withoutHeadings = content.replace(/^#{1,6}\s+.*/gm, '')
 	const withoutMarkup = withoutHeadings.replace(/[*_`~>[\]]/g, '')
-	const normalized = withoutMarkup.replace(/\s+/g, ' ').trim()
-	return normalized.slice(0, 160)
+	return withoutMarkup.replace(/\s+/g, ' ').trim().slice(0, 160)
 }
 
 type DocumentCardPropsT = {
@@ -44,7 +42,7 @@ export const DocumentCard = (props: DocumentCardPropsT): JSX.Element => {
 	const isCopied = copiedId === props.document._id
 	const folder = props.folders.find((item) => item._id === props.document.folderId)
 
-	const handleCardClick = (): void => beginAppTransition(() => router.push(`/documents/${props.document._id}`))
+	const handleCardClick = (): void => beginAppTransition(() => router.push(getEditorHref(props.document._id)))
 	const handleMoveChange = (event: ChangeEvent<HTMLSelectElement>): void => { void props.onMove(props.document._id, event.target.value) }
 	const handleShareClick = (event: MouseEvent): void => { event.stopPropagation(); props.onShare(props.document._id) }
 
