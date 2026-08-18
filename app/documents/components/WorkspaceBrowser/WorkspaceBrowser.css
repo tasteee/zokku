@@ -1,0 +1,72 @@
+.workspaceBrowser {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-6);
+}
+
+.workspaceBrowserHeader {
+	padding-bottom: var(--spacing-5);
+	border-bottom: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
+}
+
+.workspaceBrowserGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+	gap: var(--spacing-4);
+}
+
+.workspaceBrowserCard {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: start;
+	gap: var(--spacing-4);
+	min-height: 9.5rem;
+	padding: var(--spacing-5);
+	border: 1px solid color-mix(in srgb, var(--line) 84%, transparent);
+	border-radius: var(--medium-button-radius);
+	background: color-mix(in srgb, var(--paper) 68%, transparent);
+	color: var(--foreground);
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	transition: transform 140ms ease, border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
+}
+
+.workspaceBrowserCard:hover {
+	transform: translateY(-2px);
+	border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
+	background: color-mix(in srgb, var(--paper) 88%, transparent);
+	box-shadow: 0 18px 50px color-mix(in srgb, black 16%, transparent);
+}
+
+.workspaceBrowserCard:disabled { opacity: 0.55; cursor: wait; }
+
+.workspaceBrowserCardIcon {
+	display: grid;
+	place-items: center;
+	width: 2.6rem;
+	height: 2.6rem;
+	border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+	border-radius: var(--medium-button-radius);
+	background: color-mix(in srgb, var(--accent) 9%, transparent);
+	color: var(--accent);
+}
+
+.workspaceBrowserCardIcon svg { width: 1.25rem; height: 1.25rem; }
+.workspaceBrowserCardBody { min-width: 0; }
+.workspaceBrowserCardTitle { color: var(--primary); font-size: var(--font-size-3); font-weight: var(--font-weight-bold); line-height: 1.25; }
+.workspaceBrowserCardMeta { display: flex; align-items: center; gap: var(--spacing-2); margin-top: var(--spacing-2); color: var(--muted); font-size: var(--font-size-caption); }
+.workspaceBrowserCardPath { margin-top: var(--spacing-4); overflow: hidden; color: var(--secondary); font-family: var(--font-mono); font-size: var(--font-size-0); text-overflow: ellipsis; white-space: nowrap; }
+
+.workspaceBrowserCreateButton {
+	margin-top: var(--spacing-1);
+	padding: var(--spacing-3) var(--spacing-5);
+	border: 1px solid var(--color-pink);
+	border-radius: var(--medium-button-radius);
+	background: var(--color-pink);
+	color: var(--primary-foreground);
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
