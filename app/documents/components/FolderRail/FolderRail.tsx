@@ -2,7 +2,7 @@
 
 import './FolderRail.css'
 import { JSX } from 'react'
-import { CaretLeft, FileText, Folder, FolderPlus, Plus, Trash } from '@phosphor-icons/react'
+import { CaretLeft, FileText, Folder, FolderPlus, Trash } from '@phosphor-icons/react'
 import { $composer, $documents, $folders, DocumentT, FolderFilterT, FolderT } from '../../stores'
 
 type FolderRailPropsT = {
@@ -37,7 +37,7 @@ export const FolderRail = (props: FolderRailPropsT): JSX.Element => {
 					<span>Workspaces</span>
 					<div className="folderRailHeaderActions">
 						<span>{props.workspaceCount}</span>
-						<button className="folderRailAddButton" title="Create workspace" onClick={props.onCreateWorkspace}><Plus weight="bold" /></button>
+						<button className="folderRailAddButton" title="Create workspace" onClick={props.onCreateWorkspace}><FolderPlus weight="bold" /></button>
 					</div>
 				</div>
 			</aside>
