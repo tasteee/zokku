@@ -18,6 +18,7 @@ import { getDocument, listWorkspace, removeDocument, restoreWorkspace, saveDocum
 import type { LocalDocumentT } from '@/lib/localWorkspace'
 import { resolveDocumentHref } from '@/lib/documentLinks'
 import { getExportDocuments } from '@/lib/localDocumentExport'
+import { getEditorHref, getPreviewHref } from '@/lib/documentRoutes'
 
 type DocumentEditorPropsT = { documentId: string }
 type SaveStateT = 'saved' | 'saving' | 'unsaved'
@@ -29,10 +30,7 @@ const PREVIEW_DEBOUNCE_MS = 250
 const blobToDataUrl = (blob: Blob, onProgress: (percent: number) => void): Promise<string> => new Promise((resolve, reject) => {
 	const reader = new FileReader()
 	reader.onloadstart = () => onProgress(10)
-	reader.onprogress = (event) => {
-		if (!event.lengthComputable) return
-		onProgress(Math.max(10, Math.round((event.loaded / event.total) * 90)))
-	}
+	reader.onprogress = (event) => { if (event.lengthComputable) onProgress(Math.max(10, Math.round((event.loaded / event.total) * 90))) }
 	reader.onload = () => { onProgress(100); resolve(String(reader.result)) }
 	reader.onerror = () => reject(reader.error)
 	reader.readAsDataURL(blob)
@@ -57,7 +55,6 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const themeTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
 	const editorLayoutRef = useRef<HTMLDivElement | null>(null)
 	const isDraggingRef = useRef(false)
-
 	const previewTheme = $previewSettings.use.lookup('theme') as PreviewThemeT
 	const previewBaseFontSize = $previewSettings.use.lookup('baseFontSize') as number
 	const previewSettings: PreviewSettingsT = { theme: previewTheme, font: 'sans', scale: 'compact', baseFontSize: previewBaseFontSize }
@@ -98,7 +95,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 			if (nextId !== previousId) {
 				const savedDocument = await getDocument(nextId)
 				if (savedDocument !== null) setDocumentPath(savedDocument.path)
-				router.replace(`/documents/${nextId}`)
+				router.replace(getEditorHref(nextId))
 			}
 			setSaveState('saved')
 		}, AUTOSAVE_DELAY_MS)
@@ -135,7 +132,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		activeIdRef.current = nextId
 		const html = await exportLinkedHtml(await getExportDocuments(nextId), previewSettings)
 		setSaveState('saved')
-		if (nextId !== previousId) router.replace(`/documents/${nextId}`)
+		if (nextId !== previousId) router.replace(getEditorHref(nextId))
 		const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 		const anchor = document.createElement('a')
 		anchor.href = url
@@ -153,12 +150,12 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		event.preventDefault()
 		const linkedDocument = workspaceDocuments.find((document) => document.path === resolved.path)
 		if (linkedDocument === undefined) return
-		router.push(`/documents/${linkedDocument._id}${resolved.anchor ? `#${resolved.anchor}` : ''}`)
+		router.push(getEditorHref(linkedDocument._id, resolved.anchor))
 	}
 	const handleDelete = async (): Promise<void> => {
 		if (!isConfirmingDelete) { setIsConfirmingDelete(true); return }
 		await removeDocument(activeIdRef.current)
-		router.push('/documents')
+		router.push('/documents/')
 	}
 	const handleResizePointerDown = (event: React.PointerEvent<HTMLDivElement>): void => { isDraggingRef.current = true; event.currentTarget.setPointerCapture(event.pointerId) }
 	const handleResizePointerMove = (event: React.PointerEvent<HTMLDivElement>): void => {
@@ -169,7 +166,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const handleResizePointerUp = (event: React.PointerEvent<HTMLDivElement>): void => { isDraggingRef.current = false; event.currentTarget.releasePointerCapture(event.pointerId) }
 
 	if (isLoading) return <div className="HomeEmpty"><p className="HomeEmptyBody">Opening local document…</p></div>
-	if (isMissing) return <div className="HomeEmpty"><h1 className="HomeEmptyTitle">Document not found</h1><p className="HomeEmptyBody">The file may have been moved or deleted outside Zokku.</p><ZButton label="Back to documents" onClick={() => router.push('/documents')} /></div>
+	if (isMissing) return <div className="HomeEmpty"><h1 className="HomeEmptyTitle">Document not found</h1><p className="HomeEmptyBody">The file may have been moved or deleted outside Zokku.</p><ZButton label="Back to documents" onClick={() => router.push('/documents/')} /></div>
 
 	const saveStatusLabel = saveState === 'saving' ? 'Saving' : saveState === 'saved' ? 'Saved' : 'Changes pending'
 	const previewSurfaceStyle = getPreviewSurfaceStyle(previewSettings)
@@ -177,9 +174,9 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 
 	return <div className="EditorShell">
 		<div className="Topbar">
-			<div className="EditorNavigationCluster"><button className="TopbarBackButton" onClick={() => router.push('/documents')} title="All documents"><CaretLeftIcon size={18} weight="bold" /></button><div className="EditorTopbarBrand"><ZokkuBrand isCompact /></div></div>
+			<div className="EditorNavigationCluster"><button className="TopbarBackButton" onClick={() => router.push('/documents/')} title="All documents"><CaretLeftIcon size={18} weight="bold" /></button><div className="EditorTopbarBrand"><ZokkuBrand isCompact /></div></div>
 			<div className="EditorDocumentIdentity"><input className="TopbarTitle" type="text" value={title.state} onChange={handleTitleChange} placeholder="Untitled" spellCheck={false} /><span className="EditorSaveStatus" data-state={saveState} title={saveStatusLabel} aria-label={saveStatusLabel}>{saveState === 'saving' && <SpinnerGap className="EditorSaveSpinner" size={13} weight="bold" />}{saveState === 'saved' && <Check size={13} weight="bold" />}<span>{saveStatusLabel}</span></span></div>
-			<div className="TopbarActions"><ZButton isIcon isGhost title="Open full preview" aria-label="Open full preview" onClick={() => router.push(`/documents/${activeIdRef.current}/preview`)}><ArrowSquareOut weight="bold" /></ZButton><ZButton isIcon isGhost title="Export HTML" aria-label="Export HTML" onClick={() => void handleExport()}><Export weight="bold" /></ZButton><ZButton isIcon isGhost isRed title={isConfirmingDelete ? 'Click again to delete' : 'Delete document'} aria-label="Delete document" data-confirm={isConfirmingDelete ? 'true' : 'false'} onClick={() => void handleDelete()} onBlur={() => setIsConfirmingDelete(false)}><Trash weight={isConfirmingDelete ? 'fill' : 'bold'} /></ZButton></div>
+			<div className="TopbarActions"><ZButton isIcon isGhost title="Open full preview" aria-label="Open full preview" onClick={() => router.push(getPreviewHref(activeIdRef.current))}><ArrowSquareOut weight="bold" /></ZButton><ZButton isIcon isGhost title="Export HTML" aria-label="Export HTML" onClick={() => void handleExport()}><Export weight="bold" /></ZButton><ZButton isIcon isGhost isRed title={isConfirmingDelete ? 'Click again to delete' : 'Delete document'} aria-label="Delete document" data-confirm={isConfirmingDelete ? 'true' : 'false'} onClick={() => void handleDelete()} onBlur={() => setIsConfirmingDelete(false)}><Trash weight={isConfirmingDelete ? 'fill' : 'bold'} /></ZButton></div>
 		</div>
 		<div ref={editorLayoutRef} className="EditorLayout" data-mobile-view={mobilePaneView} style={{ gridTemplateColumns: `${splitPercent}% auto 1fr` } as CSSProperties}>
 			<div className="EditorPane"><MarkdownEditor value={content} onChange={handleContentChange} onMediaUpload={(blob, onProgress) => blobToDataUrl(blob, onProgress)} /></div>
