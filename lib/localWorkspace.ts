@@ -21,6 +21,11 @@ export type LocalSearchResultT = LocalDocumentT & {
 	matchType: 'title' | 'content'
 }
 
+export type ResolvedWorkspaceMediaT = {
+	html: string
+	objectUrls: string[]
+}
+
 type DirectoryHandleT = FileSystemDirectoryHandle & {
 	values: () => AsyncIterableIterator<FileSystemHandle>
 	entries: () => AsyncIterableIterator<[string, FileSystemHandle]>
@@ -39,6 +44,7 @@ const DB_NAME = 'zokku-local'
 const DB_VERSION = 2
 const STORE_NAME = 'workspace'
 const HANDLE_KEY = 'root'
+const ASSETS_DIRECTORY = 'assets'
 
 let rootHandle: FileSystemDirectoryHandle | null = null
 
@@ -64,6 +70,62 @@ const slugify = (value: string): string => {
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-+|-+$/g, '')
 	return slug || 'untitled'
+}
+
+const normalizePath = (path: string): string => {
+	const normalized: string[] = []
+	for (const part of path.split('/')) {
+		if (!part || part === '.') continue
+		if (part === '..') {
+			normalized.pop()
+			continue
+		}
+		normalized.push(part)
+	}
+	return normalized.join('/')
+}
+
+const getDocumentDirectoryPath = (documentPath: string): string => {
+	const parts = documentPath.split('/').filter(Boolean)
+	parts.pop()
+	return parts.join('/')
+}
+
+const getRelativeWorkspacePath = (currentDocumentPath: string, targetPath: string): string => {
+	const currentParts = getDocumentDirectoryPath(currentDocumentPath).split('/').filter(Boolean)
+	const targetParts = targetPath.split('/').filter(Boolean)
+	let commonLength = 0
+
+	while (currentParts[commonLength] === targetParts[commonLength] && commonLength < currentParts.length && commonLength < targetParts.length) {
+		commonLength += 1
+	}
+
+	const upParts = currentParts.slice(commonLength).map(() => '..')
+	const downParts = targetParts.slice(commonLength)
+	return [...upParts, ...downParts].join('/') || targetPath
+}
+
+const getMediaExtension = (blob: Blob): string => {
+	if (blob instanceof File) {
+		const match = blob.name.toLowerCase().match(/\.([a-z0-9]{1,10})$/)
+		if (match !== null) return match[1]
+	}
+
+	const subtype = blob.type.split('/')[1]?.toLowerCase() ?? ''
+	const knownExtensions: Record<string, string> = {
+		'jpeg': 'jpg',
+		'svg+xml': 'svg',
+		'quicktime': 'mov',
+		'x-m4v': 'm4v'
+	}
+	return knownExtensions[subtype] ?? subtype.replace(/[^a-z0-9]/g, '') || 'bin'
+}
+
+const getMediaStem = (blob: Blob): string => {
+	if (!(blob instanceof File)) return 'media'
+	const withoutExtension = blob.name.replace(/\.[^.]+$/, '')
+	const stem = slugify(withoutExtension)
+	return stem === 'untitled' ? 'media' : stem
 }
 
 const openDatabase = (): Promise<IDBDatabase> => {
@@ -160,6 +222,36 @@ const getParentAndName = (path: string): { directoryPath: string; name: string }
 	return { directoryPath: parts.join('/'), name }
 }
 
+const readWorkspaceFile = async (path: string): Promise<File | null> => {
+	try {
+		const { directoryPath, name } = getParentAndName(path)
+		const directory = await getDirectory(directoryPath)
+		const handle = await directory.getFileHandle(name)
+		return await handle.getFile()
+	} catch {
+		return null
+	}
+}
+
+const resolveWorkspaceMediaPath = (currentDocumentPath: string, src: string): string | null => {
+	const trimmed = src.trim()
+	if (!trimmed || trimmed.startsWith('#')) return null
+	if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return null
+
+	let decoded = ''
+	try {
+		decoded = decodeURIComponent(trimmed.split(/[?#]/)[0])
+	} catch {
+		return null
+	}
+	if (!decoded) return null
+
+	const currentDirectory = getDocumentDirectoryPath(currentDocumentPath)
+	const unresolved = decoded.startsWith('/') ? decoded.slice(1) : `${currentDirectory}/${decoded}`
+	const normalized = normalizePath(unresolved)
+	return normalized || null
+}
+
 const readMarkdownFile = async (path: string): Promise<LocalDocumentT> => {
 	const { directoryPath, name } = getParentAndName(path)
 	const directory = await getDirectory(directoryPath)
@@ -185,6 +277,7 @@ const walk = async (directory: FileSystemDirectoryHandle, basePath = ''): Promis
 	for await (const handle of iterable.values()) {
 		const path = basePath ? `${basePath}/${handle.name}` : handle.name
 		if (handle.kind === 'directory') {
+			if (path === ASSETS_DIRECTORY) continue
 			folders.push({ _id: encodePath(path), name: handle.name, path })
 			const nested = await walk(handle as FileSystemDirectoryHandle, path)
 			folders.push(...nested.folders)
@@ -267,6 +360,7 @@ export const createFolder = async (name: string): Promise<LocalFolderT> => {
 	const root = await requireWorkspace()
 	const safeName = name.trim()
 	if (!safeName) throw new Error('Folder name is required')
+	if (safeName === ASSETS_DIRECTORY) throw new Error(`${ASSETS_DIRECTORY} is reserved for workspace media`)
 	await root.getDirectoryHandle(safeName, { create: true })
 	return { _id: encodePath(safeName), name: safeName, path: safeName }
 }
@@ -309,14 +403,39 @@ export const searchDocuments = async (query: string): Promise<LocalSearchResultT
 		.filter((result): result is LocalSearchResultT => result !== null)
 }
 
-export const saveMedia = async (blob: Blob): Promise<string> => {
+export const saveMedia = async (blob: Blob, currentDocumentPath: string, onProgress?: (percent: number) => void): Promise<string> => {
 	const root = await requireWorkspace()
-	const assets = await root.getDirectoryHandle('.zokku-assets', { create: true })
-	const extension = blob.type.split('/')[1]?.replace('jpeg', 'jpg') || 'bin'
-	const filename = `${crypto.randomUUID()}.${extension}`
+	const assets = await root.getDirectoryHandle(ASSETS_DIRECTORY, { create: true })
+	const extension = getMediaExtension(blob)
+	const stem = getMediaStem(blob)
+	const filename = `${stem}-${crypto.randomUUID().slice(0, 8)}.${extension}`
 	const handle = await assets.getFileHandle(filename, { create: true })
 	const writable = await handle.createWritable()
+	onProgress?.(10)
 	await writable.write(blob)
 	await writable.close()
-	return `/.zokku-assets/${filename}`
+	onProgress?.(100)
+	return getRelativeWorkspacePath(currentDocumentPath, `${ASSETS_DIRECTORY}/${filename}`)
+}
+
+export const resolveWorkspaceMediaInHtml = async (html: string, currentDocumentPath: string): Promise<ResolvedWorkspaceMediaT> => {
+	if (!html || !currentDocumentPath) return { html, objectUrls: [] }
+
+	const parser = new DOMParser()
+	const parsed = parser.parseFromString(`<body>${html}</body>`, 'text/html')
+	const mediaElements = Array.from(parsed.body.querySelectorAll<HTMLElement>('img[src], video[src], source[src]'))
+	const objectUrls: string[] = []
+
+	await Promise.all(mediaElements.map(async (element) => {
+		const src = element.getAttribute('src') ?? ''
+		const path = resolveWorkspaceMediaPath(currentDocumentPath, src)
+		if (path === null) return
+		const file = await readWorkspaceFile(path)
+		if (file === null) return
+		const objectUrl = URL.createObjectURL(file)
+		objectUrls.push(objectUrl)
+		element.setAttribute('src', objectUrl)
+	}))
+
+	return { html: parsed.body.innerHTML, objectUrls }
 }
