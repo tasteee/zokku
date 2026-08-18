@@ -11,77 +11,78 @@ export type RecentWorkspaceT = {
 	displayPath: string
 }
 
-type RecentWorkspaceRecordT = RecentWorkspaceT & {
-	handle: FileSystemDirectoryHandle
-}
-
+type RecentWorkspaceRecordT = RecentWorkspaceT & { handle: FileSystemDirectoryHandle }
 type PermissionHandleT = FileSystemHandle & {
-	queryPermission: (options: { mode: 'readwrite' }) => Promise<PermissionState>
-	requestPermission: (options: { mode: 'readwrite' }) => Promise<PermissionState>
+	queryPermission?: (options: { mode: 'readwrite' }) => Promise<PermissionState>
+	requestPermission?: (options: { mode: 'readwrite' }) => Promise<PermissionState>
 }
 
 const DB_NAME = 'zokku-local'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const STORE_NAME = 'workspace'
 const ROOT_KEY = 'root'
 const RECENT_KEY = 'recent-workspaces'
 
-const openDatabase = (): Promise<IDBDatabase> => {
-	return new Promise((resolve, reject) => {
-		const request = indexedDB.open(DB_NAME, DB_VERSION)
-		request.onsuccess = () => resolve(request.result)
-		request.onerror = () => reject(request.error)
-	})
-}
+const openDatabase = (): Promise<IDBDatabase> => new Promise((resolve, reject) => {
+	const request = indexedDB.open(DB_NAME, DB_VERSION)
+	request.onupgradeneeded = () => {
+		const database = request.result
+		if (!database.objectStoreNames.contains(STORE_NAME)) database.createObjectStore(STORE_NAME)
+	}
+	request.onsuccess = () => {
+		const database = request.result
+		if (!database.objectStoreNames.contains(STORE_NAME)) {
+			database.close()
+			reject(new Error('Unable to initialize local workspace storage.'))
+			return
+		}
+		resolve(database)
+	}
+	request.onerror = () => reject(request.error ?? new Error('Unable to open local workspace storage.'))
+})
 
 const readValue = async <T>(key: string): Promise<T | null> => {
 	const database = await openDatabase()
-	const value = await new Promise<T | null>((resolve, reject) => {
-		const transaction = database.transaction(STORE_NAME, 'readonly')
-		const request = transaction.objectStore(STORE_NAME).get(key)
-		request.onsuccess = () => resolve((request.result as T | undefined) ?? null)
-		request.onerror = () => reject(request.error)
-	})
-	database.close()
-	return value
+	try {
+		return await new Promise<T | null>((resolve, reject) => {
+			const transaction = database.transaction(STORE_NAME, 'readonly')
+			const request = transaction.objectStore(STORE_NAME).get(key)
+			request.onsuccess = () => resolve((request.result as T | undefined) ?? null)
+			request.onerror = () => reject(request.error)
+		})
+	} finally {
+		database.close()
+	}
 }
 
 const writeValue = async (key: string, value: unknown): Promise<void> => {
 	const database = await openDatabase()
-	await new Promise<void>((resolve, reject) => {
-		const transaction = database.transaction(STORE_NAME, 'readwrite')
-		transaction.objectStore(STORE_NAME).put(value, key)
-		transaction.oncomplete = () => resolve()
-		transaction.onerror = () => reject(transaction.error)
-	})
-	database.close()
+	try {
+		await new Promise<void>((resolve, reject) => {
+			const transaction = database.transaction(STORE_NAME, 'readwrite')
+			transaction.objectStore(STORE_NAME).put(value, key)
+			transaction.oncomplete = () => resolve()
+			transaction.onerror = () => reject(transaction.error)
+		})
+	} finally {
+		database.close()
+	}
 }
 
-const getRecentRecords = async (): Promise<RecentWorkspaceRecordT[]> => {
-	return (await readValue<RecentWorkspaceRecordT[]>(RECENT_KEY)) ?? []
-}
-
-const isSameEntry = async (left: FileSystemDirectoryHandle, right: FileSystemDirectoryHandle): Promise<boolean> => {
-	if (typeof left.isSameEntry !== 'function') return left.name === right.name
-	return left.isSameEntry(right)
-}
+const getRecentRecords = async (): Promise<RecentWorkspaceRecordT[]> => (await readValue<RecentWorkspaceRecordT[]>(RECENT_KEY)) ?? []
+const isSameEntry = async (left: FileSystemDirectoryHandle, right: FileSystemDirectoryHandle): Promise<boolean> => typeof left.isSameEntry === 'function' ? left.isSameEntry(right) : left.name === right.name
 
 const requestPermission = async (handle: FileSystemDirectoryHandle): Promise<boolean> => {
 	const permissionHandle = handle as PermissionHandleT
-	const currentPermission = await permissionHandle.queryPermission({ mode: 'readwrite' })
-	if (currentPermission === 'granted') return true
-	const nextPermission = await permissionHandle.requestPermission({ mode: 'readwrite' })
-	return nextPermission === 'granted'
+	if (typeof permissionHandle.queryPermission !== 'function' || typeof permissionHandle.requestPermission !== 'function') return true
+	if (await permissionHandle.queryPermission({ mode: 'readwrite' }) === 'granted') return true
+	return await permissionHandle.requestPermission({ mode: 'readwrite' }) === 'granted'
 }
 
 const getCurrentWorkspaceMetadata = async (name: string): Promise<Pick<RecentWorkspaceT, 'noteCount' | 'folderCount' | 'displayPath'>> => {
 	try {
 		const snapshot = await listWorkspace()
-		return {
-			noteCount: snapshot.documents.length,
-			folderCount: snapshot.folders.length,
-			displayPath: `/${name}`
-		}
+		return { noteCount: snapshot.documents.length, folderCount: snapshot.folders.length, displayPath: `/${name}` }
 	} catch {
 		return { noteCount: 0, folderCount: 0, displayPath: `/${name}` }
 	}
@@ -90,56 +91,41 @@ const getCurrentWorkspaceMetadata = async (name: string): Promise<Pick<RecentWor
 export const rememberCurrentWorkspace = async (): Promise<void> => {
 	const currentHandle = await readValue<FileSystemDirectoryHandle>(ROOT_KEY)
 	if (currentHandle === null) return
-
 	const records = await getRecentRecords()
 	let existingRecord: RecentWorkspaceRecordT | null = null
-
 	for (const record of records) {
-		const isMatch = await isSameEntry(record.handle, currentHandle)
-		if (!isMatch) continue
+		if (!await isSameEntry(record.handle, currentHandle)) continue
 		existingRecord = record
 		break
 	}
-
-	const metadata = await getCurrentWorkspaceMetadata(currentHandle.name)
 	const nextRecord: RecentWorkspaceRecordT = {
 		id: existingRecord?.id ?? crypto.randomUUID(),
 		name: currentHandle.name,
 		lastOpenedAt: Date.now(),
 		handle: currentHandle,
-		...metadata
+		...await getCurrentWorkspaceMetadata(currentHandle.name)
 	}
-
-	const remainingRecords = records.filter((record) => record.id !== nextRecord.id)
-	await writeValue(RECENT_KEY, [nextRecord, ...remainingRecords])
+	await writeValue(RECENT_KEY, [nextRecord, ...records.filter((record) => record.id !== nextRecord.id)])
 }
 
 export const listRecentWorkspaces = async (): Promise<RecentWorkspaceT[]> => {
 	const records = await getRecentRecords()
-	return records
-		.slice()
-		.sort((left, right) => right.lastOpenedAt - left.lastOpenedAt)
-		.map((record) => ({
-			id: record.id,
-			name: record.name,
-			lastOpenedAt: record.lastOpenedAt,
-			noteCount: record.noteCount ?? 0,
-			folderCount: record.folderCount ?? 0,
-			displayPath: record.displayPath ?? `/${record.name}`
-		}))
+	return records.slice().sort((left, right) => right.lastOpenedAt - left.lastOpenedAt).map((record) => ({
+		id: record.id,
+		name: record.name,
+		lastOpenedAt: record.lastOpenedAt,
+		noteCount: record.noteCount ?? 0,
+		folderCount: record.folderCount ?? 0,
+		displayPath: record.displayPath ?? `/${record.name}`
+	}))
 }
 
 export const activateRecentWorkspace = async (id: string): Promise<boolean> => {
 	const records = await getRecentRecords()
 	const record = records.find((candidate) => candidate.id === id)
-	if (record === undefined) return false
-
-	const hasPermission = await requestPermission(record.handle)
-	if (!hasPermission) return false
-
+	if (record === undefined || !await requestPermission(record.handle)) return false
 	await writeValue(ROOT_KEY, record.handle)
-	const nextRecord: RecentWorkspaceRecordT = { ...record, lastOpenedAt: Date.now() }
-	const remainingRecords = records.filter((candidate) => candidate.id !== id)
-	await writeValue(RECENT_KEY, [nextRecord, ...remainingRecords])
+	const nextRecord = { ...record, lastOpenedAt: Date.now() }
+	await writeValue(RECENT_KEY, [nextRecord, ...records.filter((candidate) => candidate.id !== id)])
 	return true
 }
