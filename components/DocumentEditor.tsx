@@ -14,7 +14,7 @@ import { MarkdownEditor } from '@/components/MarkdownEditor'
 import { PreviewSettings } from '@/components/PreviewSettingsPanel'
 import { $previewSettings, getPreviewSurfaceStyle, loadPreviewSettings, savePreviewSettings } from '@/components/previewSettings'
 import type { PreviewSettingsT, PreviewThemeT } from '@/components/previewSettings'
-import { getDocument, listWorkspace, removeDocument, resolveWorkspaceMediaInHtml, restoreWorkspace, saveDocument, saveMedia } from '@/lib/localWorkspace'
+import { getDocument, listWorkspace, resolveWorkspaceMediaInHtml, restoreWorkspace, saveDocument, saveMedia, trashDocument } from '@/lib/localWorkspace'
 import type { LocalDocumentT } from '@/lib/localWorkspace'
 import { resolveDocumentHref } from '@/lib/documentLinks'
 import { getExportDocuments } from '@/lib/localDocumentExport'
@@ -186,7 +186,7 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	}
 	const handleDelete = async (): Promise<void> => {
 		if (!isConfirmingDelete) { setIsConfirmingDelete(true); return }
-		await removeDocument(activeIdRef.current)
+		await trashDocument(activeIdRef.current)
 		router.push('/documents/')
 	}
 	const handleResizePointerDown = (event: React.PointerEvent<HTMLDivElement>): void => { isDraggingRef.current = true; event.currentTarget.setPointerCapture(event.pointerId) }

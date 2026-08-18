@@ -100,23 +100,6 @@ Use todo for an author-only drafting reminder. TODO blocks are removed from expo
 > Add the final migration timeline.
 \`\`\`
 
-### Inline icons
-
-Use a MingCute Iconify icon inline with \`:icon[name]:\`. Icon names are lowercase and hyphenated. Invalid names render as a warning-colored question icon.
-
-\`\`\`md
-Saved :icon[check-circle-line]: successfully.
-Continue :icon[arrow-right-line]:
-\`\`\`
-
-### Inline separators
-
-Use \`:separator:\` for a subtle vertical hairline between compact pieces of inline content.
-
-\`\`\`md
-Design :separator: Engineering :separator: Product
-\`\`\`
-
 ## Working in Zokku
 
 ### Create or switch a workspace
@@ -256,11 +239,11 @@ export const value = 42
 > [!EYEBROW FULL]
 > PROJECT BRIEF
 
-# Local-first workspace :icon[folder-open-line]:
+# Local-first workspace
 
 A short introduction to the document.
 
-Product :separator: Design :separator: Engineering
+Product · Design · Engineering
 
 > [!IMPORTANT]
 > The workspace folder is the source of truth.

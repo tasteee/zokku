@@ -45,7 +45,6 @@ export const DocumentsWorkspace = (props: DocumentsWorkspacePropsT): JSX.Element
 		<main className="documentsWorkspace">
 			<div className="documentsWorkspaceHeader">
 				<div>
-					<div className="documentsWorkspaceKicker">Local workspace</div>
 					<h1 className="documentsWorkspaceTitle">{selectedTitle}</h1>
 					<p className="documentsWorkspaceDescription" title={selectedDescription}>{selectedDescription}</p>
 				</div>

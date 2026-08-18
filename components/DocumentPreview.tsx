@@ -1,6 +1,7 @@
 'use client'
 
 import './DocumentPreview.css'
+import '@/components/PreviewSettings.css'
 import { useRouter } from 'next/navigation'
 import { JSX, useEffect, useRef, useState } from 'react'
 import { renderMarkdown } from '@/app/actions/renderMarkdown'
@@ -10,6 +11,8 @@ import { listWorkspace, resolveWorkspaceMediaInHtml, restoreWorkspace } from '@/
 import type { LocalDocumentT } from '@/lib/localWorkspace'
 import { resolveDocumentHref } from '@/lib/documentLinks'
 import { getEditorHref, getPreviewHref } from '@/lib/documentRoutes'
+import { getPreviewSurfaceStyle, loadPreviewSettings } from '@/components/previewSettings'
+import type { PreviewSettingsT } from '@/components/previewSettings'
 
 type DocumentPreviewPropsT = { documentId: string }
 
@@ -18,6 +21,7 @@ export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
 	const [document, setDocument] = useState<LocalDocumentT | null | undefined>(undefined)
 	const [workspaceDocuments, setWorkspaceDocuments] = useState<LocalDocumentT[]>([])
 	const [previewHtml, setPreviewHtml] = useState('')
+	const [previewSettings] = useState<PreviewSettingsT>(loadPreviewSettings)
 	const previewMediaUrlsRef = useRef<string[]>([])
 
 	useEffect(() => {
@@ -32,7 +36,7 @@ export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
 			setDocument(nextDocument)
 			if (nextDocument === null) return
 
-			const renderedHtml = await renderMarkdown(nextDocument.content)
+			const renderedHtml = await renderMarkdown(nextDocument.content, previewSettings.theme)
 			const resolved = await resolveWorkspaceMediaInHtml(renderedHtml, nextDocument.path)
 			if (!isCurrent) {
 				for (const url of resolved.objectUrls) URL.revokeObjectURL(url)
@@ -43,7 +47,7 @@ export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
 			setPreviewHtml(resolved.html)
 		})()
 		return () => { isCurrent = false }
-	}, [props.documentId, router])
+	}, [props.documentId, router, previewSettings.theme])
 
 	useEffect(() => () => {
 		for (const url of previewMediaUrlsRef.current) URL.revokeObjectURL(url)
@@ -71,6 +75,6 @@ export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
 			<button className="TopbarBackButton" onClick={() => router.push(getEditorHref(props.documentId))} title="Back to editor"><CaretLeftIcon size={18} weight="bold" /></button>
 			<span className="TopbarTitle">{document.title || 'Untitled'}</span>
 		</div>
-		<div className="DocumentPreviewContent" onClick={handlePreviewClick}><div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div>
+		<div className="DocumentPreviewContent" data-preview-theme={previewSettings.theme} data-preview-font="sans" data-preview-scale="compact" style={getPreviewSurfaceStyle(previewSettings)} onClick={handlePreviewClick}><div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div>
 	</div>
 }

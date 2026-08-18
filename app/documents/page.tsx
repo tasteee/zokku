@@ -97,7 +97,7 @@ const DocumentsPage = (): JSX.Element => {
 	return <div className="documentsPage" data-visibility={visibilityState} data-transition="idle">
 		<DocumentsHeader />
 		<div className="documentsPageBody">
-			<FolderRail onDeleteFolder={handleDeleteFolder} />
+			<FolderRail workspaceName={workspaceName} onDeleteFolder={handleDeleteFolder} />
 			<div className="documentsPageContent"><DocumentsWorkspace onNew={handleNew} onMoveDocument={handleMoveDocument} onShareDocument={handleShareDocument} /></div>
 		</div>
 		{isComposerOpen && <FolderComposer onSubmit={handleCreateFolder} />}

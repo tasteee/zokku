@@ -3,6 +3,7 @@
 import './documents/page.css'
 
 import { JSX, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { DocumentsHeader } from './documents/components/DocumentsHeader/DocumentsHeader'
 import { WorkspaceBrowser } from './documents/components/WorkspaceBrowser/WorkspaceBrowser'
 import { chooseWorkspace, isFileSystemWorkspaceSupported } from '@/lib/localWorkspace'
@@ -13,6 +14,7 @@ import type { RecentWorkspaceT, TrashedWorkspaceT } from '@/lib/recentWorkspaces
 const WORKSPACE_TRANSITION_KEY = 'zokku-workspace-transition'
 
 const HomePage = (): JSX.Element => {
+	const router = useRouter()
 	const [workspaces, setWorkspaces] = useState<RecentWorkspaceT[]>([])
 	const [trashedWorkspaces, setTrashedWorkspaces] = useState<TrashedWorkspaceT[]>([])
 	const [isOpening, setIsOpening] = useState(false)
@@ -30,7 +32,8 @@ const HomePage = (): JSX.Element => {
 		sessionStorage.setItem(WORKSPACE_TRANSITION_KEY, '1')
 		const root = document.querySelector<HTMLElement>('.documentsPage')
 		if (root !== null) root.dataset.transition = 'out'
-		window.setTimeout(() => window.location.assign('/documents'), 300)
+		// Next applies its configured base path (`/zokku` in GitHub Pages) here.
+		window.setTimeout(() => router.push('/documents/'), 300)
 	}
 
 	const handleCreateWorkspace = async (): Promise<void> => {

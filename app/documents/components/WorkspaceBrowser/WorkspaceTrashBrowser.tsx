@@ -1,9 +1,8 @@
 'use client'
 
 import './WorkspaceBrowser.css'
-import { ArrowCounterClockwise, CaretLeft, Trash } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, Trash } from '@phosphor-icons/react'
 import { JSX } from 'react'
-import Link from 'next/link'
 import { ZButton } from '@/components/zButton'
 import type { TrashedWorkspaceT } from '@/lib/recentWorkspaces'
 
@@ -15,11 +14,6 @@ type WorkspaceTrashBrowserPropsT = {
 export const WorkspaceTrashBrowser = (props: WorkspaceTrashBrowserPropsT): JSX.Element => {
 	return (
 		<main className="workspaceBrowser">
-			<Link className="workspaceBrowserBackLink" href="/">
-				<CaretLeft weight="bold" />
-				<span>Workspaces</span>
-			</Link>
-
 			<div className="workspaceBrowserHeader">
 				<div>
 					<div className="workspaceBrowserKicker">Trash</div>

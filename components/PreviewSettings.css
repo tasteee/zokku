@@ -110,10 +110,6 @@
 [data-preview-theme='light'] .zTodo::before { border-color: #235ae4; }
 [data-preview-theme='light'] .zTodo::after { color: #00004e; }
 
-.zInlineIcon { display: inline-flex; align-items: center; justify-content: center; width: 1em; height: 1em; margin-inline: 0.08em; vertical-align: -0.12em; color: currentColor; }
-.zInlineIcon.isInvalid { color: var(--warning); }
-.zInlineIcon svg { display: block; width: 1em; height: 1em; }
-.zInlineSeparator { display: inline-block; width: 1px; height: 1em; margin-inline: 0.55em; vertical-align: -0.14em; background: currentColor; opacity: 0.28; }
 
 [data-preview-theme='light'] .Prose .zCodeBlock { border-color: #e2e3e9; background: #fbfbfd; box-shadow: 0 1px 1px rgba(0, 0, 78, 0.025), 0 8px 24px rgba(0, 0, 78, 0.045); }
 [data-preview-theme='light'] .Prose .zCodeBlock::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; border-radius: var(--radius) var(--radius) 0 0; background: linear-gradient(90deg, #235ae4 0%, #6547c8 52%, #d8d9e0 100%); }

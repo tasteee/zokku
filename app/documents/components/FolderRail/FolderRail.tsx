@@ -7,6 +7,7 @@ import { CaretLeft, FileText, Folder, FolderPlus, Trash } from '@phosphor-icons/
 import { $composer, $documents, $folders, DocumentT, FolderFilterT, FolderT } from '../../stores'
 
 type FolderRailPropsT = {
+	workspaceName: string
 	onDeleteFolder: (folderId: string) => Promise<void>
 }
 
@@ -29,10 +30,13 @@ export const FolderRail = (props: FolderRailPropsT): JSX.Element => {
 
 	return (
 		<aside className="folderRail">
-			<Link className="folderRailBackLink" href="/">
-				<CaretLeft weight="bold" />
-				<span>Workspaces</span>
-			</Link>
+			<div className="folderRailWorkspaceHeader">
+				<Link className="folderRailBackLink" href="/">
+					<CaretLeft weight="bold" />
+					<span>Workspaces</span>
+				</Link>
+				<div className="folderRailWorkspaceHeaderName" title={props.workspaceName}>{props.workspaceName}</div>
+			</div>
 			<div className="folderRailDivider" />
 			<div className="folderRailSection">
 				<button className="folderRailItem" data-active={selectedId === 'all' ? 'true' : 'false'} onClick={() => handleSelectFolder('all')}>
@@ -61,6 +65,11 @@ export const FolderRail = (props: FolderRailPropsT): JSX.Element => {
 					)
 				})}
 			</div>
+			<div className="folderRailDivider" />
+			<Link className="folderRailFooterLink" href="/trash">
+				<Trash weight="bold" />
+				<span>Trash</span>
+			</Link>
 		</aside>
 	)
 }

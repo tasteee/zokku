@@ -22,6 +22,13 @@
 		inset 0 1px 0 color-mix(in srgb, var(--primary) 4%, transparent);
 }
 
+.folderRailWorkspaceHeader {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+	padding: var(--spacing-1) var(--spacing-2) 0;
+}
+
 .folderRailBackLink {
 	display: inline-flex;
 	align-items: center;
@@ -40,6 +47,41 @@
 }
 .folderRailBackLink:hover { color: var(--primary); }
 .folderRailBackLink svg { width: 0.9rem; height: 0.9rem; }
+
+.folderRailWorkspaceHeader .folderRailBackLink {
+	gap: var(--spacing-1);
+	padding: 0;
+	margin-left: -1px;
+	font-size: var(--font-size-2);
+	letter-spacing: 0.01em;
+}
+.folderRailWorkspaceHeader .folderRailBackLink svg { width: 0.9rem; height: 0.9rem; }
+
+.folderRailWorkspaceHeaderName {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--foreground);
+	font-size: var(--font-size-4);
+	font-weight: var(--font-weight-bold);
+}
+
+.folderRailFooterLink {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--spacing-2);
+	width: fit-content;
+	margin-top: auto;
+	padding: var(--spacing-2);
+	border-radius: var(--small-button-radius);
+	color: var(--muted);
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-semibold);
+	text-decoration: none;
+	transition: background 120ms ease, color 120ms ease;
+}
+.folderRailFooterLink:hover { background: color-mix(in srgb, var(--primary) 6%, transparent); color: var(--primary); }
+.folderRailFooterLink svg { width: 0.95rem; height: 0.95rem; }
 
 .folderRailSection,
 .folderRailList { display: flex; flex-direction: column; gap: var(--spacing-1); }

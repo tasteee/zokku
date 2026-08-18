@@ -21,6 +21,12 @@ export type LocalSearchResultT = LocalDocumentT & {
 	matchType: 'title' | 'content'
 }
 
+export type TrashedDocumentT = Pick<LocalDocumentT, '_id' | 'title' | 'content' | 'path'> & {
+	workspaceName: string
+	deletedAt: number
+	expiresAt: number
+}
+
 export type ResolvedWorkspaceMediaT = {
 	html: string
 	objectUrls: string[]
@@ -45,6 +51,8 @@ const DB_VERSION = 2
 const STORE_NAME = 'workspace'
 const HANDLE_KEY = 'root'
 const ASSETS_DIRECTORY = 'assets'
+const DOCUMENT_TRASH_KEY = 'document-trash'
+const TRASH_RETENTION_MS = 30 * 24 * 60 * 60 * 1000
 
 let rootHandle: FileSystemDirectoryHandle | null = null
 
@@ -164,14 +172,42 @@ const readPersistedHandle = async (): Promise<FileSystemDirectoryHandle | null> 
 	return handle
 }
 
+const readStoredValue = async <T>(key: string): Promise<T | null> => {
+	const database = await openDatabase()
+	try {
+		return await new Promise<T | null>((resolve, reject) => {
+			const transaction = database.transaction(STORE_NAME, 'readonly')
+			const request = transaction.objectStore(STORE_NAME).get(key)
+			request.onsuccess = () => resolve((request.result as T | undefined) ?? null)
+			request.onerror = () => reject(request.error)
+		})
+	} finally {
+		database.close()
+	}
+}
+
+const writeStoredValue = async (key: string, value: unknown): Promise<void> => {
+	const database = await openDatabase()
+	try {
+		await new Promise<void>((resolve, reject) => {
+			const transaction = database.transaction(STORE_NAME, 'readwrite')
+			transaction.objectStore(STORE_NAME).put(value, key)
+			transaction.oncomplete = () => resolve()
+			transaction.onerror = () => reject(transaction.error)
+		})
+	} finally {
+		database.close()
+	}
+}
+
 const hasReadWritePermission = async (handle: FileSystemDirectoryHandle): Promise<boolean> => {
-	const permissionHandle = handle as PermissionHandleT
+	const permissionHandle = handle as unknown as PermissionHandleT
 	if (typeof permissionHandle.queryPermission !== 'function') return true
 	return (await permissionHandle.queryPermission({ mode: 'readwrite' })) === 'granted'
 }
 
 const requestReadWritePermission = async (handle: FileSystemDirectoryHandle): Promise<boolean> => {
-	const permissionHandle = handle as PermissionHandleT
+	const permissionHandle = handle as unknown as PermissionHandleT
 	if (typeof permissionHandle.requestPermission !== 'function') return true
 	return (await permissionHandle.requestPermission({ mode: 'readwrite' })) === 'granted'
 }
@@ -355,6 +391,54 @@ export const removeDocument = async (id: string): Promise<void> => {
 	const { directoryPath, name } = getParentAndName(decodePath(id))
 	const directory = await getDirectory(directoryPath)
 	await directory.removeEntry(name)
+}
+
+const getTrashedDocuments = async (): Promise<TrashedDocumentT[]> => {
+	const documents = (await readStoredValue<TrashedDocumentT[]>(DOCUMENT_TRASH_KEY)) ?? []
+	const retainedDocuments = documents.filter((document) => document.deletedAt > Date.now() - TRASH_RETENTION_MS)
+	if (retainedDocuments.length !== documents.length) await writeStoredValue(DOCUMENT_TRASH_KEY, retainedDocuments)
+	return retainedDocuments
+}
+
+export const listTrashedDocuments = async (): Promise<TrashedDocumentT[]> => {
+	const workspaceName = await restoreWorkspace(false)
+	if (workspaceName === null) return []
+	return (await getTrashedDocuments()).filter((document) => document.workspaceName === workspaceName).sort((left, right) => right.deletedAt - left.deletedAt).map((document) => ({
+		...document,
+		expiresAt: document.deletedAt + TRASH_RETENTION_MS
+	}))
+}
+
+export const trashDocument = async (id: string): Promise<void> => {
+	const document = await getDocument(id)
+	if (document === null) throw new Error('Document not found')
+	const workspaceName = await restoreWorkspace(false)
+	if (workspaceName === null) throw new Error('Workspace not found')
+	const trashedDocuments = await getTrashedDocuments()
+	const trashedDocument: TrashedDocumentT = {
+		_id: crypto.randomUUID(),
+		title: document.title,
+		content: document.content,
+		path: document.path,
+		workspaceName,
+		deletedAt: Date.now(),
+		expiresAt: Date.now() + TRASH_RETENTION_MS
+	}
+	await writeStoredValue(DOCUMENT_TRASH_KEY, [trashedDocument, ...trashedDocuments])
+	await removeDocument(id)
+}
+
+export const restoreTrashedDocument = async (id: string): Promise<void> => {
+	const trashedDocuments = await getTrashedDocuments()
+	const document = trashedDocuments.find((candidate) => candidate._id === id)
+	if (document === undefined) return
+	const { directoryPath, name } = getParentAndName(document.path)
+	const directory = await getDirectory(directoryPath, true)
+	const handle = await directory.getFileHandle(name, { create: true })
+	const writable = await handle.createWritable()
+	await writable.write(document.content)
+	await writable.close()
+	await writeStoredValue(DOCUMENT_TRASH_KEY, trashedDocuments.filter((candidate) => candidate._id !== id))
 }
 
 export const createFolder = async (name: string): Promise<LocalFolderT> => {

@@ -8,8 +8,6 @@ import rehypeSlug from 'rehype-slug'
 import rehypeStringify from 'rehype-stringify'
 import { codeToTokensBase } from 'shiki'
 import type { ThemeRegistrationAny } from '@shikijs/types'
-import { icons as mingcuteIcons } from '@iconify-json/mingcute'
-import { getIconData, iconToHTML, iconToSVG, replaceIDs } from '@iconify/utils'
 import { customMarkers, matchDynamicMarkerDefinition } from '@/lib/markers'
 import type { MarkerDefinitionT } from '@/lib/markers'
 import { codeTheme } from '@/lib/codeTheme'
@@ -35,34 +33,6 @@ type Code = { type: 'code'; value: string; lang?: string | null; meta?: string |
 type Paragraph = { type: 'paragraph'; children: MdastNode[]; data?: Record<string, unknown> }
 type Root = { type: 'root'; children: MdastNode[] }
 type MdastNode = Root | Paragraph | { type: string; children?: MdastNode[]; data?: Record<string, unknown> }
-
-const INLINE_ICON_REGEX = /:icon\[([a-z0-9]+(?:-[a-z0-9]+)*)\]:/g
-const INLINE_SEPARATOR_REGEX = /:separator:/g
-const INVALID_ICON_FALLBACK = 'question-fill'
-
-const renderIconSvg = (name: string): string | null => {
-	const iconData = getIconData(mingcuteIcons, name)
-	if (iconData === null) return null
-	const rendered = iconToSVG(iconData, { height: '1em', width: '1em' })
-	return iconToHTML(replaceIDs(rendered.body), {
-		...rendered.attributes,
-		'aria-hidden': 'true',
-		focusable: 'false'
-	})
-}
-
-const renderInlineIcon = (name: string): string => {
-	const requestedSvg = renderIconSvg(name)
-	if (requestedSvg !== null) return `<span class="zInlineIcon" data-icon="mingcute:${name}" aria-hidden="true">${requestedSvg}</span>`
-	const fallbackSvg = renderIconSvg(INVALID_ICON_FALLBACK)
-	if (fallbackSvg === null) return ''
-	return `<span class="zInlineIcon isInvalid" data-icon="mingcute:${INVALID_ICON_FALLBACK}" data-invalid-icon="${name}" aria-hidden="true">${fallbackSvg}</span>`
-}
-
-const expandInlineSyntax = (content: string): string => {
-	const withIcons = content.replace(INLINE_ICON_REGEX, (_fullMatch, name: string): string => renderInlineIcon(name))
-	return withIcons.replace(INLINE_SEPARATOR_REGEX, '<span class="zInlineSeparator" aria-hidden="true"></span>')
-}
 
 const visitParagraphs = (node: MdastNode, visitor: (node: Paragraph) => void): void => {
 	if (node.type === 'paragraph') visitor(node as Paragraph)
@@ -217,6 +187,6 @@ const createProcessor = (stripTodos: boolean, previewTheme: PreviewThemeT) => {
 	return processor.use(rehypeStringify, { allowDangerousHtml: true })
 }
 
-export const renderMarkdown = async (content: string, previewTheme: PreviewThemeT = 'dark'): Promise<string> => String(await createProcessor(false, previewTheme).process(expandInlineSyntax(content)))
+export const renderMarkdown = async (content: string, previewTheme: PreviewThemeT = 'dark'): Promise<string> => String(await createProcessor(false, previewTheme).process(content))
 
-export const renderMarkdownForExport = async (content: string, previewTheme: PreviewThemeT): Promise<string> => String(await createProcessor(true, previewTheme).process(expandInlineSyntax(content)))
+export const renderMarkdownForExport = async (content: string, previewTheme: PreviewThemeT): Promise<string> => String(await createProcessor(true, previewTheme).process(content))

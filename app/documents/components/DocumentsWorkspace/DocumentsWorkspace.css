@@ -14,17 +14,8 @@
 	border-bottom: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
 }
 
-.documentsWorkspaceKicker {
-	margin-bottom: var(--spacing-2);
-	font-size: var(--font-size-0);
-	font-weight: var(--font-weight-bold);
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
-	color: var(--accent);
-}
-
 .documentsWorkspaceTitle {
-	font-size: var(--font-size-h3);
+	font-size: clamp(1.75rem, 2.4vw, 2.35rem);
 	line-height: var(--line-height-h3);
 	font-weight: var(--font-weight-bold);
 	color: var(--primary);
@@ -180,4 +171,15 @@
 
 .documentsWorkspaceEmptyButton {
 	margin-top: var(--spacing-1);
+}
+
+@media (max-width: 680px) {
+	.documentsWorkspaceHeader {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.documentsWorkspaceActions {
+		align-items: flex-start;
+	}
 }
