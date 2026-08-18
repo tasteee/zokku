@@ -4,7 +4,6 @@ import './documents/page.css'
 
 import { JSX, useEffect, useState } from 'react'
 import { DocumentsHeader } from './documents/components/DocumentsHeader/DocumentsHeader'
-import { FolderRail } from './documents/components/FolderRail/FolderRail'
 import { WorkspaceBrowser } from './documents/components/WorkspaceBrowser/WorkspaceBrowser'
 import { chooseWorkspace, isFileSystemWorkspaceSupported } from '@/lib/localWorkspace'
 import { ensureWorkspaceGuide } from '@/lib/ensureWorkspaceGuide'
@@ -65,17 +64,8 @@ const HomePage = (): JSX.Element => {
 	return (
 		<div className="documentsPage" data-visibility="ready" data-transition="idle">
 			<DocumentsHeader />
-			<div className="documentsPageBody">
-				<FolderRail
-					mode="workspaces"
-					workspaceCount={workspaces.length}
-					workspaces={workspaces}
-					onShowWorkspaces={() => undefined}
-					onCreateWorkspace={() => void handleCreateWorkspace()}
-					onOpenWorkspace={(workspace) => void handleOpenWorkspace(workspace)}
-					onDeleteFolder={async () => undefined}
-				/>
-				<div className="documentsPageContent">
+			<div className="documentsPageBody documentsPageBodyWorkspaces">
+				<div className="documentsPageContent documentsPageContentFull">
 					<WorkspaceBrowser workspaces={workspaces} isOpening={isOpening} onOpen={(workspace) => void handleOpenWorkspace(workspace)} onCreate={() => void handleCreateWorkspace()} />
 					{!isSupported && <p className="WorkspaceError">Local workspaces require Chrome or Edge.</p>}
 					{error && <p className="WorkspaceError">{error}</p>}
