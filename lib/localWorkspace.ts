@@ -96,7 +96,7 @@ const getRelativeWorkspacePath = (currentDocumentPath: string, targetPath: strin
 	const targetParts = targetPath.split('/').filter(Boolean)
 	let commonLength = 0
 
-	while (currentParts[commonLength] === targetParts[commonLength] && commonLength < currentParts.length && commonLength < targetParts.length) {
+	while (commonLength < currentParts.length && commonLength < targetParts.length && currentParts[commonLength] === targetParts[commonLength]) {
 		commonLength += 1
 	}
 
@@ -118,7 +118,8 @@ const getMediaExtension = (blob: Blob): string => {
 		'quicktime': 'mov',
 		'x-m4v': 'm4v'
 	}
-	return knownExtensions[subtype] ?? subtype.replace(/[^a-z0-9]/g, '') || 'bin'
+	const normalizedSubtype = subtype.replace(/[^a-z0-9]/g, '')
+	return knownExtensions[subtype] ?? normalizedSubtype || 'bin'
 }
 
 const getMediaStem = (blob: Blob): string => {
