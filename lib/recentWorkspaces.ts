@@ -11,7 +11,15 @@ export type RecentWorkspaceT = {
 	displayPath: string
 }
 
-type RecentWorkspaceRecordT = RecentWorkspaceT & { handle: FileSystemDirectoryHandle }
+export type TrashedWorkspaceT = RecentWorkspaceT & {
+	deletedAt: number
+	expiresAt: number
+}
+
+type RecentWorkspaceRecordT = RecentWorkspaceT & {
+	handle: FileSystemDirectoryHandle
+	deletedAt?: number
+}
 type PermissionHandleT = FileSystemHandle & {
 	queryPermission?: (options: { mode: 'readwrite' }) => Promise<PermissionState>
 	requestPermission?: (options: { mode: 'readwrite' }) => Promise<PermissionState>
@@ -22,6 +30,7 @@ const DB_VERSION = 2
 const STORE_NAME = 'workspace'
 const ROOT_KEY = 'root'
 const RECENT_KEY = 'recent-workspaces'
+const TRASH_RETENTION_MS = 30 * 24 * 60 * 60 * 1000
 
 const openDatabase = (): Promise<IDBDatabase> => new Promise((resolve, reject) => {
 	const request = indexedDB.open(DB_NAME, DB_VERSION)
@@ -69,7 +78,27 @@ const writeValue = async (key: string, value: unknown): Promise<void> => {
 	}
 }
 
-const getRecentRecords = async (): Promise<RecentWorkspaceRecordT[]> => (await readValue<RecentWorkspaceRecordT[]>(RECENT_KEY)) ?? []
+const deleteValue = async (key: string): Promise<void> => {
+	const database = await openDatabase()
+	try {
+		await new Promise<void>((resolve, reject) => {
+			const transaction = database.transaction(STORE_NAME, 'readwrite')
+			transaction.objectStore(STORE_NAME).delete(key)
+			transaction.oncomplete = () => resolve()
+			transaction.onerror = () => reject(transaction.error)
+		})
+	} finally {
+		database.close()
+	}
+}
+
+const getRecentRecords = async (): Promise<RecentWorkspaceRecordT[]> => {
+	const records = (await readValue<RecentWorkspaceRecordT[]>(RECENT_KEY)) ?? []
+	const expirationThreshold = Date.now() - TRASH_RETENTION_MS
+	const retainedRecords = records.filter((record) => record.deletedAt === undefined || record.deletedAt > expirationThreshold)
+	if (retainedRecords.length !== records.length) await writeValue(RECENT_KEY, retainedRecords)
+	return retainedRecords
+}
 const isSameEntry = async (left: FileSystemDirectoryHandle, right: FileSystemDirectoryHandle): Promise<boolean> => typeof left.isSameEntry === 'function' ? left.isSameEntry(right) : left.name === right.name
 
 const requestPermission = async (handle: FileSystemDirectoryHandle): Promise<boolean> => {
@@ -103,6 +132,7 @@ export const rememberCurrentWorkspace = async (): Promise<void> => {
 		name: currentHandle.name,
 		lastOpenedAt: Date.now(),
 		handle: currentHandle,
+		deletedAt: undefined,
 		...await getCurrentWorkspaceMetadata(currentHandle.name)
 	}
 	await writeValue(RECENT_KEY, [nextRecord, ...records.filter((record) => record.id !== nextRecord.id)])
@@ -110,7 +140,7 @@ export const rememberCurrentWorkspace = async (): Promise<void> => {
 
 export const listRecentWorkspaces = async (): Promise<RecentWorkspaceT[]> => {
 	const records = await getRecentRecords()
-	return records.slice().sort((left, right) => right.lastOpenedAt - left.lastOpenedAt).map((record) => ({
+	return records.filter((record) => record.deletedAt === undefined).sort((left, right) => right.lastOpenedAt - left.lastOpenedAt).map((record) => ({
 		id: record.id,
 		name: record.name,
 		lastOpenedAt: record.lastOpenedAt,
@@ -120,9 +150,37 @@ export const listRecentWorkspaces = async (): Promise<RecentWorkspaceT[]> => {
 	}))
 }
 
+export const listTrashedWorkspaces = async (): Promise<TrashedWorkspaceT[]> => {
+	const records = await getRecentRecords()
+	return records.filter((record): record is RecentWorkspaceRecordT & { deletedAt: number } => record.deletedAt !== undefined).sort((left, right) => right.deletedAt - left.deletedAt).map((record) => ({
+		id: record.id,
+		name: record.name,
+		lastOpenedAt: record.lastOpenedAt,
+		noteCount: record.noteCount ?? 0,
+		folderCount: record.folderCount ?? 0,
+		displayPath: record.displayPath ?? `/${record.name}`,
+		deletedAt: record.deletedAt,
+		expiresAt: record.deletedAt + TRASH_RETENTION_MS
+	}))
+}
+
+export const trashRecentWorkspace = async (id: string): Promise<void> => {
+	const records = await getRecentRecords()
+	const record = records.find((candidate) => candidate.id === id && candidate.deletedAt === undefined)
+	if (record === undefined) return
+	await writeValue(RECENT_KEY, records.map((candidate) => candidate.id === id ? { ...candidate, deletedAt: Date.now() } : candidate))
+	const currentHandle = await readValue<FileSystemDirectoryHandle>(ROOT_KEY)
+	if (currentHandle !== null && await isSameEntry(record.handle, currentHandle)) await deleteValue(ROOT_KEY)
+}
+
+export const restoreTrashedWorkspace = async (id: string): Promise<void> => {
+	const records = await getRecentRecords()
+	await writeValue(RECENT_KEY, records.map((record) => record.id === id ? { ...record, deletedAt: undefined } : record))
+}
+
 export const activateRecentWorkspace = async (id: string): Promise<boolean> => {
 	const records = await getRecentRecords()
-	const record = records.find((candidate) => candidate.id === id)
+	const record = records.find((candidate) => candidate.id === id && candidate.deletedAt === undefined)
 	if (record === undefined || !await requestPermission(record.handle)) return false
 	await writeValue(ROOT_KEY, record.handle)
 	const nextRecord = { ...record, lastOpenedAt: Date.now() }

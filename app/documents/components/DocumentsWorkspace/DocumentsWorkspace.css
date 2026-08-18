@@ -127,6 +127,24 @@
 
 .documentsWorkspaceEmptyCompact {
 	min-height: 22rem;
+	border-color: color-mix(in srgb, var(--line) 54%, transparent);
+	border-style: dashed;
+	background: transparent;
+}
+
+.documentsWorkspaceEmptyCompact .documentsWorkspaceEmptyGlyph {
+	border-color: color-mix(in srgb, currentColor 32%, transparent);
+	background: transparent;
+	color: var(--muted);
+	opacity: 0.78;
+}
+
+.documentsWorkspaceEmptyCompact .documentsWorkspaceEmptyTitle {
+	color: var(--muted);
+}
+
+.documentsWorkspaceEmptyCompact .documentsWorkspaceEmptyBody {
+	opacity: 0.72;
 }
 
 .documentsWorkspaceEmptyGlyph {

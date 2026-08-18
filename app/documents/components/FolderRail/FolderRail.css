@@ -31,6 +31,7 @@
 	border: 0;
 	background: transparent;
 	color: var(--muted);
+	text-decoration: none;
 	font: inherit;
 	font-size: var(--font-size-caption);
 	font-weight: var(--font-weight-semibold);

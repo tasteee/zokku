@@ -5,40 +5,30 @@ import { $composer, $documents, $folders, $search, FolderFilterT } from './store
 import { DocumentsHeader } from './components/DocumentsHeader/DocumentsHeader'
 import { FolderRail } from './components/FolderRail/FolderRail'
 import { DocumentsWorkspace } from './components/DocumentsWorkspace/DocumentsWorkspace'
-import { WorkspaceBrowser } from './components/WorkspaceBrowser/WorkspaceBrowser'
 import { FolderComposer } from './components/FolderComposer/FolderComposer'
 import { SearchPalette } from './components/SearchPalette/SearchPalette'
 import { JSX, useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { chooseWorkspace, createDocument, createFolder, listWorkspace, moveDocument, removeFolder, restoreWorkspace, searchDocuments } from '@/lib/localWorkspace'
+import { createDocument, createFolder, listWorkspace, moveDocument, removeFolder, restoreWorkspace, searchDocuments } from '@/lib/localWorkspace'
 import type { LocalDocumentT, LocalFolderT } from '@/lib/localWorkspace'
-import { ensureWorkspaceGuide } from '@/lib/ensureWorkspaceGuide'
 import { getFolderDescriptions, saveFolderDescription } from '@/lib/folderDescriptions'
-import { activateRecentWorkspace, listRecentWorkspaces, rememberCurrentWorkspace } from '@/lib/recentWorkspaces'
-import type { RecentWorkspaceT } from '@/lib/recentWorkspaces'
+import { rememberCurrentWorkspace } from '@/lib/recentWorkspaces'
 import { beginAppTransition } from '@/lib/appTransition'
 import { getEditorHref } from '@/lib/documentRoutes'
 
 const WORKSPACE_TRANSITION_KEY = 'zokku-workspace-transition'
-type BrowserModeT = 'documents' | 'workspaces'
-type ContentTransitionT = 'idle' | 'out' | 'in'
 
 const DocumentsPage = (): JSX.Element => {
 	const router = useRouter()
 	const [debouncedSearchInput, setDebouncedSearchInput] = useState('')
 	const [isReady, setIsReady] = useState(false)
 	const [workspaceName, setWorkspaceName] = useState('')
-	const [mode, setMode] = useState<BrowserModeT>('documents')
-	const [contentTransition, setContentTransition] = useState<ContentTransitionT>('idle')
-	const [recentWorkspaces, setRecentWorkspaces] = useState<RecentWorkspaceT[]>([])
-	const [isOpeningWorkspace, setIsOpeningWorkspace] = useState(false)
 	const [shouldFadeIn] = useState(() => typeof window !== 'undefined' && sessionStorage.getItem(WORKSPACE_TRANSITION_KEY) === '1')
 	const searchInput = $search.use.lookup('input') as string
 	const searchTerm = debouncedSearchInput.trim()
 	const isComposerOpen = $composer.use.lookup('isOpen') as boolean
 	const isSearchOpen = $search.use.lookup('isOpen') as boolean
 
-	const refreshRecentWorkspaces = useCallback(async (): Promise<void> => setRecentWorkspaces(await listRecentWorkspaces()), [])
 	const refreshWorkspace = useCallback(async (): Promise<void> => {
 		try {
 			const nextWorkspaceName = await restoreWorkspace(false)
@@ -51,9 +41,8 @@ const DocumentsPage = (): JSX.Element => {
 			$folders.set({ isLoading: false, list: folders })
 			setIsReady(true)
 			await rememberCurrentWorkspace()
-			await refreshRecentWorkspaces()
 		} catch { router.replace('/') }
-	}, [refreshRecentWorkspaces, router])
+	}, [router])
 
 	useEffect(() => { void refreshWorkspace() }, [refreshWorkspace])
 	useEffect(() => { if (isReady && shouldFadeIn) sessionStorage.removeItem(WORKSPACE_TRANSITION_KEY) }, [isReady, shouldFadeIn])
@@ -67,18 +56,12 @@ const DocumentsPage = (): JSX.Element => {
 	}, [searchTerm])
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent): void => {
-			if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k' && mode === 'documents') { event.preventDefault(); $search.set.lookup('isOpen', true); return }
+			if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); $search.set.lookup('isOpen', true); return }
 			if (event.key === 'Escape' && $search.state.isOpen) $search.set.lookup('isOpen', false)
 		}
 		window.addEventListener('keydown', handleKeyDown)
 		return () => window.removeEventListener('keydown', handleKeyDown)
-	}, [mode])
-
-	const transitionMode = (nextMode: BrowserModeT): void => {
-		if (nextMode === mode || contentTransition !== 'idle') return
-		setContentTransition('out')
-		window.setTimeout(() => { setMode(nextMode); setContentTransition('in'); window.setTimeout(() => setContentTransition('idle'), 500) }, 300)
-	}
+	}, [])
 	const handleNew = async (): Promise<void> => {
 		const selectedId = $folders.state.selectedId
 		const folderId = selectedId !== 'all' && selectedId !== 'uncategorized' ? selectedId : undefined
@@ -110,31 +93,15 @@ const DocumentsPage = (): JSX.Element => {
 	}
 	const handleMoveDocument = async (documentId: string, value: string): Promise<void> => { await moveDocument(documentId, value === 'uncategorized' ? undefined : value); await refreshWorkspace() }
 	const handleNavigateToDocument = (documentId: string): void => { $search.set.lookup('isOpen', false); beginAppTransition(() => router.push(getEditorHref(documentId))) }
-	const handleCreateWorkspace = async (): Promise<void> => {
-		setIsOpeningWorkspace(true)
-		try { await chooseWorkspace(); await ensureWorkspaceGuide(); await rememberCurrentWorkspace(); $folders.set.lookup('selectedId', 'all'); await refreshWorkspace(); transitionMode('documents') }
-		finally { setIsOpeningWorkspace(false) }
-	}
-	const handleOpenWorkspace = async (workspace: RecentWorkspaceT): Promise<void> => {
-		setIsOpeningWorkspace(true)
-		try {
-			if (!(await activateRecentWorkspace(workspace.id))) return
-			sessionStorage.setItem(WORKSPACE_TRANSITION_KEY, '1')
-			const root = document.querySelector<HTMLElement>('.documentsPage')
-			if (root !== null) root.dataset.transition = 'out'
-			window.setTimeout(() => window.location.assign('/documents/'), 300)
-		} finally { window.setTimeout(() => setIsOpeningWorkspace(false), 300) }
-	}
-
 	const visibilityState = !isReady ? 'hidden' : shouldFadeIn ? 'visible' : 'ready'
 	return <div className="documentsPage" data-visibility={visibilityState} data-transition="idle">
 		<DocumentsHeader />
 		<div className="documentsPageBody">
-			<FolderRail mode={mode} workspaceCount={recentWorkspaces.length} workspaces={recentWorkspaces} onShowWorkspaces={() => transitionMode('workspaces')} onCreateWorkspace={() => void handleCreateWorkspace()} onOpenWorkspace={(workspace) => void handleOpenWorkspace(workspace)} onDeleteFolder={handleDeleteFolder} />
-			<div className="documentsPageContent" data-transition={contentTransition}>{mode === 'documents' ? <DocumentsWorkspace onNew={handleNew} onMoveDocument={handleMoveDocument} onShareDocument={handleShareDocument} /> : <WorkspaceBrowser workspaces={recentWorkspaces} isOpening={isOpeningWorkspace} onOpen={(workspace) => void handleOpenWorkspace(workspace)} onCreate={() => void handleCreateWorkspace()} />}</div>
+			<FolderRail onDeleteFolder={handleDeleteFolder} />
+			<div className="documentsPageContent"><DocumentsWorkspace onNew={handleNew} onMoveDocument={handleMoveDocument} onShareDocument={handleShareDocument} /></div>
 		</div>
-		{isComposerOpen && mode === 'documents' && <FolderComposer onSubmit={handleCreateFolder} />}
-		{isSearchOpen && mode === 'documents' && <SearchPalette onNavigate={handleNavigateToDocument} />}
+		{isComposerOpen && <FolderComposer onSubmit={handleCreateFolder} />}
+		{isSearchOpen && <SearchPalette onNavigate={handleNavigateToDocument} />}
 	</div>
 }
 

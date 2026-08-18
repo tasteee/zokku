@@ -55,7 +55,7 @@ export const DocumentCard = (props: DocumentCardPropsT): JSX.Element => {
 			</div>
 			<div className="documentCardActions">
 				<label className="documentMoveControl" onClick={(event) => event.stopPropagation()}>
-					<span>Move to</span>
+					<span>Folder</span>
 					<select value={props.document.folderId ?? 'uncategorized'} onChange={handleMoveChange}>
 						<option value="uncategorized">Uncategorized</option>
 						{props.folders.map((folderOption) => <option key={folderOption._id} value={folderOption._id}>{folderOption.name}</option>)}

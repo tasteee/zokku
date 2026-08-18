@@ -73,7 +73,7 @@ export const DocumentsWorkspace = (props: DocumentsWorkspacePropsT): JSX.Element
 					<div className="documentsWorkspaceEmptyGlyph"><Folder weight="bold" /></div>
 					<h2 className="documentsWorkspaceEmptyTitle">Nothing here yet</h2>
 					<p className="documentsWorkspaceEmptyBody">Move an existing document into this folder or create a new one here.</p>
-					<ZButton className="documentsWorkspaceEmptyButton" onClick={props.onNew}>Create in folder</ZButton>
+					<ZButton className="documentsWorkspaceEmptyButton" isGhost onClick={props.onNew}>Create in folder</ZButton>
 				</div>
 			)}
 			{!isLoading && filteredDocuments.length > 0 && (

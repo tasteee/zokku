@@ -24,7 +24,7 @@
 }
 
 .workspaceBrowserTitle {
-	font-size: var(--font-size-h3);
+	font-size: clamp(1.75rem, 2.4vw, 2.35rem);
 	line-height: var(--line-height-h3);
 	font-weight: var(--font-weight-bold);
 	color: var(--primary);
@@ -46,6 +46,11 @@
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
 	gap: var(--spacing-4);
+}
+
+.workspaceBrowserCardShell {
+	position: relative;
+	min-width: 0;
 }
 
 .workspaceBrowserCard,
@@ -76,6 +81,11 @@
 		0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent),
 		0 16px 44px color-mix(in srgb, black 26%, transparent);
 	transform: translateY(-2px);
+}
+
+.workspaceBrowserCard {
+	width: 100%;
+	height: 100%;
 }
 
 .workspaceBrowserCard:disabled,
@@ -142,6 +152,7 @@
 .workspaceBrowserCardFooter {
 	margin-top: var(--spacing-5);
 	padding-top: var(--spacing-4);
+	padding-right: 2.25rem;
 	border-top: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
 	font-size: var(--font-size-0);
 	font-weight: var(--font-weight-bold);
@@ -152,17 +163,59 @@
 
 .workspaceBrowserAddCard {
 	width: min(100%, 17rem);
-	border-style: dashed;
-	background: color-mix(in srgb, var(--paper) 54%, transparent);
+	border-color: color-mix(in srgb, var(--line) 58%, transparent);
+	border-style: solid;
+	background: transparent;
+	color: var(--secondary);
 	align-items: flex-start;
 	justify-content: center;
 	gap: var(--spacing-3);
+	will-change: auto;
 }
 
 .workspaceBrowserAddCard:hover:not(:disabled) {
-	border-color: color-mix(in srgb, var(--accent) 58%, transparent);
-	background: color-mix(in srgb, var(--accent) 5%, var(--paper));
+	border-color: color-mix(in srgb, var(--line) 70%, transparent);
+	background: transparent;
+	color: var(--foreground);
 }
+
+.workspaceBrowserTrashButton {
+	position: absolute;
+	right: var(--spacing-3);
+	bottom: calc(var(--spacing-3) - 0.125rem);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: var(--small-button-radius);
+	background: color-mix(in srgb, var(--paper) 92%, transparent);
+	color: var(--muted);
+	cursor: pointer;
+	opacity: 0;
+	pointer-events: none;
+	transform: translateY(2px);
+	transition: opacity 120ms ease, transform 120ms ease, border-color 120ms ease, color 120ms ease, background 120ms ease;
+}
+
+.workspaceBrowserTrashButton svg { width: 0.9rem; height: 0.9rem; }
+
+.workspaceBrowserCardShell:hover .workspaceBrowserTrashButton,
+.workspaceBrowserCardShell:focus-within .workspaceBrowserTrashButton {
+	opacity: 1;
+	pointer-events: auto;
+	transform: translateY(0);
+}
+
+.workspaceBrowserTrashButton:hover:not(:disabled) {
+	border-color: color-mix(in srgb, var(--accent-alt) 42%, transparent);
+	background: color-mix(in srgb, var(--accent-alt) 9%, var(--paper));
+	color: var(--accent-alt);
+}
+
+.workspaceBrowserTrashButton:disabled { cursor: wait; opacity: 0.45; }
 
 .workspaceBrowserAddGlyph {
 	display: inline-flex;
@@ -170,10 +223,11 @@
 	justify-content: center;
 	width: 2.5rem;
 	height: 2.5rem;
-	border: 1px solid color-mix(in srgb, var(--accent) 36%, transparent);
+	border: 1px solid color-mix(in srgb, currentColor 36%, transparent);
 	border-radius: 999px;
-	background: color-mix(in srgb, var(--accent) 9%, transparent);
-	color: var(--accent);
+	background: transparent;
+	color: inherit;
+	opacity: 0.9;
 }
 
 .workspaceBrowserAddGlyph svg {
@@ -185,13 +239,96 @@
 	font-size: var(--font-size-small);
 	font-weight: var(--font-weight-semibold);
 	line-height: 1.35;
-	color: var(--primary);
+	color: inherit;
 }
 
 .workspaceBrowserAddBody {
 	max-width: 14rem;
 	font-size: var(--font-size-caption);
 	line-height: var(--line-height-small);
+	color: inherit;
+	opacity: 0.84;
+}
+
+.workspaceBrowserTrashLink,
+.workspaceBrowserBackLink {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--spacing-2);
+	width: fit-content;
+	color: var(--muted);
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-semibold);
+	text-decoration: none;
+	transition: color 120ms ease;
+}
+
+.workspaceBrowserTrashLink {
+	margin-top: var(--spacing-2);
+	padding: var(--spacing-2) 0;
+}
+
+.workspaceBrowserBackLink {
+	margin-bottom: calc(var(--spacing-2) * -1);
+	padding: var(--spacing-2) 0;
+}
+
+.workspaceBrowserTrashLink:hover,
+.workspaceBrowserBackLink:hover { color: var(--primary); }
+.workspaceBrowserTrashLink svg,
+.workspaceBrowserBackLink svg { width: 0.9rem; height: 0.9rem; }
+
+.workspaceBrowserTrashCount {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.25rem;
+	height: 1.25rem;
+	padding: 0 var(--spacing-1);
+	border: 1px solid color-mix(in srgb, var(--line) 64%, transparent);
+	border-radius: 999px;
+	font-size: var(--font-size-0);
+}
+
+.workspaceBrowserTrashCard,
+.workspaceBrowserTrashEmpty {
+	display: flex;
+	min-height: 13rem;
+	padding: var(--spacing-5);
+	border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+	border-radius: var(--medium-button-radius);
+	background: color-mix(in srgb, var(--paper) 72%, transparent);
+}
+
+.workspaceBrowserTrashCard {
+	flex-direction: column;
+}
+
+.workspaceBrowserTrashCardFooter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--spacing-3);
+	margin-top: var(--spacing-5);
+	padding-top: var(--spacing-3);
+	border-top: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
+	color: var(--secondary);
+	font-size: var(--font-size-0);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.workspaceBrowserTrashEmpty {
+	width: min(100%, 22rem);
+	min-height: 18rem;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	gap: var(--spacing-3);
+	border-color: color-mix(in srgb, var(--line) 54%, transparent);
+	border-style: dashed;
+	background: transparent;
 	color: var(--muted);
 }
 
@@ -203,5 +340,13 @@
 
 	.workspaceBrowserAddCard {
 		width: 100%;
+	}
+}
+
+@media (hover: none) {
+	.workspaceBrowserTrashButton {
+		opacity: 0.72;
+		pointer-events: auto;
+		transform: none;
 	}
 }

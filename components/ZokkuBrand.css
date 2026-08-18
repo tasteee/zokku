@@ -7,8 +7,15 @@
 	letter-spacing: 0.18em;
 	text-transform: uppercase;
 	color: var(--primary);
+	text-decoration: none;
 	user-select: none;
 	white-space: nowrap;
+}
+
+.zokkuBrand:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: var(--spacing-2);
+	border-radius: var(--small-button-radius);
 }
 
 .zokkuBrand.isCompact {

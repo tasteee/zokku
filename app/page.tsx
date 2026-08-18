@@ -7,18 +7,23 @@ import { DocumentsHeader } from './documents/components/DocumentsHeader/Document
 import { WorkspaceBrowser } from './documents/components/WorkspaceBrowser/WorkspaceBrowser'
 import { chooseWorkspace, isFileSystemWorkspaceSupported } from '@/lib/localWorkspace'
 import { ensureWorkspaceGuide } from '@/lib/ensureWorkspaceGuide'
-import { activateRecentWorkspace, listRecentWorkspaces, rememberCurrentWorkspace } from '@/lib/recentWorkspaces'
-import type { RecentWorkspaceT } from '@/lib/recentWorkspaces'
+import { activateRecentWorkspace, listRecentWorkspaces, listTrashedWorkspaces, rememberCurrentWorkspace, trashRecentWorkspace } from '@/lib/recentWorkspaces'
+import type { RecentWorkspaceT, TrashedWorkspaceT } from '@/lib/recentWorkspaces'
 
 const WORKSPACE_TRANSITION_KEY = 'zokku-workspace-transition'
 
 const HomePage = (): JSX.Element => {
 	const [workspaces, setWorkspaces] = useState<RecentWorkspaceT[]>([])
+	const [trashedWorkspaces, setTrashedWorkspaces] = useState<TrashedWorkspaceT[]>([])
 	const [isOpening, setIsOpening] = useState(false)
 	const [error, setError] = useState('')
 	const isSupported = typeof window === 'undefined' || isFileSystemWorkspaceSupported()
 
-	const refreshWorkspaces = async (): Promise<void> => setWorkspaces(await listRecentWorkspaces())
+	const refreshWorkspaces = async (): Promise<void> => {
+		const [nextWorkspaces, nextTrashedWorkspaces] = await Promise.all([listRecentWorkspaces(), listTrashedWorkspaces()])
+		setWorkspaces(nextWorkspaces)
+		setTrashedWorkspaces(nextTrashedWorkspaces)
+	}
 	useEffect(() => { void refreshWorkspaces() }, [])
 
 	const enterDocuments = (): void => {
@@ -61,12 +66,22 @@ const HomePage = (): JSX.Element => {
 		}
 	}
 
+	const handleTrashWorkspace = async (workspace: RecentWorkspaceT): Promise<void> => {
+		setError('')
+		try {
+			await trashRecentWorkspace(workspace.id)
+			await refreshWorkspaces()
+		} catch {
+			setError(`Zokku could not move ${workspace.name} to Trash.`)
+		}
+	}
+
 	return (
 		<div className="documentsPage" data-visibility="ready" data-transition="idle">
 			<DocumentsHeader />
 			<div className="documentsPageBody documentsPageBodyWorkspaces">
 				<div className="documentsPageContent documentsPageContentFull">
-					<WorkspaceBrowser workspaces={workspaces} isOpening={isOpening} onOpen={(workspace) => void handleOpenWorkspace(workspace)} onCreate={() => void handleCreateWorkspace()} />
+					<WorkspaceBrowser workspaces={workspaces} trashCount={trashedWorkspaces.length} isOpening={isOpening} onOpen={(workspace) => void handleOpenWorkspace(workspace)} onCreate={() => void handleCreateWorkspace()} onTrash={(workspace) => void handleTrashWorkspace(workspace)} />
 					{!isSupported && <p className="WorkspaceError">Local workspaces require Chrome or Edge.</p>}
 					{error && <p className="WorkspaceError">{error}</p>}
 				</div>
