@@ -4,135 +4,43 @@
 	flex-direction: column;
 	height: 100%;
 	min-height: 0;
-	background: var(--bg);
-}
-
-.MarkdownCopyToast {
-	position: absolute;
-	bottom: var(--spacing-5);
-	left: 50%;
-	transform: translateX(-50%) translateY(4px);
-	padding: var(--spacing-2) var(--spacing-4);
-	background: var(--paper);
-	border: 1px solid var(--line);
-	border-radius: var(--radius);
-	color: var(--primary);
-	font-size: var(--font-size-caption);
-	font-weight: var(--font-weight-semibold);
-	letter-spacing: 0.04em;
-	white-space: nowrap;
-	pointer-events: none;
-	opacity: 0;
-	transition:
-		opacity 150ms,
-		transform 150ms;
-	z-index: 10;
-}
-
-.MarkdownCopyToast[data-visible='true'] {
-	opacity: 1;
-	transform: translateX(-50%) translateY(0);
+	background: var(--background);
 }
 
 .MarkdownUploadToast {
 	position: absolute;
-	bottom: var(--spacing-5);
+	bottom: var(--space-lg);
 	left: 50%;
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-2);
+	gap: var(--space-xs);
 	min-width: 12rem;
-	transform: translateX(-50%) translateY(4px);
-	padding: var(--spacing-2) var(--spacing-4);
-	background: var(--paper);
-	border: 1px solid var(--line);
-	border-radius: var(--radius);
-	color: var(--muted);
+	transform: translateX(-50%);
+	padding: var(--space-xs) var(--space-md);
+	background: var(--card);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-md);
+	color: var(--muted-foreground);
 	font-size: var(--font-size-caption);
 	font-weight: var(--font-weight-semibold);
 	letter-spacing: 0.04em;
 	white-space: nowrap;
-	pointer-events: none;
-	opacity: 0;
-	transition:
-		opacity 150ms,
-		transform 150ms;
 	z-index: 10;
-}
-
-.MarkdownUploadToast[data-visible='true'] {
-	opacity: 1;
-	transform: translateX(-50%) translateY(0);
-}
-
-.MarkdownUploadToast[data-error='true'] {
-	color: var(--accent-alt);
-	border-color: color-mix(in srgb, var(--accent-alt) 50%, var(--line));
 }
 
 .MarkdownUploadLabel {
 	text-align: center;
 }
 
-.MarkdownUploadProgress {
-	display: block;
-	width: 100%;
-	height: 3px;
-	overflow: hidden;
-	border-radius: 999px;
-	background: var(--line);
-}
-
-.MarkdownUploadProgressFill {
-	display: block;
-	height: 100%;
-	border-radius: inherit;
-	background: var(--accent);
-	transition: width 120ms ease-out;
-}
-
 .MarkdownToolbar {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: var(--spacing-1);
-	padding: var(--spacing-1) var(--spacing-2);
+	padding: 0.125rem var(--space-xs);
 	height: 40px;
-	border-bottom: 1px solid var(--line);
+	border-bottom: 1px solid var(--border);
 	flex-shrink: 0;
 }
-
-.MarkdownToolbarButton {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 1.75rem;
-	height: 1.75rem;
-	border: 1px solid transparent;
-	border-radius: var(--small-button-radius);
-	background: transparent;
-	color: var(--muted);
-	cursor: pointer;
-	transition:
-		background-color 0.1s ease,
-		color 0.1s ease,
-		border-color 0.1s ease;
-}
-
-.MarkdownToolbarButton:hover {
-	background: color-mix(in oklch, var(--foreground) 8%, transparent);
-	color: var(--primary);
-}
-
-.MarkdownToolbarButton:active {
-	background: color-mix(in oklch, var(--foreground) 14%, transparent);
-}
-
-.MarkdownToolbarDivider {
-	width: 1px;
-	align-self: stretch;
-	margin: var(--spacing-1) var(--spacing-1);
-	background: var(--line);
+.MarkdownToolbar z-button,
+.MarkdownToolbar z-separator {
+	flex-shrink: 0;
 }
 
 .MarkdownEditorSurface {

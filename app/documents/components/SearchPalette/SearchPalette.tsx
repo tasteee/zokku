@@ -2,7 +2,7 @@
 
 import './SearchPalette.css'
 import { JSX, useEffect, useRef } from 'react'
-import { FileTextIcon, MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react'
+import { FileTextIcon, MagnifyingGlassIcon } from '@phosphor-icons/react'
 import { $folders, $search, FolderT, SearchResultT } from '../../stores'
 import { formatRelativeTime } from '../../helpers'
 import { HighlightedMatch } from '../HighlightedMatch/HighlightedMatch'
@@ -19,7 +19,7 @@ const SearchStatus = (props: { searchTerm: string }): JSX.Element | null => {
 }
 
 export const SearchPalette = (props: SearchPalettePropsT): JSX.Element => {
-	const inputRef = useRef<HTMLInputElement | null>(null)
+	const inputRef = useRef<HTMLElement | null>(null)
 	const searchInput = $search.use.lookup('input') as string
 	const results = $search.use.lookup('results') as SearchResultT[]
 	const folders = $folders.use.lookup('list') as FolderT[]
@@ -38,33 +38,36 @@ export const SearchPalette = (props: SearchPalettePropsT): JSX.Element => {
 	}
 
 	return (
-		<div className="searchPaletteBackdrop" role="presentation" onMouseDown={handleClose}>
-			<section className="searchPalette" role="dialog" aria-modal="true" aria-label="Search documents" onMouseDown={(event) => event.stopPropagation()}>
-				<div className="searchPaletteInputRow">
-					<MagnifyingGlassIcon weight="bold" />
-					<input ref={inputRef} value={searchInput} onChange={(event) => $search.set.lookup('input', event.target.value)} placeholder="Search every Markdown file..." aria-label="Search documents" />
-					<button className="searchPaletteClose" type="button" onClick={handleClose} title="Close search"><XIcon weight="bold" /></button>
+		<z-dialog is-open size="lg" onClose={handleClose}>
+			<div className="searchPaletteInputRow">
+				<MagnifyingGlassIcon weight="bold" />
+				<z-input
+					ref={inputRef}
+					value={searchInput}
+					onInput={(event: CustomEvent<{ value: string }>) => $search.set.lookup('input', event.detail.value)}
+					placeholder="Search every Markdown file..."
+					label="Search documents"
+				/>
+			</div>
+			<SearchStatus searchTerm={searchInput.trim()} />
+			{hasInput && (
+				<div className="searchPaletteResults">
+					{results.map((result) => {
+						const folder = folders.find((item) => item._id === result.folderId)
+						return (
+							<button key={result._id} className="searchPaletteResult" type="button" onClick={() => props.onNavigate(result._id)}>
+								<span className="searchPaletteResultIcon"><FileTextIcon weight="bold" /></span>
+								<span className="searchPaletteResultBody">
+									<span className="searchPaletteResultMeta">{result.matchType} match · {folder?.name ?? 'Workspace root'} · Edited {formatRelativeTime(result.updatedAt)}</span>
+									<span className="searchPaletteResultTitle"><HighlightedMatch text={result.title} query={searchInput.trim()} /></span>
+									<span className="searchPaletteResultSnippet"><HighlightedMatch text={result.snippet} query={searchInput.trim()} /></span>
+								</span>
+							</button>
+						)
+					})}
+					{results.length === 0 && !$search.state.isLoading && <z-empty-state heading="No matches" description="Try another phrase or a smaller fragment of text." />}
 				</div>
-				<SearchStatus searchTerm={searchInput.trim()} />
-				{hasInput && (
-					<div className="searchPaletteResults">
-						{results.map((result) => {
-							const folder = folders.find((item) => item._id === result.folderId)
-							return (
-								<button key={result._id} className="searchPaletteResult" type="button" onClick={() => props.onNavigate(result._id)}>
-									<span className="searchPaletteResultIcon"><FileTextIcon weight="bold" /></span>
-									<span className="searchPaletteResultBody">
-										<span className="searchPaletteResultMeta">{result.matchType} match · {folder?.name ?? 'Workspace root'} · Edited {formatRelativeTime(result.updatedAt)}</span>
-										<span className="searchPaletteResultTitle"><HighlightedMatch text={result.title} query={searchInput.trim()} /></span>
-										<span className="searchPaletteResultSnippet"><HighlightedMatch text={result.snippet} query={searchInput.trim()} /></span>
-									</span>
-								</button>
-							)
-						})}
-						{results.length === 0 && !$search.state.isLoading && <div className="searchPaletteEmpty"><div className="searchPaletteEmptyGlyph"><MagnifyingGlassIcon weight="bold" /></div><h2>No matches</h2><p>Try another phrase or a smaller fragment of text.</p></div>}
-					</div>
-				)}
-			</section>
-		</div>
+			)}
+		</z-dialog>
 	)
 }

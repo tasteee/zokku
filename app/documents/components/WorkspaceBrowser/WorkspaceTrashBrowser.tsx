@@ -3,7 +3,6 @@
 import './WorkspaceBrowser.css'
 import { ArrowCounterClockwise, Trash } from '@phosphor-icons/react'
 import { JSX } from 'react'
-import { ZButton } from '@/components/zButton'
 import type { TrashedWorkspaceT } from '@/lib/recentWorkspaces'
 
 type WorkspaceTrashBrowserPropsT = {
@@ -16,24 +15,20 @@ export const WorkspaceTrashBrowser = (props: WorkspaceTrashBrowserPropsT): JSX.E
 		<main className="workspaceBrowser">
 			<div className="workspaceBrowserHeader">
 				<div>
-					<div className="workspaceBrowserKicker">Trash</div>
-					<h1 className="workspaceBrowserTitle">Deleted workspaces</h1>
+					<z-eyebrow label="Trash" />
+					<z-heading size="lg">Deleted workspaces</z-heading>
 					<p className="workspaceBrowserDescription">Workspace shortcuts remain here for 30 days. Your folders and files stay untouched on this computer.</p>
 				</div>
 			</div>
 
 			{props.workspaces.length === 0 ? (
-				<div className="workspaceBrowserTrashEmpty">
-					<div className="workspaceBrowserAddGlyph"><Trash weight="bold" /></div>
-					<div className="workspaceBrowserAddTitle">Trash is empty</div>
-					<div className="workspaceBrowserAddBody">Deleted workspace shortcuts will appear here for 30 days.</div>
-				</div>
+				<z-empty-state heading="Trash is empty" description="Deleted workspace shortcuts will appear here for 30 days." is-bordered />
 			) : (
 				<div className="workspaceBrowserGrid">
 					{props.workspaces.map((workspace) => {
 						const daysRemaining = Math.max(1, Math.ceil((workspace.expiresAt - Date.now()) / (24 * 60 * 60 * 1000)))
 						return (
-							<article key={workspace.id} className="workspaceBrowserTrashCard">
+							<z-card key={workspace.id} className="workspaceBrowserTrashCard">
 								<div className="workspaceBrowserCardBody">
 									<div className="workspaceBrowserCardTopline">
 										<span>Removed in {daysRemaining} {daysRemaining === 1 ? 'day' : 'days'}</span>
@@ -44,9 +39,9 @@ export const WorkspaceTrashBrowser = (props: WorkspaceTrashBrowserPropsT): JSX.E
 								</div>
 								<div className="workspaceBrowserTrashCardFooter">
 									<span>{workspace.noteCount} documents · {workspace.folderCount} folders</span>
-									<ZButton isSmall isGhost onClick={() => props.onRestore(workspace)}><ArrowCounterClockwise weight="bold" />Restore</ZButton>
+									<z-button kind="ghost" size="sm" onClick={() => props.onRestore(workspace)}><ArrowCounterClockwise weight="bold" />Restore</z-button>
 								</div>
-							</article>
+							</z-card>
 						)
 					})}
 				</div>

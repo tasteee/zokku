@@ -20,7 +20,6 @@ type ComposerStateT = {
 	folderDescription: string
 	isCreating: boolean
 	isOpen: boolean
-	confirmingFolderId: string | null
 }
 
 type FoldersStateT = {
@@ -46,8 +45,7 @@ export const $composer = datass.object<ComposerStateT>({
 	folderName: '',
 	folderDescription: '',
 	isCreating: false,
-	isOpen: false,
-	confirmingFolderId: null
+	isOpen: false
 })
 
 export const $folders = datass.object<FoldersStateT>({

@@ -1,12 +1,13 @@
 import './base.css'
 import './main.css'
 import './zText.css'
+import '@tasteee/zest/ink.css'
 
 import { JSX } from 'react'
 import type { Metadata } from 'next'
 import { DM_Mono, DM_Sans, Fraunces } from 'next/font/google'
-import '@/components/zButton.css'
 import '@/components/Circular.css'
+import { ZestRegistration } from '@/components/ZestRegistration'
 
 export const metadata: Metadata = {
 	title: 'Zokku',
@@ -37,8 +38,11 @@ type RootLayoutPropsT = {
 
 const RootLayout = (props: RootLayoutPropsT): JSX.Element => {
 	return (
-		<html lang="en" className={`${dmSans.className} ${dmMono.className} ${fraunces.variable}`}>
-			<body>{props.children}</body>
+		<html lang="en" data-theme="dark" className={`${dmSans.className} ${dmMono.className} ${fraunces.variable}`}>
+			<body>
+				<ZestRegistration />
+				{props.children}
+			</body>
 		</html>
 	)
 }

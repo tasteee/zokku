@@ -2,9 +2,9 @@
 
 import '@/app/documents/components/FolderRail/FolderRail.css'
 
-import { CaretLeft, FileText, FolderOpen, Trash } from '@phosphor-icons/react'
+import { CaretLeft, FileText, FolderOpen } from '@phosphor-icons/react'
 import { JSX } from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export type TrashSectionT = 'workspaces' | 'documents'
 
@@ -16,27 +16,31 @@ type TrashRailPropsT = {
 }
 
 export const TrashRail = (props: TrashRailPropsT): JSX.Element => {
+	const router = useRouter()
+	const handleBack = (): void => { window.history.length > 1 ? router.back() : router.push('/') }
+
 	return (
 		<aside className="folderRail">
-			<Link className="folderRailBackLink" href="/">
-				<CaretLeft weight="bold" />
-				<span>Back</span>
-			</Link>
-			<div className="folderRailDivider" />
-			<div className="folderRailHeader"><span>Trash</span></div>
-			<div className="folderRailSection">
-				<button className="folderRailItem" data-active={props.activeSection === 'workspaces' ? 'true' : 'false'} onClick={() => props.onSelect('workspaces')}>
-					<span className="folderRailItemIcon"><FolderOpen weight="bold" /></span><span className="folderRailItemText">Workspaces</span><span className="folderRailItemCount">{props.workspaceCount}</span>
+			<z-card className="folderRailCard">
+				<button type="button" className="folderRailBackLink" onClick={handleBack}>
+					<CaretLeft weight="bold" />
+					<span>Back</span>
 				</button>
-				<button className="folderRailItem" data-active={props.activeSection === 'documents' ? 'true' : 'false'} onClick={() => props.onSelect('documents')}>
-					<span className="folderRailItemIcon"><FileText weight="bold" /></span><span className="folderRailItemText">Documents</span><span className="folderRailItemCount">{props.documentCount}</span>
-				</button>
-			</div>
-			<div className="folderRailDivider" />
-			<Link className="folderRailFooterLink" href="/trash" aria-current="page">
-				<Trash weight="fill" />
-				<span>Trash</span>
-			</Link>
+				<z-separator />
+				<div className="folderRailHeader"><span>Trash</span></div>
+				<div className="folderRailSection">
+					<div className="folderRailItem">
+						<button type="button" className="folderRailItemButton" data-active={props.activeSection === 'workspaces' ? 'true' : 'false'} onClick={() => props.onSelect('workspaces')}>
+							<FolderOpen weight="bold" /><span className="folderRailItemText">Workspaces ({props.workspaceCount})</span>
+						</button>
+					</div>
+					<div className="folderRailItem">
+						<button type="button" className="folderRailItemButton" data-active={props.activeSection === 'documents' ? 'true' : 'false'} onClick={() => props.onSelect('documents')}>
+							<FileText weight="bold" /><span className="folderRailItemText">Documents ({props.documentCount})</span>
+						</button>
+					</div>
+				</div>
+			</z-card>
 		</aside>
 	)
 }

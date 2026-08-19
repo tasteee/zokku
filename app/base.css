@@ -1,5 +1,5 @@
 /* Theming foundations. */
-:root {
+.proseRoot {
 	/* --base-font-size: 18px; */
 
 	--base-accent-color-0: oklch(0.75 0.25 350);
@@ -102,7 +102,7 @@
 	--spacing-40: calc(var(--base-spacing) * 40); /* 160px */
 }
 
-:root {
+.proseRoot {
 	/*
 		Zest palette.
 	*/

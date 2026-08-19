@@ -1,8 +1,9 @@
 'use client'
 
 import './DocumentCard.css'
-import { ChangeEvent, JSX, MouseEvent } from 'react'
+import { JSX, MouseEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import { Trash } from '@phosphor-icons/react'
 import { $folders, DocumentT, FolderT } from '../../stores'
 import { beginAppTransition } from '@/lib/appTransition'
 import { getEditorHref } from '@/lib/documentRoutes'
@@ -31,6 +32,7 @@ type DocumentCardPropsT = {
 	folders: FolderT[]
 	onMove: (documentId: string, value: string) => Promise<void>
 	onShare: (documentId: string) => void
+	onDelete: (documentId: string) => Promise<void>
 }
 
 export const DocumentCard = (props: DocumentCardPropsT): JSX.Element => {
@@ -41,28 +43,35 @@ export const DocumentCard = (props: DocumentCardPropsT): JSX.Element => {
 	const titleLabel = props.document.title || 'Untitled'
 	const isCopied = copiedId === props.document._id
 	const folder = props.folders.find((item) => item._id === props.document.folderId)
+	const folderOptions = [
+		{ value: 'uncategorized', label: 'Uncategorized' },
+		...props.folders.map((folderOption) => ({ value: folderOption._id, label: folderOption.name }))
+	]
 
 	const handleCardClick = (): void => beginAppTransition(() => router.push(getEditorHref(props.document._id)))
-	const handleMoveChange = (event: ChangeEvent<HTMLSelectElement>): void => { void props.onMove(props.document._id, event.target.value) }
+	const handleMoveChange = (event: CustomEvent<{ value: string }>): void => { void props.onMove(props.document._id, event.detail.value) }
 	const handleShareClick = (event: MouseEvent): void => { event.stopPropagation(); props.onShare(props.document._id) }
 
 	return (
-		<article className="documentCard" onClick={handleCardClick}>
+		<z-card is-reactive className="documentCard" onClick={handleCardClick}>
 			<div className="documentCardBody">
 				<div className="documentCardTopline"><span>{folder?.name ?? 'Uncategorized'}</span><span>Edited {relativeTime}</span></div>
 				<div className="documentCardTitle">{titleLabel}</div>
 				{preview.length > 0 && <div className="documentCardPreview">{preview}</div>}
 			</div>
-			<div className="documentCardActions">
-				<label className="documentMoveControl" onClick={(event) => event.stopPropagation()}>
-					<span>Folder</span>
-					<select value={props.document.folderId ?? 'uncategorized'} onChange={handleMoveChange}>
-						<option value="uncategorized">Uncategorized</option>
-						{props.folders.map((folderOption) => <option key={folderOption._id} value={folderOption._id}>{folderOption.name}</option>)}
-					</select>
-				</label>
-				<button className="documentCardShareButton" onClick={handleShareClick} data-copied={isCopied ? 'true' : 'false'}>{isCopied ? 'Copied' : 'Copy link'}</button>
+			<div className="documentCardActions" onClick={(event: MouseEvent) => event.stopPropagation()}>
+				<z-select
+					label="Folder"
+					value={props.document.folderId ?? 'uncategorized'}
+					options={folderOptions}
+					size="sm"
+					onChange={handleMoveChange}
+				/>
+				<z-button size="sm" kind="ghost" accent={isCopied ? 'dom' : 'neutral'} onClick={handleShareClick}>{isCopied ? 'Copied' : 'Copy link'}</z-button>
+				<z-alert-dialog heading="Delete this document?" description="This can't be undone." accent="error" confirm-label="Delete" onConfirm={() => void props.onDelete(props.document._id)}>
+					<z-button slot="trigger" size="sm" kind="ghost" accent="error" title="Delete document" aria-label="Delete document"><Trash weight="bold" /></z-button>
+				</z-alert-dialog>
 			</div>
-		</article>
+		</z-card>
 	)
 }

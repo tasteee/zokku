@@ -15,7 +15,6 @@ export const FolderRail = (props: FolderRailPropsT): JSX.Element => {
 	const documents = $documents.use.lookup('list') as DocumentT[]
 	const folders = $folders.use.lookup('list') as FolderT[]
 	const selectedId = $folders.use.lookup('selectedId') as FolderFilterT
-	const confirmingFolderId = $composer.use.lookup('confirmingFolderId')
 	const folderCounts = new Map<string, number>()
 	for (const document of documents) {
 		const folderKey = document.folderId ?? 'uncategorized'
@@ -25,51 +24,60 @@ export const FolderRail = (props: FolderRailPropsT): JSX.Element => {
 
 	const handleSelectFolder = (nextId: FolderFilterT): void => {
 		$folders.set.lookup('selectedId', nextId)
-		$composer.set.lookup('confirmingFolderId', null)
 	}
 
 	return (
 		<aside className="folderRail">
-			<div className="folderRailWorkspaceHeader">
-				<Link className="folderRailBackLink" href="/">
-					<CaretLeft weight="bold" />
-					<span>Workspaces</span>
+			<z-card className="folderRailCard">
+				<div className="folderRailWorkspaceHeader">
+					<Link className="folderRailBackLink" href="/">
+						<CaretLeft weight="bold" />
+						<span>Back</span>
+					</Link>
+					<div className="folderRailWorkspaceHeaderName" title={props.workspaceName}>{props.workspaceName}</div>
+				</div>
+				<z-separator />
+				<div className="folderRailSection">
+					<div className="folderRailItem">
+						<button type="button" className="folderRailItemButton" data-active={selectedId === 'all' ? 'true' : 'false'} onClick={() => handleSelectFolder('all')}>
+							<FileText weight="bold" /><span className="folderRailItemText">All documents ({documents.length})</span>
+						</button>
+					</div>
+					<div className="folderRailItem">
+						<button type="button" className="folderRailItemButton" data-active={selectedId === 'uncategorized' ? 'true' : 'false'} onClick={() => handleSelectFolder('uncategorized')}>
+							<Folder weight="bold" /><span className="folderRailItemText">Workspace root ({uncategorizedCount})</span>
+						</button>
+					</div>
+				</div>
+				<z-separator />
+				<div className="folderRailHeader">
+					<span>Folders</span>
+					<div className="folderRailHeaderActions">
+						<span>{folders.length}</span>
+						<z-button kind="ghost" size="sm" title="New folder" aria-label="New folder" onClick={() => $composer.set.lookup('isOpen', true)}><FolderPlus weight="bold" /></z-button>
+					</div>
+				</div>
+				<div className="folderRailList">
+					{folders.map((folder) => {
+						const isActive = selectedId === folder._id
+						return (
+							<div key={folder._id} className="folderRailItem">
+								<button type="button" className="folderRailItemButton" data-active={isActive ? 'true' : 'false'} onClick={() => handleSelectFolder(folder._id)}>
+									<Folder weight={isActive ? 'fill' : 'bold'} /><span className="folderRailItemText">{folder.name} ({folderCounts.get(folder._id) ?? 0})</span>
+								</button>
+								<z-alert-dialog heading={`Delete "${folder.name}"?`} description="Documents inside move to the workspace root. This can't be undone." accent="error" confirm-label="Delete" onConfirm={() => void props.onDeleteFolder(folder._id)}>
+									<z-button slot="trigger" kind="ghost" size="sm" accent="error" title="Delete folder" aria-label="Delete folder"><Trash weight="bold" /></z-button>
+								</z-alert-dialog>
+							</div>
+						)
+					})}
+				</div>
+				<z-separator />
+				<Link className="folderRailFooterLink" href="/trash">
+					<Trash weight="bold" />
+					<span>Trash</span>
 				</Link>
-				<div className="folderRailWorkspaceHeaderName" title={props.workspaceName}>{props.workspaceName}</div>
-			</div>
-			<div className="folderRailDivider" />
-			<div className="folderRailSection">
-				<button className="folderRailItem" data-active={selectedId === 'all' ? 'true' : 'false'} onClick={() => handleSelectFolder('all')}>
-					<span className="folderRailItemIcon"><FileText weight="bold" /></span><span className="folderRailItemText">All documents</span><span className="folderRailItemCount">{documents.length}</span>
-				</button>
-				<button className="folderRailItem" data-active={selectedId === 'uncategorized' ? 'true' : 'false'} onClick={() => handleSelectFolder('uncategorized')}>
-					<span className="folderRailItemIcon"><Folder weight="bold" /></span><span className="folderRailItemText">Workspace root</span><span className="folderRailItemCount">{uncategorizedCount}</span>
-				</button>
-			</div>
-			<div className="folderRailDivider" />
-			<div className="folderRailHeader">
-				<span>Folders</span>
-				<div className="folderRailHeaderActions"><span>{folders.length}</span><button className="folderRailAddButton" title="New folder" onClick={() => $composer.set.lookup('isOpen', true)}><FolderPlus weight="bold" /></button></div>
-			</div>
-			<div className="folderRailList">
-				{folders.map((folder) => {
-					const isConfirming = confirmingFolderId === folder._id
-					const isActive = selectedId === folder._id
-					return (
-						<div key={folder._id} className="folderRailRow">
-							<button className="folderRailItem" data-active={isActive ? 'true' : 'false'} onClick={() => handleSelectFolder(folder._id)}>
-								<span className="folderRailItemIcon"><Folder weight={isActive ? 'fill' : 'bold'} /></span><span className="folderRailItemText">{folder.name}</span><span className="folderRailItemCount">{folderCounts.get(folder._id) ?? 0}</span>
-							</button>
-							<button className="folderRailDeleteButton" data-confirm={isConfirming ? 'true' : 'false'} title={isConfirming ? 'Confirm delete folder' : 'Delete folder'} onClick={() => void props.onDeleteFolder(folder._id)}>{isConfirming ? 'Confirm' : <Trash weight="bold" />}</button>
-						</div>
-					)
-				})}
-			</div>
-			<div className="folderRailDivider" />
-			<Link className="folderRailFooterLink" href="/trash">
-				<Trash weight="bold" />
-				<span>Trash</span>
-			</Link>
+			</z-card>
 		</aside>
 	)
 }

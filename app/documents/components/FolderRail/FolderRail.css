@@ -1,43 +1,33 @@
 .folderRail {
 	position: sticky;
-	top: calc(3.5rem + var(--spacing-8));
+	top: calc(3.5rem + var(--space-2xl));
 	align-self: start;
-	display: flex;
-	flex-direction: column;
-	gap: var(--spacing-3);
 	max-height: calc(100dvh - 7.5rem);
-	padding: var(--spacing-3);
-	border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
-	border-radius: var(--medium-button-radius);
-	background: color-mix(in srgb, var(--paper) 82%, transparent);
-	box-shadow: 0 18px 60px color-mix(in srgb, black 22%, transparent);
-	overflow: hidden;
 }
 
-.folderRail.isWorkspaceMode {
-	background:
-		linear-gradient(180deg, color-mix(in srgb, var(--paper) 94%, transparent), color-mix(in srgb, var(--paper) 78%, transparent));
-	box-shadow:
-		0 18px 60px color-mix(in srgb, black 18%, transparent),
-		inset 0 1px 0 color-mix(in srgb, var(--primary) 4%, transparent);
+.folderRailCard {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-sm);
+	height: 100%;
+	overflow: hidden;
 }
 
 .folderRailWorkspaceHeader {
 	display: flex;
 	flex-direction: column;
-	gap: 0.15rem;
-	padding: var(--spacing-1) var(--spacing-2) 0;
+	gap: var(--space-xs);
 }
 
 .folderRailBackLink {
 	display: inline-flex;
 	align-items: center;
-	gap: var(--spacing-2);
+	gap: var(--space-xs);
 	width: fit-content;
-	padding: var(--spacing-2);
-	border: 0;
+	padding: var(--space-xs);
+	border: none;
 	background: transparent;
-	color: var(--muted);
+	color: var(--muted-foreground);
 	text-decoration: none;
 	font: inherit;
 	font-size: var(--font-size-caption);
@@ -45,108 +35,94 @@
 	cursor: pointer;
 	transition: color 120ms ease;
 }
-.folderRailBackLink:hover { color: var(--primary); }
+.folderRailBackLink:hover { color: var(--foreground); }
 .folderRailBackLink svg { width: 0.9rem; height: 0.9rem; }
-
-.folderRailWorkspaceHeader .folderRailBackLink {
-	gap: var(--spacing-1);
-	padding: 0;
-	margin-left: -1px;
-	font-size: var(--font-size-2);
-	letter-spacing: 0.01em;
-}
-.folderRailWorkspaceHeader .folderRailBackLink svg { width: 0.9rem; height: 0.9rem; }
 
 .folderRailWorkspaceHeaderName {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	padding-left: var(--space-xs);
 	color: var(--foreground);
-	font-size: var(--font-size-4);
+	font-size: var(--font-size-h4);
 	font-weight: var(--font-weight-bold);
 }
 
 .folderRailFooterLink {
 	display: inline-flex;
 	align-items: center;
-	gap: var(--spacing-2);
+	gap: var(--space-xs);
 	width: fit-content;
 	margin-top: auto;
-	padding: var(--spacing-2);
-	border-radius: var(--small-button-radius);
-	color: var(--muted);
+	padding: var(--space-xs);
+	padding-top: var(--space-sm);
+	border-radius: var(--radius-sm);
+	color: var(--muted-foreground);
 	font-size: var(--font-size-caption);
 	font-weight: var(--font-weight-semibold);
 	text-decoration: none;
 	transition: background 120ms ease, color 120ms ease;
 }
-.folderRailFooterLink:hover { background: color-mix(in srgb, var(--primary) 6%, transparent); color: var(--primary); }
+.folderRailFooterLink:hover { background: color-mix(in srgb, var(--foreground) 6%, transparent); color: var(--foreground); }
 .folderRailFooterLink svg { width: 0.95rem; height: 0.95rem; }
 
 .folderRailSection,
-.folderRailList { display: flex; flex-direction: column; gap: var(--spacing-1); }
-.folderRailList { overflow-y: auto; padding-right: var(--spacing-1); }
-.folderRailDivider { height: 1px; background: var(--line); margin: var(--spacing-1) 0; }
+.folderRailList { display: flex; flex-direction: column; gap: 0.25rem; }
+.folderRailList { overflow-y: auto; padding-right: 0.25rem; }
 
 .folderRailHeader {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 0 var(--spacing-2);
-	font-size: var(--font-size-0);
+	padding: 0 var(--space-xs);
+	font-size: var(--font-size-caption);
 	font-weight: var(--font-weight-bold);
 	letter-spacing: 0.11em;
 	text-transform: uppercase;
-	color: var(--muted);
+	color: var(--muted-foreground);
 }
-.folderRailHeaderActions { display: flex; align-items: center; gap: var(--spacing-2); }
-.folderRailAddButton { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border: 1px solid transparent; border-radius: var(--small-button-radius); background: transparent; color: var(--muted); cursor: pointer; transition: border-color 120ms, background 120ms, color 120ms; }
-.folderRailAddButton svg { width: 0.8125rem; height: 0.8125rem; }
-.folderRailAddButton:hover { border-color: color-mix(in srgb, var(--accent) 44%, transparent); background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
+.folderRailHeaderActions { display: flex; align-items: center; gap: var(--space-xs); }
 
-.folderRailWorkspaceEmpty {
-	padding: var(--spacing-3) var(--spacing-2) var(--spacing-2);
-	color: var(--secondary);
-	font-size: var(--font-size-0);
-	line-height: 1.55;
-}
-
-.folderRailWorkspaceItem {
-	display: grid;
-	grid-template-columns: auto minmax(0, 1fr);
+.folderRailItem {
+	display: flex;
 	align-items: center;
-	gap: var(--spacing-3);
-	width: 100%;
-	padding: var(--spacing-3) var(--spacing-2);
+	gap: 0.25rem;
+}
+
+.folderRailItemButton {
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 2.25rem;
+	padding: 0 var(--space-sm);
 	border: 1px solid transparent;
-	border-radius: var(--small-button-radius);
+	border-radius: var(--radius-sm);
 	background: transparent;
-	color: var(--muted);
+	color: var(--muted-foreground);
 	font: inherit;
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-medium);
 	text-align: left;
 	cursor: pointer;
-	transition: background 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease;
+	transition: background 120ms, color 120ms;
 }
-.folderRailWorkspaceItem:hover {
-	transform: translateX(1px);
-	border-color: color-mix(in srgb, var(--accent) 26%, transparent);
-	background: color-mix(in srgb, var(--accent) 7%, transparent);
-	color: var(--primary);
+.folderRailItemButton:hover {
+	background: color-mix(in srgb, var(--foreground) 6%, transparent);
+	color: var(--foreground);
 }
-.folderRailWorkspaceText { display: flex; flex-direction: column; min-width: 0; gap: 0.2rem; }
-.folderRailWorkspaceName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: currentColor; font-size: var(--font-size-caption); font-weight: var(--font-weight-semibold); }
-.folderRailWorkspaceMeta { color: var(--secondary); font-size: var(--font-size-0); font-weight: var(--font-weight-medium); }
-
-.folderRailRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--spacing-1); }
-.folderRailItem { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--spacing-2); width: 100%; min-height: 2.25rem; padding: 0 var(--spacing-2); border: 1px solid transparent; border-radius: var(--small-button-radius); background: transparent; color: var(--muted); text-align: left; font-family: var(--font-sans); cursor: pointer; transition: background 120ms, border-color 120ms, color 120ms; }
-.folderRailItem:hover { background: color-mix(in srgb, var(--primary) 6%, transparent); color: var(--foreground); }
-.folderRailItem[data-active='true'] { border-color: color-mix(in srgb, var(--accent) 38%, transparent); background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--primary); }
-.folderRailItemIcon { display: inline-flex; align-items: center; justify-content: center; width: 1rem; color: currentColor; }
-.folderRailItemIcon svg { width: 0.95rem; height: 0.95rem; }
-.folderRailItemText { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--font-size-caption); font-weight: var(--font-weight-medium); }
-.folderRailItemCount { display: inline-flex; align-items: center; justify-content: center; min-width: 1.375rem; height: 1.25rem; padding: 0 var(--spacing-1); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); border-radius: 999px; font-size: var(--font-size-0); color: var(--muted); }
-.folderRailDeleteButton { display: inline-flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border: 1px solid transparent; border-radius: var(--small-button-radius); background: transparent; color: var(--muted); font-family: var(--font-sans); cursor: pointer; transition: border-color 120ms, background 120ms, color 120ms; }
-.folderRailDeleteButton svg { width: 0.875rem; height: 0.875rem; }
-.folderRailDeleteButton:hover,
-.folderRailDeleteButton[data-confirm='true'] { border-color: color-mix(in srgb, var(--accent-alt) 44%, transparent); background: color-mix(in srgb, var(--accent-alt) 10%, transparent); color: var(--accent-alt); }
-.folderRailDeleteButton[data-confirm='true'] { width: auto; padding: 0 var(--spacing-2); font-size: var(--font-size-0); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; }
+.folderRailItemButton[data-active='true'] {
+	background: color-mix(in srgb, var(--purple) 12%, transparent);
+	color: var(--purple);
+}
+.folderRailItemButton svg {
+	flex-shrink: 0;
+	width: 0.95rem;
+	height: 0.95rem;
+}
+.folderRailItemText {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

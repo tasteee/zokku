@@ -9,7 +9,7 @@ import { FolderComposer } from './components/FolderComposer/FolderComposer'
 import { SearchPalette } from './components/SearchPalette/SearchPalette'
 import { JSX, useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createDocument, createFolder, listWorkspace, moveDocument, removeFolder, restoreWorkspace, searchDocuments } from '@/lib/localWorkspace'
+import { createDocument, createFolder, listWorkspace, moveDocument, removeFolder, restoreWorkspace, searchDocuments, trashDocument } from '@/lib/localWorkspace'
 import type { LocalDocumentT, LocalFolderT } from '@/lib/localWorkspace'
 import { getFolderDescriptions, saveFolderDescription } from '@/lib/folderDescriptions'
 import { rememberCurrentWorkspace } from '@/lib/recentWorkspaces'
@@ -77,9 +77,7 @@ const DocumentsPage = (): JSX.Element => {
 		setTimeout(() => $folders.set.lookup('copiedId', ''), 2000)
 	}
 	const handleDeleteFolder = async (folderId: string): Promise<void> => {
-		if ($composer.state.confirmingFolderId !== folderId) { $composer.set.lookup('confirmingFolderId', folderId); return }
 		await removeFolder(folderId)
-		$composer.set.lookup('confirmingFolderId', null)
 		if ($folders.state.selectedId === folderId) $folders.set.lookup('selectedId', 'uncategorized' as FolderFilterT)
 		await refreshWorkspace()
 	}
@@ -88,17 +86,18 @@ const DocumentsPage = (): JSX.Element => {
 		const folder = await createFolder(name)
 		if (workspaceName) await saveFolderDescription(workspaceName, folder.path, description)
 		$folders.set.lookup('selectedId', folder._id as FolderFilterT)
-		$composer.set.replace({ folderName: '', folderDescription: '', isCreating: false, isOpen: false, confirmingFolderId: null })
+		$composer.set.replace({ folderName: '', folderDescription: '', isCreating: false, isOpen: false })
 		await refreshWorkspace()
 	}
 	const handleMoveDocument = async (documentId: string, value: string): Promise<void> => { await moveDocument(documentId, value === 'uncategorized' ? undefined : value); await refreshWorkspace() }
+	const handleDeleteDocument = async (documentId: string): Promise<void> => { await trashDocument(documentId); await refreshWorkspace() }
 	const handleNavigateToDocument = (documentId: string): void => { $search.set.lookup('isOpen', false); beginAppTransition(() => router.push(getEditorHref(documentId))) }
 	const visibilityState = !isReady ? 'hidden' : shouldFadeIn ? 'visible' : 'ready'
 	return <div className="documentsPage" data-visibility={visibilityState} data-transition="idle">
 		<DocumentsHeader />
 		<div className="documentsPageBody">
 			<FolderRail workspaceName={workspaceName} onDeleteFolder={handleDeleteFolder} />
-			<div className="documentsPageContent"><DocumentsWorkspace onNew={handleNew} onMoveDocument={handleMoveDocument} onShareDocument={handleShareDocument} /></div>
+			<div className="documentsPageContent"><DocumentsWorkspace onNew={handleNew} onMoveDocument={handleMoveDocument} onShareDocument={handleShareDocument} onDeleteDocument={handleDeleteDocument} /></div>
 		</div>
 		{isComposerOpen && <FolderComposer onSubmit={handleCreateFolder} />}
 		{isSearchOpen && <SearchPalette onNavigate={handleNavigateToDocument} />}

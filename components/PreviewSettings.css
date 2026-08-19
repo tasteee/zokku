@@ -126,19 +126,5 @@
 /* Typography is deliberately fixed to the product sans face and compact scale. */
 [data-preview-font] { font-family: var(--font-sans); }
 
-.PreviewSettingsRoot { position: relative; display: flex; align-items: center; }
-.PreviewSettingsTrigger { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid transparent; border-radius: var(--small-button-radius); background: transparent; color: var(--muted); cursor: pointer; transition: color 120ms, background 120ms, border-color 120ms; }
-.PreviewSettingsTrigger:hover { color: var(--primary); background: var(--paper-soft); }
-.PreviewSettingsTrigger.isOpen { color: var(--primary); background: var(--paper-soft); border-color: var(--line); }
-.PreviewSettingsPanel { position: absolute; top: calc(100% + var(--spacing-2)); right: 0; z-index: 20; display: flex; flex-direction: column; gap: var(--spacing-5); width: 260px; padding: var(--spacing-5); border: 1px solid var(--line); border-radius: var(--medium-button-radius); background: var(--paper); }
-.PreviewSettingsGroup { display: flex; flex-direction: column; gap: var(--spacing-2); }
-.PreviewSettingsGroupLabel { font-size: var(--font-size-0); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-.PreviewSettingsSegmented { display: flex; padding: var(--spacing-1); gap: var(--spacing-1); border: 1px solid var(--line); border-radius: var(--medium-button-radius); background: var(--bg); }
-.PreviewSettingsSegment { flex: 1; padding: var(--spacing-2) 0; border: none; border-radius: var(--small-button-radius); background: transparent; color: var(--muted); font-family: var(--font-sans); font-size: var(--font-size-1); font-weight: 500; cursor: pointer; transition: color 120ms, background 120ms; }
-.PreviewSettingsSegment:hover { color: var(--primary); }
-.PreviewSettingsSegment.isActive { background: var(--paper-soft); color: var(--primary); }
-.PreviewSettingsStepper { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-1); border: 1px solid var(--line); border-radius: var(--medium-button-radius); background: var(--bg); }
-.PreviewSettingsStepperButton { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: none; border-radius: var(--small-button-radius); background: transparent; color: var(--foreground); cursor: pointer; transition: color 120ms, background 120ms; }
-.PreviewSettingsStepperButton:hover:not(:disabled) { color: var(--primary); background: var(--paper-soft); }
-.PreviewSettingsStepperButton:disabled { color: var(--secondary); cursor: not-allowed; }
-.PreviewSettingsStepperValue { font-size: var(--font-size-2); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--primary); }
+.previewSettingsPanelBody { display: flex; flex-direction: column; gap: var(--space-lg); width: 220px; }
+.previewSettingsGroup { display: flex; flex-direction: column; gap: var(--space-xs); }

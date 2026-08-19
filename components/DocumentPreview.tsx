@@ -5,11 +5,11 @@ import '@/components/PreviewSettings.css'
 import { useRouter } from 'next/navigation'
 import { JSX, useEffect, useRef, useState } from 'react'
 import { renderMarkdown } from '@/app/actions/renderMarkdown'
-import { ZButton } from '@/components/zButton'
 import { CaretLeftIcon } from '@phosphor-icons/react'
 import { listWorkspace, resolveWorkspaceMediaInHtml, restoreWorkspace } from '@/lib/localWorkspace'
 import type { LocalDocumentT } from '@/lib/localWorkspace'
 import { resolveDocumentHref } from '@/lib/documentLinks'
+import { beginAppTransition } from '@/lib/appTransition'
 import { getEditorHref, getPreviewHref } from '@/lib/documentRoutes'
 import { getPreviewSurfaceStyle, loadPreviewSettings } from '@/components/previewSettings'
 import type { PreviewSettingsT } from '@/components/previewSettings'
@@ -64,17 +64,17 @@ export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
 		event.preventDefault()
 		const linkedDocument = workspaceDocuments.find((candidate) => candidate.path === resolved.path)
 		if (linkedDocument === undefined) return
-		router.push(getPreviewHref(linkedDocument._id, resolved.anchor))
+		beginAppTransition(() => router.push(getPreviewHref(linkedDocument._id, resolved.anchor)))
 	}
 
-	if (document === null) return <div className="HomeEmpty"><h1 className="HomeEmptyTitle">Document not found</h1><p className="HomeEmptyBody">The Markdown file may have been moved or deleted.</p><ZButton label="Back to documents" onClick={() => router.push('/documents/')} /></div>
+	if (document === null) return <div className="HomeEmpty"><z-heading size="lg">Document not found</z-heading><p className="HomeEmptyBody">The Markdown file may have been moved or deleted.</p><z-button accent="dom" onClick={() => beginAppTransition(() => router.push('/documents/'))}>Back to documents</z-button></div>
 	if (document === undefined) return <div className="HomeEmpty"><p className="HomeEmptyBody">Loading local preview…</p></div>
 
 	return <div className="DocumentPreviewShell">
 		<div className="Topbar">
-			<button className="TopbarBackButton" onClick={() => router.push(getEditorHref(props.documentId))} title="Back to editor"><CaretLeftIcon size={18} weight="bold" /></button>
+			<z-button kind="ghost" size="sm" onClick={() => beginAppTransition(() => router.push(getEditorHref(props.documentId)))} title="Back to editor" aria-label="Back to editor"><CaretLeftIcon size={18} weight="bold" /></z-button>
 			<span className="TopbarTitle">{document.title || 'Untitled'}</span>
 		</div>
-		<div className="DocumentPreviewContent" data-preview-theme={previewSettings.theme} data-preview-font="sans" data-preview-scale="compact" style={getPreviewSurfaceStyle(previewSettings)} onClick={handlePreviewClick}><div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div>
+		<div className="DocumentPreviewContent proseRoot" data-preview-theme={previewSettings.theme} data-preview-font="sans" data-preview-scale="compact" style={getPreviewSurfaceStyle(previewSettings)} onClick={handlePreviewClick}><div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div>
 	</div>
 }

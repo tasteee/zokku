@@ -28,6 +28,10 @@ type MarkdownEditorPropsT = {
 	onMediaUpload?: (blob: Blob, onProgress: (percent: number) => void) => Promise<string | null>
 }
 
+type ZToastElementT = HTMLElement & {
+	push: (input: { title?: string; description?: string; accent?: 'dom' | 'success' | 'warning' | 'error'; duration?: number }) => number
+}
+
 type ToolbarButtonT = {
 	kind: 'button'
 	id: string
@@ -124,25 +128,16 @@ const defineZestTheme = (monaco: Monaco): void => {
 export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 	const editorRef = useRef<MonacoEditorNS.IStandaloneCodeEditor | null>(null)
 	const monacoRef = useRef<Monaco | null>(null)
-	const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 	const surfaceRef = useRef<HTMLDivElement | null>(null)
-	const uploadErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+	const toastRef = useRef<ZToastElementT | null>(null)
 	const onMediaUploadRef = useRef(props.onMediaUpload)
 
-	const [isCopied, setIsCopied] = useState(false)
 	const [isUploadingMedia, setIsUploadingMedia] = useState(false)
 	const [uploadProgress, setUploadProgress] = useState(0)
-	const [uploadError, setUploadError] = useState('')
 
 	useEffect(() => {
 		onMediaUploadRef.current = props.onMediaUpload
 	}, [props.onMediaUpload])
-
-	useEffect(() => {
-		return () => {
-			if (uploadErrorTimerRef.current !== null) clearTimeout(uploadErrorTimerRef.current)
-		}
-	}, [])
 
 	useEffect(() => {
 		const surface = surfaceRef.current
@@ -164,7 +159,6 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 
 			setIsUploadingMedia(true)
 			setUploadProgress(0)
-			setUploadError('')
 
 			try {
 				const url = await upload(blob, setUploadProgress)
@@ -186,10 +180,7 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 				editor.focus()
 			} catch (error) {
 				console.error('Media upload failed', error)
-				setUploadError('Upload failed. Try again.')
-
-				if (uploadErrorTimerRef.current !== null) clearTimeout(uploadErrorTimerRef.current)
-				uploadErrorTimerRef.current = setTimeout(() => setUploadError(''), 4000)
+				toastRef.current?.push({ title: 'Upload failed', description: 'Try again.', accent: 'error' })
 			} finally {
 				setIsUploadingMedia(false)
 			}
@@ -361,11 +352,7 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 		)
 		if (copyError !== null) return
 
-		if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current)
-		setIsCopied(true)
-		copyTimerRef.current = setTimeout(() => {
-			setIsCopied(false)
-		}, 1500)
+		toastRef.current?.push({ title: 'Copied!', accent: 'success', duration: 1500 })
 	}
 
 	const handlePaste = async (): Promise<void> => {
@@ -595,46 +582,36 @@ export const MarkdownEditor = (props: MarkdownEditorPropsT): JSX.Element => {
 
 	return (
 		<div className="MarkdownEditor">
-			<div className="MarkdownCopyToast" data-visible={isCopied ? 'true' : 'false'} aria-live="polite">
-				Copied!
-			</div>
-			<div
-				className="MarkdownUploadToast"
-				data-visible={isUploadingMedia || uploadError !== '' ? 'true' : 'false'}
-				data-error={uploadError !== '' ? 'true' : 'false'}
-				aria-live="polite"
-			>
-				{uploadError || (
-					<>
-						<span className="MarkdownUploadLabel">
-							{uploadProgress >= 100 ? 'Finishing…' : `Uploading… ${uploadProgress}%`}
-						</span>
-						<span className="MarkdownUploadProgress" aria-hidden="true">
-							<span className="MarkdownUploadProgressFill" style={{ width: `${uploadProgress}%` }} />
-						</span>
-					</>
-				)}
-			</div>
+			<z-toast ref={toastRef} position="bottom-end" />
 
-			<div className="MarkdownToolbar">
+			{isUploadingMedia && (
+				<div className="MarkdownUploadToast" aria-live="polite">
+					<span className="MarkdownUploadLabel">
+						{uploadProgress >= 100 ? 'Finishing…' : `Uploading… ${uploadProgress}%`}
+					</span>
+					<z-progress value={uploadProgress} max={100} size="sm" />
+				</div>
+			)}
+
+			<z-toolbar className="MarkdownToolbar" overflow="scroll">
 				{toolbarItems.map((item: ToolbarItemT): JSX.Element => {
 					const isDivider = item.kind === 'divider'
-					if (isDivider) return <span key={item.id} className="MarkdownToolbarDivider" aria-hidden="true" />
+					if (isDivider) return <z-line vertical key={item.id} />
 
 					return (
-						<button
+						<z-button
 							key={item.id}
-							type="button"
-							className="MarkdownToolbarButton"
+							kind="ghost"
+							size="sm"
 							title={item.title}
 							aria-label={item.title}
 							onClick={item.onClick}
 						>
 							{item.icon}
-						</button>
+						</z-button>
 					)
 				})}
-			</div>
+			</z-toolbar>
 
 			<div ref={surfaceRef} className="MarkdownEditorSurface">
 				<Editor

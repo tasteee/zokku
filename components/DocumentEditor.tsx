@@ -8,7 +8,6 @@ import { ArrowSquareOut, CaretLeftIcon, Check, Export, MoonStars, SpinnerGap, Su
 import { useDatass } from 'datass'
 import { renderMarkdown } from '@/app/actions/renderMarkdown'
 import { exportLinkedHtml } from '@/app/actions/exportLinkedHtml'
-import { ZButton } from '@/components/zButton'
 import { ZokkuBrand } from '@/components/ZokkuBrand'
 import { MarkdownEditor } from '@/components/MarkdownEditor'
 import { PreviewSettings } from '@/components/PreviewSettingsPanel'
@@ -18,6 +17,7 @@ import { getDocument, listWorkspace, resolveWorkspaceMediaInHtml, restoreWorkspa
 import type { LocalDocumentT } from '@/lib/localWorkspace'
 import { resolveDocumentHref } from '@/lib/documentLinks'
 import { getExportDocuments } from '@/lib/localDocumentExport'
+import { beginAppTransition } from '@/lib/appTransition'
 import { getEditorHref, getPreviewHref } from '@/lib/documentRoutes'
 
 type DocumentEditorPropsT = { documentId: string }
@@ -36,7 +36,6 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 	const [previewHtml, setPreviewHtml] = useState('')
 	const [saveState, setSaveState] = useState<SaveStateT>('saved')
 	const [themeTransition, setThemeTransition] = useState<ThemeTransitionT>('idle')
-	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
 	const [isLoading, setIsLoading] = useState(true)
 	const [isMissing, setIsMissing] = useState(false)
 	const [splitPercent, setSplitPercent] = useState(50)
@@ -182,12 +181,11 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		event.preventDefault()
 		const linkedDocument = workspaceDocuments.find((document) => document.path === resolved.path)
 		if (linkedDocument === undefined) return
-		router.push(getEditorHref(linkedDocument._id, resolved.anchor))
+		beginAppTransition(() => router.push(getEditorHref(linkedDocument._id, resolved.anchor)))
 	}
 	const handleDelete = async (): Promise<void> => {
-		if (!isConfirmingDelete) { setIsConfirmingDelete(true); return }
 		await trashDocument(activeIdRef.current)
-		router.push('/documents/')
+		beginAppTransition(() => router.push('/documents/'))
 	}
 	const handleResizePointerDown = (event: React.PointerEvent<HTMLDivElement>): void => { isDraggingRef.current = true; event.currentTarget.setPointerCapture(event.pointerId) }
 	const handleResizePointerMove = (event: React.PointerEvent<HTMLDivElement>): void => {
@@ -196,9 +194,10 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 		setSplitPercent(Math.min(80, Math.max(20, ((event.clientX - rect.left) / rect.width) * 100)))
 	}
 	const handleResizePointerUp = (event: React.PointerEvent<HTMLDivElement>): void => { isDraggingRef.current = false; event.currentTarget.releasePointerCapture(event.pointerId) }
+	const handleMobileViewChange = (event: CustomEvent<{ value: 'editor' | 'preview' }>): void => { if (event.detail.value) setMobilePaneView(event.detail.value) }
 
 	if (isLoading) return <div className="HomeEmpty"><p className="HomeEmptyBody">Opening local document…</p></div>
-	if (isMissing) return <div className="HomeEmpty"><h1 className="HomeEmptyTitle">Document not found</h1><p className="HomeEmptyBody">The file may have been moved or deleted outside Zokku.</p><ZButton label="Back to documents" onClick={() => router.push('/documents/')} /></div>
+	if (isMissing) return <div className="HomeEmpty"><z-heading size="lg">Document not found</z-heading><p className="HomeEmptyBody">The file may have been moved or deleted outside Zokku.</p><z-button accent="dom" onClick={() => beginAppTransition(() => router.push('/documents/'))}>Back to documents</z-button></div>
 
 	const saveStatusLabel = saveState === 'saving' ? 'Saving' : saveState === 'saved' ? 'Saved' : 'Changes pending'
 	const previewSurfaceStyle = getPreviewSurfaceStyle(previewSettings)
@@ -206,15 +205,31 @@ export const DocumentEditor = (props: DocumentEditorPropsT): JSX.Element => {
 
 	return <div className="EditorShell">
 		<div className="Topbar">
-			<div className="EditorNavigationCluster"><button className="TopbarBackButton" onClick={() => router.push('/documents/')} title="All documents"><CaretLeftIcon size={18} weight="bold" /></button><div className="EditorTopbarBrand"><ZokkuBrand isCompact /></div></div>
-			<div className="EditorDocumentIdentity"><input className="TopbarTitle" type="text" value={title.state} onChange={handleTitleChange} placeholder="Untitled" spellCheck={false} /><span className="EditorSaveStatus" data-state={saveState} title={saveStatusLabel} aria-label={saveStatusLabel}>{saveState === 'saving' && <SpinnerGap className="EditorSaveSpinner" size={13} weight="bold" />}{saveState === 'saved' && <Check size={13} weight="bold" />}<span>{saveStatusLabel}</span></span></div>
-			<div className="TopbarActions"><ZButton isIcon isGhost title="Open full preview" aria-label="Open full preview" onClick={() => router.push(getPreviewHref(activeIdRef.current))}><ArrowSquareOut weight="bold" /></ZButton><ZButton isIcon isGhost title="Export HTML" aria-label="Export HTML" onClick={() => void handleExport()}><Export weight="bold" /></ZButton><ZButton isIcon isGhost isRed title={isConfirmingDelete ? 'Click again to delete' : 'Delete document'} aria-label="Delete document" data-confirm={isConfirmingDelete ? 'true' : 'false'} onClick={() => void handleDelete()} onBlur={() => setIsConfirmingDelete(false)}><Trash weight={isConfirmingDelete ? 'fill' : 'bold'} /></ZButton></div>
+			<div className="EditorNavigationCluster"><z-button kind="ghost" size="sm" onClick={() => beginAppTransition(() => router.push('/documents/'))} title="All documents" aria-label="All documents"><CaretLeftIcon size={18} weight="bold" /></z-button><div className="EditorTopbarBrand"><ZokkuBrand isCompact /></div></div>
+			<div className="EditorDocumentIdentity">
+				<input className="TopbarTitle" type="text" value={title.state} onChange={handleTitleChange} placeholder="Untitled" spellCheck={false} aria-label="Document title" />
+				<z-badge size="sm" accent={saveState === 'saving' ? 'dom' : 'neutral'} kind="soft">
+					{saveState === 'saving' && <SpinnerGap slot="prefix" className="EditorSaveSpinner" size={13} weight="bold" />}
+					{saveState === 'saved' && <Check slot="prefix" size={13} weight="bold" />}
+					{saveStatusLabel}
+				</z-badge>
+			</div>
+			<div className="TopbarActions">
+				<z-button kind="ghost" size="sm" title="Open full preview" aria-label="Open full preview" onClick={() => beginAppTransition(() => router.push(getPreviewHref(activeIdRef.current)))}><ArrowSquareOut weight="bold" /></z-button>
+				<z-button kind="ghost" size="sm" title="Export HTML" aria-label="Export HTML" onClick={() => void handleExport()}><Export weight="bold" /></z-button>
+				<z-alert-dialog heading="Delete this document?" description="This can't be undone." accent="error" confirm-label="Delete" onConfirm={() => void handleDelete()}>
+					<z-button slot="trigger" kind="ghost" size="sm" accent="error" title="Delete document" aria-label="Delete document"><Trash weight="bold" /></z-button>
+				</z-alert-dialog>
+			</div>
 		</div>
 		<div ref={editorLayoutRef} className="EditorLayout" data-mobile-view={mobilePaneView} style={{ gridTemplateColumns: `${splitPercent}% auto 1fr` } as CSSProperties}>
 			<div className="EditorPane"><MarkdownEditor value={content} onChange={handleContentChange} onMediaUpload={(blob, onProgress) => saveMedia(blob, documentPath, onProgress)} /></div>
 			<div className="EditorResizeHandle" onPointerDown={handleResizePointerDown} onPointerMove={handleResizePointerMove} onPointerUp={handleResizePointerUp} />
-			<div className="PreviewPane"><div className="PreviewPaneLabel"><span className="PreviewPaneLabelText">Preview</span><div className="PreviewPaneLabelActions"><button className="PreviewThemeToggle" onClick={handleThemeToggle} disabled={themeTransition !== 'idle'} title={themeToggleTitle} aria-label={themeToggleTitle}>{previewTheme === 'light' ? <MoonStars size={16} weight="bold" /> : <Sun size={16} weight="bold" />}</button><PreviewSettings settings={previewSettings} onChange={handlePreviewSettingsChange} /></div></div><div ref={previewPaneContentRef} className="PreviewPaneContent" data-preview-theme={previewTheme} data-preview-font="sans" data-preview-scale="compact" style={previewSurfaceStyle} onClick={handlePreviewClick}><div className="PreviewThemeContent" data-theme-transition={themeTransition}><div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div></div></div>
+			<div className="PreviewPane"><div className="PreviewPaneLabel"><span className="PreviewPaneLabelText">Preview</span><div className="PreviewPaneLabelActions"><z-button kind="ghost" size="sm" onClick={handleThemeToggle} disabled={themeTransition !== 'idle'} title={themeToggleTitle} aria-label={themeToggleTitle}>{previewTheme === 'light' ? <MoonStars size={16} weight="bold" /> : <Sun size={16} weight="bold" />}</z-button><PreviewSettings settings={previewSettings} onChange={handlePreviewSettingsChange} /></div></div><div ref={previewPaneContentRef} className="PreviewPaneContent proseRoot" data-preview-theme={previewTheme} data-preview-font="sans" data-preview-scale="compact" style={previewSurfaceStyle} onClick={handlePreviewClick}><div className="PreviewThemeContent" data-theme-transition={themeTransition}><div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div></div></div>
 		</div>
-		<div className="EditorMobileToggle" role="group" aria-label="Switch pane"><button className="EditorMobileToggleButton" data-active={mobilePaneView === 'editor' ? 'true' : 'false'} onClick={() => setMobilePaneView('editor')}>Editor</button><button className="EditorMobileToggleButton" data-active={mobilePaneView === 'preview' ? 'true' : 'false'} onClick={() => setMobilePaneView('preview')}>Preview</button></div>
+		<z-toggle-group className="EditorMobileToggle" type="single" onChange={handleMobileViewChange}>
+			<z-toggle-group-item value="editor" is-pressed={mobilePaneView === 'editor'}>Editor</z-toggle-group-item>
+			<z-toggle-group-item value="preview" is-pressed={mobilePaneView === 'preview'}>Preview</z-toggle-group-item>
+		</z-toggle-group>
 	</div>
 }
