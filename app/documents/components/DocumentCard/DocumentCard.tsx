@@ -1,12 +1,11 @@
-'use client'
-
 import './DocumentCard.css'
 import { JSX, MouseEvent } from 'react'
-import { useRouter } from 'next/navigation'
+import { useLocation } from 'wouter'
 import { Trash } from '@phosphor-icons/react'
 import { $folders, DocumentT, FolderT } from '../../stores'
 import { beginAppTransition } from '@/lib/appTransition'
 import { getEditorHref } from '@/lib/documentRoutes'
+import { onZestValue } from '@/lib/zestEvents'
 
 export const formatRelativeTime = (timestamp: number): string => {
 	const nowMs = Date.now()
@@ -36,7 +35,7 @@ type DocumentCardPropsT = {
 }
 
 export const DocumentCard = (props: DocumentCardPropsT): JSX.Element => {
-	const router = useRouter()
+	const [, navigate] = useLocation()
 	const copiedId = $folders.use.lookup('copiedId')
 	const relativeTime = formatRelativeTime(props.document.updatedAt)
 	const preview = getContentPreview(props.document.content)
@@ -48,8 +47,8 @@ export const DocumentCard = (props: DocumentCardPropsT): JSX.Element => {
 		...props.folders.map((folderOption) => ({ value: folderOption._id, label: folderOption.name }))
 	]
 
-	const handleCardClick = (): void => beginAppTransition(() => router.push(getEditorHref(props.document._id)))
-	const handleMoveChange = (event: CustomEvent<{ value: string }>): void => { void props.onMove(props.document._id, event.detail.value) }
+	const handleCardClick = (): void => beginAppTransition(() => navigate(getEditorHref(props.document._id)))
+	const handleMoveChange = onZestValue<string>((value) => { void props.onMove(props.document._id, value) })
 	const handleShareClick = (event: MouseEvent): void => { event.stopPropagation(); props.onShare(props.document._id) }
 
 	return (
@@ -65,10 +64,10 @@ export const DocumentCard = (props: DocumentCardPropsT): JSX.Element => {
 					value={props.document.folderId ?? 'uncategorized'}
 					options={folderOptions}
 					size="sm"
-					onChange={handleMoveChange}
+					onchange={handleMoveChange}
 				/>
 				<z-button size="sm" kind="ghost" accent={isCopied ? 'dom' : 'neutral'} onClick={handleShareClick}>{isCopied ? 'Copied' : 'Copy link'}</z-button>
-				<z-alert-dialog heading="Delete this document?" description="This can't be undone." accent="error" confirm-label="Delete" onConfirm={() => void props.onDelete(props.document._id)}>
+				<z-alert-dialog heading="Delete this document?" description="This can't be undone." accent="error" confirm-label="Delete" onconfirm={() => void props.onDelete(props.document._id)}>
 					<z-button slot="trigger" size="sm" kind="ghost" accent="error" title="Delete document" aria-label="Delete document"><Trash weight="bold" /></z-button>
 				</z-alert-dialog>
 			</div>

@@ -1,5 +1,3 @@
-'use client'
-
 import './MarkdownEditor.css'
 import { useRef, useState, useEffect, JSX } from 'react'
 import { Editor } from '@monaco-editor/react'

@@ -1,5 +1,3 @@
-'use client'
-
 import { listWorkspace } from '@/lib/localWorkspace'
 
 export type RecentWorkspaceT = {

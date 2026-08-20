@@ -1,5 +1,3 @@
-'use client'
-
 import { datass } from 'datass'
 import type { LocalDocumentT, LocalFolderT, LocalSearchResultT } from '@/lib/localWorkspace'
 

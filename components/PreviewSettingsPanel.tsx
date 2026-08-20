@@ -1,10 +1,9 @@
-'use client'
-
 import './PreviewSettings.css'
 import { JSX } from 'react'
 import { SlidersHorizontalIcon } from '@phosphor-icons/react'
 import { minBaseFontSize, maxBaseFontSize, baseFontSizeStep } from '@/components/previewSettings'
 import type { PreviewSettingsT, PreviewThemeT } from '@/components/previewSettings'
+import { onZestValue } from '@/lib/zestEvents'
 
 type PreviewSettingsPropsT = {
 	settings: PreviewSettingsT
@@ -12,10 +11,12 @@ type PreviewSettingsPropsT = {
 }
 
 export const PreviewSettings = (props: PreviewSettingsPropsT): JSX.Element => {
-	const handleThemeChange = (event: CustomEvent<{ value: PreviewThemeT }>): void =>
-		props.onChange({ ...props.settings, theme: event.detail.value, font: 'sans', scale: 'compact' })
-	const handleFontSizeChange = (event: CustomEvent<{ value: number }>): void =>
-		props.onChange({ ...props.settings, font: 'sans', scale: 'compact', baseFontSize: event.detail.value })
+	const handleThemeChange = onZestValue<PreviewThemeT>((theme) =>
+		props.onChange({ ...props.settings, theme, font: 'sans', scale: 'compact' })
+	)
+	const handleFontSizeChange = onZestValue<number>((baseFontSize) =>
+		props.onChange({ ...props.settings, font: 'sans', scale: 'compact', baseFontSize })
+	)
 
 	return (
 		<z-popover placement="bottom-end">
@@ -25,7 +26,7 @@ export const PreviewSettings = (props: PreviewSettingsPropsT): JSX.Element => {
 			<div className="previewSettingsPanelBody">
 				<div className="previewSettingsGroup">
 					<z-label>Theme</z-label>
-					<z-toggle-group type="single" onChange={handleThemeChange}>
+					<z-toggle-group type="single" onchange={handleThemeChange}>
 						<z-toggle-group-item value="dark" is-pressed={props.settings.theme === 'dark'}>Dark</z-toggle-group-item>
 						<z-toggle-group-item value="light" is-pressed={props.settings.theme === 'light'}>Light</z-toggle-group-item>
 					</z-toggle-group>
@@ -37,7 +38,7 @@ export const PreviewSettings = (props: PreviewSettingsPropsT): JSX.Element => {
 						max={maxBaseFontSize}
 						step={baseFontSizeStep}
 						has-stepper-buttons
-						onChange={handleFontSizeChange}
+						onchange={handleFontSizeChange}
 					/>
 				</z-field>
 			</div>

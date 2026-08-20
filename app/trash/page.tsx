@@ -1,9 +1,8 @@
-'use client'
-
 import '../documents/page.css'
 import { JSX, useEffect, useState } from 'react'
 import { DocumentsHeader } from '../documents/components/DocumentsHeader/DocumentsHeader'
 import { WorkspaceTrashBrowser } from '../documents/components/WorkspaceBrowser/WorkspaceTrashBrowser'
+import { AllTrashBrowser } from './AllTrashBrowser'
 import { DocumentTrashBrowser } from './DocumentTrashBrowser'
 import { TrashRail, TrashSectionT } from './TrashRail'
 import { listTrashedWorkspaces, restoreTrashedWorkspace } from '@/lib/recentWorkspaces'
@@ -14,7 +13,7 @@ import type { TrashedDocumentT } from '@/lib/localWorkspace'
 const TrashPage = (): JSX.Element => {
 	const [workspaces, setWorkspaces] = useState<TrashedWorkspaceT[]>([])
 	const [documents, setDocuments] = useState<TrashedDocumentT[]>([])
-	const [section, setSection] = useState<TrashSectionT>('workspaces')
+	const [section, setSection] = useState<TrashSectionT>('all')
 	const [error, setError] = useState('')
 
 	const refreshTrash = async (): Promise<void> => {
@@ -45,14 +44,21 @@ const TrashPage = (): JSX.Element => {
 	}
 
 	return (
-		<div className="documentsPage" data-visibility="ready" data-transition="idle">
+		<div className="trashPage">
 			<DocumentsHeader />
 			<div className="documentsPageBody">
 				<TrashRail activeSection={section} workspaceCount={workspaces.length} documentCount={documents.length} onSelect={setSection} />
 				<div className="documentsPageContent">
-					{section === 'workspaces'
-						? <WorkspaceTrashBrowser workspaces={workspaces} onRestore={(workspace) => void handleRestoreWorkspace(workspace)} />
-						: <DocumentTrashBrowser documents={documents} onRestore={(document) => void handleRestoreDocument(document)} />}
+					{section === 'all' && (
+						<AllTrashBrowser
+							workspaces={workspaces}
+							documents={documents}
+							onRestoreWorkspace={(workspace) => void handleRestoreWorkspace(workspace)}
+							onRestoreDocument={(document) => void handleRestoreDocument(document)}
+						/>
+					)}
+					{section === 'workspaces' && <WorkspaceTrashBrowser workspaces={workspaces} onRestore={(workspace) => void handleRestoreWorkspace(workspace)} />}
+					{section === 'documents' && <DocumentTrashBrowser documents={documents} onRestore={(document) => void handleRestoreDocument(document)} />}
 					{error && <p className="WorkspaceError">{error}</p>}
 				</div>
 			</div>

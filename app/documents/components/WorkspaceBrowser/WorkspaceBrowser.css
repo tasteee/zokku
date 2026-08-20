@@ -129,22 +129,11 @@
 	transform: translateY(0);
 }
 
+/* Appearance lives in TrashLink.css so this matches the rail's Trash link. */
 .workspaceBrowserTrashLink {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--space-xs);
 	width: fit-content;
-	color: var(--muted-foreground);
-	font-size: var(--font-size-caption);
-	font-weight: var(--font-weight-semibold);
-	text-decoration: none;
-	transition: color 120ms ease;
 	margin-top: var(--space-xs);
-	padding: var(--space-xs) 0;
 }
-
-.workspaceBrowserTrashLink:hover { color: var(--foreground); }
-.workspaceBrowserTrashLink svg { width: 0.9rem; height: 0.9rem; }
 
 .workspaceBrowserTrashCard {
 	display: flex;
@@ -180,4 +169,19 @@
 		pointer-events: auto;
 		transform: none;
 	}
+}
+
+.workspaceBrowserGroup {
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	gap: var(--space-md);
+}
+
+.workspaceBrowserGroupLabel {
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
 }

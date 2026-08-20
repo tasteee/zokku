@@ -1,23 +1,15 @@
-'use client'
+import { $transitions } from '@/lib/transitions.store'
 
-export const APP_TRANSITION_KEY = 'zokku-app-transition'
+/*
+	Fades the app shell out and navigates once it is fully faded. The shell
+	element sits above the router outlet, so it survives the route change;
+	FadingPage watches the location and fades the new route back in. Nothing
+	writes to the element directly, because an imperative attribute on a node
+	React owns is exactly how a fade gets stuck.
 
-export const beginAppTransition = (navigate: () => void, rootSelector = '.documentsPage'): void => {
-	const root = document.querySelector<HTMLElement>(rootSelector)
-	sessionStorage.setItem(APP_TRANSITION_KEY, '1')
-	if (root === null) {
-		navigate()
-		return
-	}
-	root.dataset.transition = 'out'
-	window.setTimeout(navigate, 300)
-}
-
-export const shouldFadeIntoRoute = (): boolean => {
-	return typeof window !== 'undefined' && sessionStorage.getItem(APP_TRANSITION_KEY) === '1'
-}
-
-export const completeAppTransition = (): void => {
-	if (typeof window === 'undefined') return
-	sessionStorage.removeItem(APP_TRANSITION_KEY)
+	Durations come from the store defaults, which FadingPage also hands to the
+	stylesheet, so the timing lives in one place.
+*/
+export const beginAppTransition = (navigate: () => void): void => {
+	$transitions.fadeOut({ onFadedOut: navigate })
 }

@@ -1,11 +1,10 @@
-'use client'
-
 import './SearchPalette.css'
 import { JSX, useEffect, useRef } from 'react'
 import { FileTextIcon, MagnifyingGlassIcon } from '@phosphor-icons/react'
 import { $folders, $search, FolderT, SearchResultT } from '../../stores'
 import { formatRelativeTime } from '../../helpers'
 import { HighlightedMatch } from '../HighlightedMatch/HighlightedMatch'
+import { onZestValue } from '@/lib/zestEvents'
 
 type SearchPalettePropsT = {
 	onNavigate: (documentId: string) => void
@@ -38,13 +37,14 @@ export const SearchPalette = (props: SearchPalettePropsT): JSX.Element => {
 	}
 
 	return (
-		<z-dialog is-open size="lg" onClose={handleClose}>
+		/* Lowercase `onclose` is the handler React actually forwards to the custom element - see FolderComposer. */
+		<z-dialog is-open size="lg" onclose={handleClose}>
 			<div className="searchPaletteInputRow">
 				<MagnifyingGlassIcon weight="bold" />
 				<z-input
 					ref={inputRef}
 					value={searchInput}
-					onInput={(event: CustomEvent<{ value: string }>) => $search.set.lookup('input', event.detail.value)}
+					oninput={onZestValue<string>((value) => $search.set.lookup('input', value))}
 					placeholder="Search every Markdown file..."
 					label="Search documents"
 				/>

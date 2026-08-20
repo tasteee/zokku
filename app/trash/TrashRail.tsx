@@ -1,12 +1,11 @@
-'use client'
-
 import '@/app/documents/components/FolderRail/FolderRail.css'
 
-import { CaretLeft, FileText, FolderOpen } from '@phosphor-icons/react'
+import { CaretLeft, FileText, FolderOpen, Stack } from '@phosphor-icons/react'
 import { JSX } from 'react'
-import { useRouter } from 'next/navigation'
+import { useLocation } from 'wouter'
+import { beginAppTransition } from '@/lib/appTransition'
 
-export type TrashSectionT = 'workspaces' | 'documents'
+export type TrashSectionT = 'all' | 'workspaces' | 'documents'
 
 type TrashRailPropsT = {
 	activeSection: TrashSectionT
@@ -16,19 +15,32 @@ type TrashRailPropsT = {
 }
 
 export const TrashRail = (props: TrashRailPropsT): JSX.Element => {
-	const router = useRouter()
-	const handleBack = (): void => { window.history.length > 1 ? router.back() : router.push('/') }
+	const [, navigate] = useLocation()
+	// Fades out before leaving, the way the documents rail does. Trash is
+	// reachable from both the workspace list and the documents rail, so the
+	// destination stays whatever the reader came from.
+	const handleBack = (): void => {
+		beginAppTransition(() => (window.history.length > 1 ? window.history.back() : navigate('/')))
+	}
 
 	return (
 		<aside className="folderRail">
 			<z-card className="folderRailCard">
-				<button type="button" className="folderRailBackLink" onClick={handleBack}>
-					<CaretLeft weight="bold" />
-					<span>Back</span>
-				</button>
+				<div className="folderRailWorkspaceHeader">
+					<button type="button" className="folderRailBackLink" onClick={handleBack}>
+						<CaretLeft weight="bold" />
+						<span>Back</span>
+					</button>
+
+					<div className="folderRailWorkspaceHeaderName">Trash</div>
+				</div>
 				<z-separator />
-				<div className="folderRailHeader"><span>Trash</span></div>
 				<div className="folderRailSection">
+					<div className="folderRailItem">
+						<button type="button" className="folderRailItemButton" data-active={props.activeSection === 'all' ? 'true' : 'false'} onClick={() => props.onSelect('all')}>
+							<Stack weight="bold" /><span className="folderRailItemText">All ({props.workspaceCount + props.documentCount})</span>
+						</button>
+					</div>
 					<div className="folderRailItem">
 						<button type="button" className="folderRailItemButton" data-active={props.activeSection === 'workspaces' ? 'true' : 'false'} onClick={() => props.onSelect('workspaces')}>
 							<FolderOpen weight="bold" /><span className="folderRailItemText">Workspaces ({props.workspaceCount})</span>

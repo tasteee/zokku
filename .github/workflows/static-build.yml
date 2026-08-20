@@ -22,8 +22,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build static export
+      - name: Build static bundle
         run: npm run build
 
-      - name: Verify export output
-        run: test -f out/index.html && test -f out/documents/index.html && test -f out/documents/editor/index.html && test -f out/documents/preview/index.html
+      - name: Verify build output
+        run: test -f out/index.html && test -f out/404.html && test -d out/assets

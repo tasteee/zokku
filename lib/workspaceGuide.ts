@@ -79,16 +79,25 @@ Use **big** for a short high-emphasis statement, **small** for secondary prose, 
 
 ### Stats
 
-Use a stat block for a concise metric. Bold the value; the other line becomes its label.
+Use a stat block for a concise metric. Bold the value; the other line becomes its label. A stat is
+only as wide as its content, and consecutive stats share one row that wraps once it runs out of
+width.
 
 \`\`\`md
-> [!STAT]
-> **73%**
-> Adoption rate
+[!STAT] **100** Documents
+[!STAT] **12** Folders
 
 > [!STAT TOP]
 > Adoption rate
 > **73%**
+\`\`\`
+
+Add FULL to give a stat the whole width of the document instead.
+
+\`\`\`md
+> [!STAT FULL]
+> **73%**
+> Adoption rate
 \`\`\`
 
 ### Todo

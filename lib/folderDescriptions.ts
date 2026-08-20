@@ -1,5 +1,3 @@
-'use client'
-
 const DB_NAME = 'zokku-folder-metadata'
 const DB_VERSION = 1
 const STORE_NAME = 'descriptions'
