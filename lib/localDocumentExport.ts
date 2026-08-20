@@ -1,5 +1,3 @@
-'use client'
-
 import { getLinkedDocumentPaths, getLinkedZokkuDocumentIds } from '@/lib/documentLinks'
 import { listWorkspace } from '@/lib/localWorkspace'
 import type { LocalDocumentT } from '@/lib/localWorkspace'

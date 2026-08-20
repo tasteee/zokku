@@ -1,5 +1,3 @@
-'use client'
-
 import './DocumentsWorkspace.css'
 import { JSX } from 'react'
 import { MagnifyingGlass, Plus } from '@phosphor-icons/react'

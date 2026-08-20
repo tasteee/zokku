@@ -1,7 +1,6 @@
-'use client'
-
 import { JSX } from 'react'
 import { $composer } from '../../stores'
+import { onZestValue } from '@/lib/zestEvents'
 
 type FolderComposerPropsT = {
 	onSubmit: (name: string, description: string) => Promise<void>
@@ -13,7 +12,7 @@ export const FolderComposer = (props: FolderComposerPropsT): JSX.Element => {
 	const isCreating = $composer.use.lookup('isCreating') as boolean
 
 	const handleClose = (): void => {
-		$composer.set.lookup('isOpen', false)
+		$composer.set.replace({ folderName: '', folderDescription: '', isCreating: false, isOpen: false })
 	}
 
 	const handleCreate = async (): Promise<void> => {
@@ -30,11 +29,18 @@ export const FolderComposer = (props: FolderComposerPropsT): JSX.Element => {
 	}
 
 	return (
-		<z-dialog is-open heading="Create a folder" onClose={handleClose}>
+		/*
+			`onclose`, not `onClose`. React owns the camelCase name and only ever
+			listens for a `close` event on a native <dialog>, so the camelCase prop on a
+			custom element is dropped and the dialog can be dismissed without the store
+			ever learning about it - which leaves isOpen stuck true and the composer
+			impossible to reopen. Lowercase handlers are forwarded to addEventListener.
+		*/
+		<z-dialog is-open heading="Create a folder" onclose={handleClose}>
 			<z-field label="Name">
 				<z-input
 					value={folderName}
-					onInput={(event: CustomEvent<{ value: string }>) => $composer.set.lookup('folderName', event.detail.value)}
+					oninput={onZestValue<string>((value) => $composer.set.lookup('folderName', value))}
 					onKeyDown={handleNameKeyDown}
 					placeholder="Product notes"
 					autoFocus
@@ -44,7 +50,7 @@ export const FolderComposer = (props: FolderComposerPropsT): JSX.Element => {
 			<z-field label="Description">
 				<z-textarea
 					value={folderDescription}
-					onInput={(event: CustomEvent<{ value: string }>) => $composer.set.lookup('folderDescription', event.detail.value)}
+					oninput={onZestValue<string>((value) => $composer.set.lookup('folderDescription', value))}
 					placeholder="Optional context for this collection"
 				/>
 			</z-field>

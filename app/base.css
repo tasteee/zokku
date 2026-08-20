@@ -193,7 +193,7 @@
 	/*
 		Font aliases.
 	*/
-	--font-sans: var(--base-sans-font-family), 'DM Sans Fallback', system-ui, sans-serif;
+	--font-sans: var(--base-sans-font-family), system-ui, sans-serif;
 	--font-mono: var(--base-mono-font-family), 'Geist Mono', 'Fira Code', monospace;
 
 	/*

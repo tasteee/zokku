@@ -1,5 +1,3 @@
-'use client'
-
 export type LocalFolderT = {
 	_id: string
 	name: string

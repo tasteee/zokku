@@ -1,5 +1,3 @@
-'use client'
-
 import type { CSSProperties } from 'react'
 import { datass } from 'datass'
 

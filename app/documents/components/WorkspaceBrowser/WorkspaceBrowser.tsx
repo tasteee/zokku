@@ -1,9 +1,7 @@
-'use client'
-
 import './WorkspaceBrowser.css'
 import { FolderOpen, FolderPlus, Trash } from '@phosphor-icons/react'
 import { JSX } from 'react'
-import Link from 'next/link'
+import { TrashLink } from '@/components/TrashLink'
 import type { RecentWorkspaceT } from '@/lib/recentWorkspaces'
 
 type WorkspaceBrowserPropsT = {
@@ -75,11 +73,7 @@ export const WorkspaceBrowser = (props: WorkspaceBrowserPropsT): JSX.Element => 
 				</div>
 			)}
 
-			<Link className="workspaceBrowserTrashLink" href="/trash">
-				<Trash weight="bold" />
-				<span>Trash</span>
-				{props.trashCount > 0 && <z-badge size="sm" accent="neutral">{props.trashCount}</z-badge>}
-			</Link>
+			<TrashLink className="workspaceBrowserTrashLink" count={props.trashCount} />
 		</main>
 	)
 }

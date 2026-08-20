@@ -1,5 +1,3 @@
-'use client'
-
 import { renderMarkdownForExport } from '@/app/actions/renderMarkdown'
 import { getZokkuDocumentIdFromHref, resolveDocumentHref } from '@/lib/documentLinks'
 import type { PreviewSettingsT, PreviewThemeT } from '@/components/previewSettings'
@@ -36,9 +34,28 @@ const rewriteLinkedDocumentHrefs = (html: string, currentDocumentPath: string, d
 	})
 }
 
+/*
+	Zest elements are defined by scripts that the export does not ship, so an
+	un-upgraded <z-eyebrow> renders nothing at all: its text lives in the label
+	attribute and its markup is generated in a shadow root. Rewriting it to the
+	project's own <zu-eyebrow>, which is styled from the document stylesheet,
+	keeps the content and the appearance in a standalone file.
+*/
+const rewriteZestEyebrows = (html: string): string => {
+	return html.replace(/<z-eyebrow\b([^>]*)>([\s\S]*?)<\/z-eyebrow>/g, (fullMatch, attributes: string, children: string): string => {
+		const labelMatch = attributes.match(/\blabel="([^"]*)"/)
+		const content = children.trim() || labelMatch?.[1] || ''
+		if (content === '') return fullMatch
+		const isFullWidth = /\b(?:is-full-width|full-width|full)\b/.test(attributes)
+		const hasRule = /\bhas-rule\b/.test(attributes)
+		const modifiers = `${isFullWidth ? ' full' : ''}${hasRule ? '' : ' no-rule'}`
+		return `<zu-eyebrow${modifiers}>${content}</zu-eyebrow>`
+	})
+}
+
 const renderForTheme = async (document: ExportDocumentT, documentsById: Map<string, ExportDocumentT>, theme: PreviewThemeT): Promise<string> => {
 	const html = await renderMarkdownForExport(document.content, theme)
-	return rewriteLinkedDocumentHrefs(html, document.path, documentsById)
+	return rewriteLinkedDocumentHrefs(rewriteZestEyebrows(html), document.path, documentsById)
 }
 
 const renderExportDocument = async (document: ExportDocumentT, documentsById: Map<string, ExportDocumentT>): Promise<RenderedExportDocumentT> => {
@@ -82,7 +99,7 @@ export const exportLinkedHtml = async (documents: ExportDocumentT[], settings: P
 	const surfaceStyle = buildSurfaceStyle(settings)
 
 	return `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-preview-theme="${settings.theme}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -92,7 +109,17 @@ export const exportLinkedHtml = async (documents: ExportDocumentT[], settings: P
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,900&display=swap" />
   <style>${applicationCss}</style>
   <style>
-    body { min-height: 100vh; padding: 3rem clamp(1.5rem, 8vw, 6rem); transition: background-color 0ms; }
+    /*
+      The application stylesheet paints html from the dark app palette and pins
+      html/body to height 100%, so without these the themed background stops at
+      the first viewport and the app's dark canvas shows through the rest of the
+      page. Carrying data-preview-theme on <html> lets the root read the same
+      --bg the document does.
+    */
+    html[data-preview-theme] { background: var(--bg); height: auto; min-height: 100%; }
+    html[data-preview-theme='light'] { color-scheme: light; }
+    html[data-preview-theme='dark'] { color-scheme: dark; }
+    body { height: auto; min-height: 100vh; background: var(--bg); padding: 3rem clamp(1.5rem, 8vw, 6rem); transition: background-color 0ms; }
     .Prose { max-width: 52rem; margin: 0 auto; padding-bottom: 64px; }
     .zokkuExportToolbar { position: fixed; top: 18px; right: 18px; z-index: 30; }
     .zokkuExportNav { max-width: 52rem; margin: 0 auto 1.5rem; }
@@ -102,12 +129,12 @@ export const exportLinkedHtml = async (documents: ExportDocumentT[], settings: P
     .zokkuMissingDocument { max-width: 52rem; margin: 0 auto; padding: 4rem 0; }
     .zokkuMissingDocument p { color: var(--muted); }
     .zokkuPageContent { opacity: 1; }
-    .zokkuPageContent[data-theme-transition="out"] { opacity: 0; transition: opacity 300ms ease; }
-    .zokkuPageContent[data-theme-transition="in"] { opacity: 1; transition: opacity 500ms ease; }
+    .zokkuPageContent[data-theme-transition="out"] { opacity: 0; transition: opacity 1000ms ease; }
+    .zokkuPageContent[data-theme-transition="in"] { opacity: 1; transition: opacity 1500ms ease; }
     .zokkuThemeToggle svg { width: 16px; height: 16px; }
   </style>
 </head>
-<body data-preview-theme="${settings.theme}" data-preview-font="sans" data-preview-scale="compact" style="${surfaceStyle}">
+<body class="proseRoot" data-preview-theme="${settings.theme}" data-preview-font="sans" data-preview-scale="compact" style="${surfaceStyle}">
   <div class="zokkuExportToolbar"><button id="zokkuThemeToggle" class="zokkuThemeToggle" type="button" aria-label="Switch theme" title="Switch theme"></button></div>
   <div id="zokkuPageContent" class="zokkuPageContent" data-theme-transition="idle">
     <nav class="zokkuExportNav"><button id="zokkuBackButton" class="zokkuBackButton" type="button" hidden aria-label="Back">← Back</button></nav>
@@ -157,6 +184,7 @@ export const exportLinkedHtml = async (documents: ExportDocumentT[], settings: P
         window.setTimeout(() => {
           currentTheme = currentTheme === 'light' ? 'dark' : 'light';
           document.body.dataset.previewTheme = currentTheme;
+          document.documentElement.dataset.previewTheme = currentTheme;
           renderDocument(currentPath, '', false);
           updateThemeToggle();
           pageContent.dataset.themeTransition = 'in';

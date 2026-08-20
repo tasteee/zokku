@@ -1,20 +1,17 @@
-'use client'
-
 import './documents/page.css'
 
 import { JSX, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useLocation } from 'wouter'
 import { DocumentsHeader } from './documents/components/DocumentsHeader/DocumentsHeader'
 import { WorkspaceBrowser } from './documents/components/WorkspaceBrowser/WorkspaceBrowser'
 import { chooseWorkspace, isFileSystemWorkspaceSupported } from '@/lib/localWorkspace'
 import { ensureWorkspaceGuide } from '@/lib/ensureWorkspaceGuide'
+import { beginAppTransition } from '@/lib/appTransition'
 import { activateRecentWorkspace, listRecentWorkspaces, listTrashedWorkspaces, rememberCurrentWorkspace, trashRecentWorkspace } from '@/lib/recentWorkspaces'
 import type { RecentWorkspaceT, TrashedWorkspaceT } from '@/lib/recentWorkspaces'
 
-const WORKSPACE_TRANSITION_KEY = 'zokku-workspace-transition'
-
 const HomePage = (): JSX.Element => {
-	const router = useRouter()
+	const [, navigate] = useLocation()
 	const [workspaces, setWorkspaces] = useState<RecentWorkspaceT[]>([])
 	const [trashedWorkspaces, setTrashedWorkspaces] = useState<TrashedWorkspaceT[]>([])
 	const [isOpening, setIsOpening] = useState(false)
@@ -26,14 +23,12 @@ const HomePage = (): JSX.Element => {
 		setWorkspaces(nextWorkspaces)
 		setTrashedWorkspaces(nextTrashedWorkspaces)
 	}
+
 	useEffect(() => { void refreshWorkspaces() }, [])
 
 	const enterDocuments = (): void => {
-		sessionStorage.setItem(WORKSPACE_TRANSITION_KEY, '1')
-		const root = document.querySelector<HTMLElement>('.documentsPage')
-		if (root !== null) root.dataset.transition = 'out'
 		// Next applies its configured base path (`/zokku` in GitHub Pages) here.
-		window.setTimeout(() => router.push('/documents/'), 300)
+		beginAppTransition(() => navigate('/documents/'))
 	}
 
 	const handleCreateWorkspace = async (): Promise<void> => {
@@ -80,7 +75,7 @@ const HomePage = (): JSX.Element => {
 	}
 
 	return (
-		<div className="documentsPage" data-visibility="ready" data-transition="idle">
+		<div className="workspacesPage">
 			<DocumentsHeader />
 			<div className="documentsPageBody documentsPageBodyWorkspaces">
 				<div className="documentsPageContent documentsPageContentFull">

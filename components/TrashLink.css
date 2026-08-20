@@ -1,0 +1,8 @@
+/*
+	z-button forces its own display box, so this only sizes the icon to match
+	the rest of the rail's footer controls.
+*/
+.trashLink svg {
+	width: 0.95rem;
+	height: 0.95rem;
+}

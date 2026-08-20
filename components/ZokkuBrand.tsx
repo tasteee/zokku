@@ -1,7 +1,7 @@
 import './ZokkuBrand.css'
 
 import { JSX } from 'react'
-import Link from 'next/link'
+import { Link } from 'wouter'
 
 type ZokkuBrandPropsT = {
 	isCompact?: boolean

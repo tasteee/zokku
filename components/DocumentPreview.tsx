@@ -1,8 +1,6 @@
-'use client'
-
 import './DocumentPreview.css'
 import '@/components/PreviewSettings.css'
-import { useRouter } from 'next/navigation'
+import { useLocation } from 'wouter'
 import { JSX, useEffect, useRef, useState } from 'react'
 import { renderMarkdown } from '@/app/actions/renderMarkdown'
 import { CaretLeftIcon } from '@phosphor-icons/react'
@@ -17,7 +15,7 @@ import type { PreviewSettingsT } from '@/components/previewSettings'
 type DocumentPreviewPropsT = { documentId: string }
 
 export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
-	const router = useRouter()
+	const [, navigate] = useLocation()
 	const [document, setDocument] = useState<LocalDocumentT | null | undefined>(undefined)
 	const [workspaceDocuments, setWorkspaceDocuments] = useState<LocalDocumentT[]>([])
 	const [previewHtml, setPreviewHtml] = useState('')
@@ -28,7 +26,7 @@ export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
 		let isCurrent = true
 		void (async () => {
 			const workspace = await restoreWorkspace(false)
-			if (workspace === null) { router.replace('/'); return }
+			if (workspace === null) { navigate('/', { replace: true }); return }
 			const workspaceState = await listWorkspace()
 			const nextDocument = workspaceState.documents.find((candidate) => candidate._id === props.documentId) ?? null
 			if (!isCurrent) return
@@ -47,7 +45,7 @@ export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
 			setPreviewHtml(resolved.html)
 		})()
 		return () => { isCurrent = false }
-	}, [props.documentId, router, previewSettings.theme])
+	}, [props.documentId, navigate, previewSettings.theme])
 
 	useEffect(() => () => {
 		for (const url of previewMediaUrlsRef.current) URL.revokeObjectURL(url)
@@ -64,15 +62,15 @@ export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
 		event.preventDefault()
 		const linkedDocument = workspaceDocuments.find((candidate) => candidate.path === resolved.path)
 		if (linkedDocument === undefined) return
-		beginAppTransition(() => router.push(getPreviewHref(linkedDocument._id, resolved.anchor)))
+		beginAppTransition(() => navigate(getPreviewHref(linkedDocument._id, resolved.anchor)))
 	}
 
-	if (document === null) return <div className="HomeEmpty"><z-heading size="lg">Document not found</z-heading><p className="HomeEmptyBody">The Markdown file may have been moved or deleted.</p><z-button accent="dom" onClick={() => beginAppTransition(() => router.push('/documents/'))}>Back to documents</z-button></div>
+	if (document === null) return <div className="HomeEmpty"><z-heading size="lg">Document not found</z-heading><p className="HomeEmptyBody">The Markdown file may have been moved or deleted.</p><z-button accent="dom" onClick={() => beginAppTransition(() => navigate('/documents/'))}>Back to documents</z-button></div>
 	if (document === undefined) return <div className="HomeEmpty"><p className="HomeEmptyBody">Loading local preview…</p></div>
 
 	return <div className="DocumentPreviewShell">
 		<div className="Topbar">
-			<z-button kind="ghost" size="sm" onClick={() => beginAppTransition(() => router.push(getEditorHref(props.documentId)))} title="Back to editor" aria-label="Back to editor"><CaretLeftIcon size={18} weight="bold" /></z-button>
+			<z-button kind="ghost" size="sm" onClick={() => beginAppTransition(() => navigate(getEditorHref(props.documentId)))} title="Back to editor" aria-label="Back to editor"><CaretLeftIcon size={18} weight="bold" /></z-button>
 			<span className="TopbarTitle">{document.title || 'Untitled'}</span>
 		</div>
 		<div className="DocumentPreviewContent proseRoot" data-preview-theme={previewSettings.theme} data-preview-font="sans" data-preview-scale="compact" style={getPreviewSurfaceStyle(previewSettings)} onClick={handlePreviewClick}><div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div>

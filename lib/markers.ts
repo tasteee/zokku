@@ -99,7 +99,9 @@ export const customMarkers: Record<string, MarkerDefinitionT> = {
 
 const SPACER_REGEX = /^\!SPACER(\d+)/
 const EYEBROW_FULL_REGEX = /^\[!EYEBROW\s+FULL\]/i
-const STAT_REGEX = /^\[!STAT(?:\s+(TOP|BOTTOM))?\]/i
+const STAT_REGEX = /^\[!STAT((?:\s+(?:TOP|BOTTOM|FULL|INLINE))*)\]/i
+
+export const STAT_MARKER_REGEX = /^\[!STAT(?:\s+(?:TOP|BOTTOM|FULL|INLINE))*\]/i
 
 export const matchDynamicMarkerDefinition = (value: string): MarkerDefinitionT | null => {
 	const eyebrowFullMatch = value.match(EYEBROW_FULL_REGEX)
@@ -113,10 +115,12 @@ export const matchDynamicMarkerDefinition = (value: string): MarkerDefinitionT |
 
 	const statMatch = value.match(STAT_REGEX)
 	if (statMatch) {
-		const position = statMatch[1]?.toUpperCase() === 'TOP' ? 'isLabelTop' : 'isLabelBottom'
+		const modifiers = (statMatch[1] ?? '').toUpperCase().split(/\s+/).filter(Boolean)
+		const position = modifiers.includes('TOP') ? 'isLabelTop' : 'isLabelBottom'
+		const inline = modifiers.includes('FULL') ? '' : ' isInline'
 		return {
 			marker: statMatch[0],
-			classes: `zStat ${position}`,
+			classes: `zStat ${position}${inline}`,
 			element: 'p'
 		}
 	}

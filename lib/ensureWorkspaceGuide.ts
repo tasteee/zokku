@@ -1,5 +1,3 @@
-'use client'
-
 import { createDocument, listWorkspace, saveDocument } from '@/lib/localWorkspace'
 import { workspaceGuideMarkdown } from '@/lib/workspaceGuide'
 

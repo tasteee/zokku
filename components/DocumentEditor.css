@@ -3,7 +3,7 @@
 	flex-direction: column;
 	height: 100dvh;
 	overflow: hidden;
-	animation: editorShellFadeIn 500ms ease both;
+	animation: editorShellFadeIn 2000ms ease both;
 }
 
 @keyframes editorShellFadeIn {
@@ -46,20 +46,11 @@
 	font-weight: var(--font-weight-semibold);
 	outline: none;
 	padding: 0.125rem 0;
+  padding-left: 0.5rem;
 }
 
 .EditorDocumentIdentity .TopbarTitle::placeholder {
 	color: var(--muted-foreground);
-}
-
-.EditorSaveSpinner {
-	animation: editorSaveSpin 0.7s linear infinite;
-}
-
-@keyframes editorSaveSpin {
-	to {
-		transform: rotate(360deg);
-	}
 }
 
 .EditorLayout {

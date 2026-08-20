@@ -1,10 +1,10 @@
-'use client'
-
 import './FolderRail.css'
 import { JSX } from 'react'
-import Link from 'next/link'
+import { Link, useLocation } from 'wouter'
 import { CaretLeft, FileText, Folder, FolderPlus, Trash } from '@phosphor-icons/react'
 import { $composer, $documents, $folders, DocumentT, FolderFilterT, FolderT } from '../../stores'
+import { TrashLink } from '@/components/TrashLink'
+import { beginAppTransition } from '@/lib/appTransition'
 
 type FolderRailPropsT = {
 	workspaceName: string
@@ -26,26 +26,47 @@ export const FolderRail = (props: FolderRailPropsT): JSX.Element => {
 		$folders.set.lookup('selectedId', nextId)
 	}
 
+	const [, navigate] = useLocation()
+
 	return (
 		<aside className="folderRail">
 			<z-card className="folderRailCard">
 				<div className="folderRailWorkspaceHeader">
-					<Link className="folderRailBackLink" href="/">
+					<button
+						type="button"
+						className="folderRailBackLink"
+						onClick={() => beginAppTransition(() => navigate('/'))}
+					>
 						<CaretLeft weight="bold" />
 						<span>Back</span>
-					</Link>
-					<div className="folderRailWorkspaceHeaderName" title={props.workspaceName}>{props.workspaceName}</div>
+					</button>
+
+					<div className="folderRailWorkspaceHeaderName" title={props.workspaceName}>
+						{props.workspaceName}
+					</div>
 				</div>
 				<z-separator />
 				<div className="folderRailSection">
 					<div className="folderRailItem">
-						<button type="button" className="folderRailItemButton" data-active={selectedId === 'all' ? 'true' : 'false'} onClick={() => handleSelectFolder('all')}>
-							<FileText weight="bold" /><span className="folderRailItemText">All documents ({documents.length})</span>
+						<button
+							type="button"
+							className="folderRailItemButton"
+							data-active={selectedId === 'all' ? 'true' : 'false'}
+							onClick={() => handleSelectFolder('all')}
+						>
+							<FileText weight="bold" />
+							<span className="folderRailItemText">All documents ({documents.length})</span>
 						</button>
 					</div>
 					<div className="folderRailItem">
-						<button type="button" className="folderRailItemButton" data-active={selectedId === 'uncategorized' ? 'true' : 'false'} onClick={() => handleSelectFolder('uncategorized')}>
-							<Folder weight="bold" /><span className="folderRailItemText">Workspace root ({uncategorizedCount})</span>
+						<button
+							type="button"
+							className="folderRailItemButton"
+							data-active={selectedId === 'uncategorized' ? 'true' : 'false'}
+							onClick={() => handleSelectFolder('uncategorized')}
+						>
+							<Folder weight="bold" />
+							<span className="folderRailItemText">Workspace root ({uncategorizedCount})</span>
 						</button>
 					</div>
 				</div>
@@ -54,7 +75,15 @@ export const FolderRail = (props: FolderRailPropsT): JSX.Element => {
 					<span>Folders</span>
 					<div className="folderRailHeaderActions">
 						<span>{folders.length}</span>
-						<z-button kind="ghost" size="sm" title="New folder" aria-label="New folder" onClick={() => $composer.set.lookup('isOpen', true)}><FolderPlus weight="bold" /></z-button>
+						<z-button
+							kind="ghost"
+							size="sm"
+							title="New folder"
+							aria-label="New folder"
+							onClick={() => $composer.set.lookup('isOpen', true)}
+						>
+							<FolderPlus weight="bold" />
+						</z-button>
 					</div>
 				</div>
 				<div className="folderRailList">
@@ -62,21 +91,41 @@ export const FolderRail = (props: FolderRailPropsT): JSX.Element => {
 						const isActive = selectedId === folder._id
 						return (
 							<div key={folder._id} className="folderRailItem">
-								<button type="button" className="folderRailItemButton" data-active={isActive ? 'true' : 'false'} onClick={() => handleSelectFolder(folder._id)}>
-									<Folder weight={isActive ? 'fill' : 'bold'} /><span className="folderRailItemText">{folder.name} ({folderCounts.get(folder._id) ?? 0})</span>
+								<button
+									type="button"
+									className="folderRailItemButton"
+									data-active={isActive ? 'true' : 'false'}
+									onClick={() => handleSelectFolder(folder._id)}
+								>
+									<Folder weight={isActive ? 'fill' : 'bold'} />
+									<span className="folderRailItemText">
+										{folder.name} ({folderCounts.get(folder._id) ?? 0})
+									</span>
 								</button>
-								<z-alert-dialog heading={`Delete "${folder.name}"?`} description="Documents inside move to the workspace root. This can't be undone." accent="error" confirm-label="Delete" onConfirm={() => void props.onDeleteFolder(folder._id)}>
-									<z-button slot="trigger" kind="ghost" size="sm" accent="error" title="Delete folder" aria-label="Delete folder"><Trash weight="bold" /></z-button>
+								<z-alert-dialog
+									heading={`Delete "${folder.name}"?`}
+									description="Documents inside move to the workspace root. This can't be undone."
+									accent="error"
+									confirm-label="Delete"
+									onconfirm={() => void props.onDeleteFolder(folder._id)}
+								>
+									<z-button
+										slot="trigger"
+										kind="ghost"
+										size="sm"
+										accent="error"
+										title="Delete folder"
+										aria-label="Delete folder"
+									>
+										<Trash weight="bold" />
+									</z-button>
 								</z-alert-dialog>
 							</div>
 						)
 					})}
 				</div>
 				<z-separator />
-				<Link className="folderRailFooterLink" href="/trash">
-					<Trash weight="bold" />
-					<span>Trash</span>
-				</Link>
+				<TrashLink className="folderRailFooterLink" />
 			</z-card>
 		</aside>
 	)

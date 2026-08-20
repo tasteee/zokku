@@ -24,7 +24,7 @@
 	align-items: center;
 	gap: var(--space-xs);
 	width: fit-content;
-	padding: var(--space-xs);
+	padding: 0;
 	border: none;
 	background: transparent;
 	color: var(--muted-foreground);
@@ -42,29 +42,16 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	padding-left: var(--space-xs);
 	color: var(--foreground);
 	font-size: var(--font-size-h4);
 	font-weight: var(--font-weight-bold);
+  margin-bottom: 0.5rem;
 }
 
+/* Appearance lives in TrashLink.css; the rail only pins it to the bottom. */
 .folderRailFooterLink {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--space-xs);
-	width: fit-content;
 	margin-top: auto;
-	padding: var(--space-xs);
-	padding-top: var(--space-sm);
-	border-radius: var(--radius-sm);
-	color: var(--muted-foreground);
-	font-size: var(--font-size-caption);
-	font-weight: var(--font-weight-semibold);
-	text-decoration: none;
-	transition: background 120ms ease, color 120ms ease;
 }
-.folderRailFooterLink:hover { background: color-mix(in srgb, var(--foreground) 6%, transparent); color: var(--foreground); }
-.folderRailFooterLink svg { width: 0.95rem; height: 0.95rem; }
 
 .folderRailSection,
 .folderRailList { display: flex; flex-direction: column; gap: 0.25rem; }

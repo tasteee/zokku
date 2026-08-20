@@ -58,6 +58,27 @@ body {
 	-webkit-font-smoothing: antialiased;
 }
 
+/*
+	The single page fade. FadingPage renders this wrapper from the root layout,
+	so the rules belong here rather than in a route stylesheet: every route has
+	the wrapper, including ones that never import the documents stylesheet.
+	Durations arrive as custom properties from FadingPage, which reads them
+	from the transitions store, so lib/transitions.store.ts sets the timing.
+*/
+.fadingPage[data-transition='out'] {
+	opacity: 0;
+	transition: opacity var(--fade-out-duration, 1000ms) ease;
+}
+
+.fadingPage[data-transition='in'] {
+	animation: fadingPageFadeIn var(--fade-in-duration, 1500ms) ease forwards;
+}
+
+@keyframes fadingPageFadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
 /* ─── Topbar ─────────────────────────────────────────────── */
 
 .Topbar {
@@ -694,7 +715,47 @@ body {
 	margin-bottom: var(--spacing-4);
 }
 
-.Prose .isSmallCaps + h1 {
+/*
+	Light-DOM mirror of the zu-eyebrow shadow styles. Document rules win over
+	the component's own :host rules, so this is the single source of truth in
+	the app and it keeps eyebrows correct in exported HTML, where the element
+	is never upgraded because no component script ships with the export.
+*/
+.Prose zu-eyebrow {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	width: 100%;
+	color: var(--primary);
+	font-family: inherit;
+	font-size: var(--font-size-1);
+	font-weight: 700;
+	line-height: var(--line-height-small);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	margin-bottom: var(--spacing-4);
+}
+
+.Prose zu-eyebrow::after {
+	content: '';
+	flex: 0 0 80px;
+	height: 1px;
+	background: currentColor;
+	opacity: 0.35;
+}
+
+.Prose zu-eyebrow[full]::after {
+	flex: 1 1 auto;
+	min-width: 32px;
+}
+
+.Prose zu-eyebrow[no-rule]::after {
+	display: none;
+}
+
+.Prose .isSmallCaps + :is(h1, h2, h3, h4, h5, h6),
+.Prose blockquote:has(> .zEyebrow) + :is(h1, h2, h3, h4, h5, h6),
+.Prose zu-eyebrow + :is(h1, h2, h3, h4, h5, h6) {
 	margin-top: -12px;
 }
 
