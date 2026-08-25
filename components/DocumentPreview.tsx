@@ -1,74 +1,78 @@
-'use client'
-
 import './DocumentPreview.css'
-import { useQuery } from 'convex/react'
-import { useRouter } from 'next/navigation'
-import { useState, useEffect, JSX } from 'react'
-import { api } from '@/convex/_generated/api'
-import type { Id } from '@/convex/_generated/dataModel'
+import '@/components/PreviewSettings.css'
+import { useLocation } from 'wouter'
+import { JSX, useEffect, useRef, useState } from 'react'
 import { renderMarkdown } from '@/app/actions/renderMarkdown'
-import { ZButton } from '@/components/zButton'
 import { CaretLeftIcon } from '@phosphor-icons/react'
+import { listWorkspace, resolveWorkspaceMediaInHtml, restoreWorkspace } from '@/lib/localWorkspace'
+import type { LocalDocumentT } from '@/lib/localWorkspace'
+import { resolveDocumentHref } from '@/lib/documentLinks'
+import { beginAppTransition } from '@/lib/appTransition'
+import { getEditorHref, getPreviewHref } from '@/lib/documentRoutes'
+import { getPreviewSurfaceStyle, loadPreviewSettings } from '@/components/previewSettings'
+import type { PreviewSettingsT } from '@/components/previewSettings'
 
-type DocumentPreviewPropsT = {
-	documentId: Id<'documents'>
-}
+type DocumentPreviewPropsT = { documentId: string }
 
 export const DocumentPreview = (props: DocumentPreviewPropsT): JSX.Element => {
-	const document = useQuery(api.documents.get, { id: props.documentId })
-	const router = useRouter()
-
+	const [, navigate] = useLocation()
+	const [document, setDocument] = useState<LocalDocumentT | null | undefined>(undefined)
+	const [workspaceDocuments, setWorkspaceDocuments] = useState<LocalDocumentT[]>([])
 	const [previewHtml, setPreviewHtml] = useState('')
+	const [previewSettings] = useState<PreviewSettingsT>(loadPreviewSettings)
+	const previewMediaUrlsRef = useRef<string[]>([])
 
 	useEffect(() => {
-		const isLoaded = document !== undefined && document !== null
-		if (!isLoaded) return
+		let isCurrent = true
+		void (async () => {
+			const workspace = await restoreWorkspace(false)
+			if (workspace === null) { navigate('/', { replace: true }); return }
+			const workspaceState = await listWorkspace()
+			const nextDocument = workspaceState.documents.find((candidate) => candidate._id === props.documentId) ?? null
+			if (!isCurrent) return
+			setWorkspaceDocuments(workspaceState.documents)
+			setDocument(nextDocument)
+			if (nextDocument === null) return
 
-		const renderContent = async (): Promise<void> => {
-			const html = await renderMarkdown(document.content)
-			setPreviewHtml(html)
-		}
+			const renderedHtml = await renderMarkdown(nextDocument.content, previewSettings.theme)
+			const resolved = await resolveWorkspaceMediaInHtml(renderedHtml, nextDocument.path)
+			if (!isCurrent) {
+				for (const url of resolved.objectUrls) URL.revokeObjectURL(url)
+				return
+			}
+			for (const url of previewMediaUrlsRef.current) URL.revokeObjectURL(url)
+			previewMediaUrlsRef.current = resolved.objectUrls
+			setPreviewHtml(resolved.html)
+		})()
+		return () => { isCurrent = false }
+	}, [props.documentId, navigate, previewSettings.theme])
 
-		renderContent()
-	}, [document])
+	useEffect(() => () => {
+		for (const url of previewMediaUrlsRef.current) URL.revokeObjectURL(url)
+	}, [])
 
-	const isDocumentMissing = document === null
-
-	if (isDocumentMissing) {
-		return (
-			<div className="HomeEmpty">
-				<h1 className="HomeEmptyTitle">Document not found</h1>
-				<p className="HomeEmptyBody">This document may have been deleted.</p>
-				<ZButton label="Back to documents" onClick={() => router.push('/documents')} />
-			</div>
-		)
+	const handlePreviewClick = (event: React.MouseEvent<HTMLDivElement>): void => {
+		if (document === null || document === undefined) return
+		const target = event.target
+		if (!(target instanceof Element)) return
+		const anchor = target.closest('a')
+		if (!(anchor instanceof HTMLAnchorElement)) return
+		const resolved = resolveDocumentHref(document.path, anchor.getAttribute('href') ?? '')
+		if (resolved === null) return
+		event.preventDefault()
+		const linkedDocument = workspaceDocuments.find((candidate) => candidate.path === resolved.path)
+		if (linkedDocument === undefined) return
+		beginAppTransition(() => navigate(getPreviewHref(linkedDocument._id, resolved.anchor)))
 	}
 
-	const isLoading = document === undefined
+	if (document === null) return <div className="HomeEmpty"><z-heading size="lg">Document not found</z-heading><p className="HomeEmptyBody">The Markdown file may have been moved or deleted.</p><z-button accent="dom" onClick={() => beginAppTransition(() => navigate('/documents/'))}>Back to documents</z-button></div>
+	if (document === undefined) return <div className="HomeEmpty"><p className="HomeEmptyBody">Loading local preview…</p></div>
 
-	if (isLoading) {
-		return (
-			<div className="HomeEmpty">
-				<p className="HomeEmptyBody">Loading...</p>
-			</div>
-		)
-	}
-
-	return (
-		<div className="DocumentPreviewShell">
-			<div className="Topbar">
-				<button
-					className="TopbarBackButton"
-					onClick={() => router.push(`/documents/${props.documentId}`)}
-					title="Back to editor"
-				>
-					<CaretLeftIcon size={18} weight="bold" />
-				</button>
-				<span className="TopbarTitle">{document.title || 'Untitled'}</span>
-			</div>
-			<div className="DocumentPreviewContent">
-				<div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} />
-			</div>
+	return <div className="DocumentPreviewShell">
+		<div className="Topbar">
+			<z-button kind="ghost" size="sm" onClick={() => beginAppTransition(() => navigate(getEditorHref(props.documentId)))} title="Back to editor" aria-label="Back to editor"><CaretLeftIcon size={18} weight="bold" /></z-button>
+			<span className="TopbarTitle">{document.title || 'Untitled'}</span>
 		</div>
-	)
+		<div className="DocumentPreviewContent proseRoot" data-preview-theme={previewSettings.theme} data-preview-font="sans" data-preview-scale="compact" style={getPreviewSurfaceStyle(previewSettings)} onClick={handlePreviewClick}><div className="Prose" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div>
+	</div>
 }

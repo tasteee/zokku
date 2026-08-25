@@ -3,3 +3,8 @@
 	line-height: var(--line-height-h4) !important;
 	margin-top: 0.5rem !important;
 }
+
+.Prose .zText.isSmall {
+	font-size: var(--font-size-1) !important;
+	line-height: var(--line-height-small) !important;
+}

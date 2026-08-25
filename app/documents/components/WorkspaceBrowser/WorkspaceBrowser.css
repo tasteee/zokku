@@ -1,0 +1,187 @@
+.workspaceBrowser {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-xl);
+}
+
+.workspaceBrowserHeader {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: var(--space-xl);
+	padding-bottom: var(--space-lg);
+	border-bottom: 1px solid var(--border);
+}
+
+.workspaceBrowserDescription {
+	display: -webkit-box;
+	margin-top: var(--space-xs);
+	max-width: 36rem;
+	overflow: hidden;
+	font-size: var(--font-size-small);
+	line-height: var(--line-height-small);
+	color: var(--muted-foreground);
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+
+.workspaceBrowserGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+	gap: var(--space-md);
+}
+
+.workspaceBrowserCardShell {
+	position: relative;
+	min-width: 0;
+}
+
+.workspaceBrowserCard {
+	display: flex;
+	flex-direction: column;
+	min-height: 13rem;
+	width: 100%;
+	height: 100%;
+	cursor: pointer;
+}
+
+.workspaceBrowserCardBody {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+	flex-direction: column;
+	gap: var(--space-xs);
+}
+
+.workspaceBrowserCardTopline {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-sm);
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
+}
+
+.workspaceBrowserCardTopline span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.workspaceBrowserCardTopline svg {
+	width: 1rem;
+	height: 1rem;
+	flex-shrink: 0;
+}
+
+.workspaceBrowserCardTitle {
+	font-size: var(--font-size-small);
+	font-weight: var(--font-weight-semibold);
+	color: var(--foreground);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	line-height: 1.35;
+}
+
+.workspaceBrowserCardPath {
+	display: -webkit-box;
+	overflow: hidden;
+	font-family: var(--font-mono);
+	font-size: var(--font-size-caption);
+	line-height: var(--line-height-small);
+	color: var(--muted-foreground);
+	opacity: 0.88;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+}
+
+.workspaceBrowserCardFooter {
+	margin-top: var(--space-lg);
+	padding-top: var(--space-md);
+	padding-right: 2.25rem;
+	border-top: 1px solid var(--border);
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
+}
+
+.workspaceBrowserTrashButton {
+	position: absolute;
+	right: var(--space-sm);
+	bottom: calc(var(--space-sm) - 0.125rem);
+	opacity: 0;
+	pointer-events: none;
+	transform: translateY(2px);
+	transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.workspaceBrowserCardShell:hover .workspaceBrowserTrashButton,
+.workspaceBrowserCardShell:focus-within .workspaceBrowserTrashButton {
+	opacity: 1;
+	pointer-events: auto;
+	transform: translateY(0);
+}
+
+/* Appearance lives in TrashLink.css so this matches the rail's Trash link. */
+.workspaceBrowserTrashLink {
+	width: fit-content;
+	margin-top: var(--space-xs);
+}
+
+.workspaceBrowserTrashCard {
+	display: flex;
+	flex-direction: column;
+	min-height: 13rem;
+}
+
+.workspaceBrowserTrashCardFooter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-sm);
+	margin-top: var(--space-lg);
+	padding-top: var(--space-sm);
+	border-top: 1px solid var(--border);
+	color: var(--muted-foreground);
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+@media (max-width: 680px) {
+	.workspaceBrowserHeader {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+}
+
+@media (hover: none) {
+	.workspaceBrowserTrashButton {
+		opacity: 0.72;
+		pointer-events: auto;
+		transform: none;
+	}
+}
+
+.workspaceBrowserGroup {
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	gap: var(--space-md);
+}
+
+.workspaceBrowserGroupLabel {
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
+}

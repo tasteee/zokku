@@ -1,10 +1,6 @@
-'use client'
-
-import './FolderComposer.css'
-import { JSX, SubmitEvent } from 'react'
-import { XIcon } from '@phosphor-icons/react'
-import { ZButton } from '@/components/zButton'
+import { JSX } from 'react'
 import { $composer } from '../../stores'
+import { onZestValue } from '@/lib/zestEvents'
 
 type FolderComposerPropsT = {
 	onSubmit: (name: string, description: string) => Promise<void>
@@ -16,58 +12,57 @@ export const FolderComposer = (props: FolderComposerPropsT): JSX.Element => {
 	const isCreating = $composer.use.lookup('isCreating') as boolean
 
 	const handleClose = (): void => {
-		$composer.set.lookup('isOpen', false)
+		$composer.set.replace({ folderName: '', folderDescription: '', isCreating: false, isOpen: false })
 	}
 
-	const handleSubmit = async (event: SubmitEvent<HTMLFormElement>): Promise<void> => {
-		event.preventDefault()
+	const handleCreate = async (): Promise<void> => {
 		const trimmedName = folderName.trim()
 		const trimmedDescription = folderDescription.trim()
-		if (!trimmedName) return
+		if (!trimmedName || isCreating) return
 		await props.onSubmit(trimmedName, trimmedDescription)
 	}
 
+	const handleNameKeyDown = (event: KeyboardEvent): void => {
+		if (event.key !== 'Enter') return
+		event.preventDefault()
+		void handleCreate()
+	}
+
 	return (
-		<div className="folderComposerBackdrop" role="presentation" onMouseDown={handleClose}>
-			<form className="folderComposer" onSubmit={handleSubmit} onMouseDown={(event) => event.stopPropagation()}>
-				<div className="folderComposerHeader">
-					<div>
-						<div className="folderComposerKicker">New folder</div>
-						<h2>Create a folder</h2>
-					</div>
-					<button className="folderComposerClose" type="button" onClick={handleClose} title="Close">
-						<XIcon weight="bold" />
-					</button>
-				</div>
+		/*
+			`onclose`, not `onClose`. React owns the camelCase name and only ever
+			listens for a `close` event on a native <dialog>, so the camelCase prop on a
+			custom element is dropped and the dialog can be dismissed without the store
+			ever learning about it - which leaves isOpen stuck true and the composer
+			impossible to reopen. Lowercase handlers are forwarded to addEventListener.
+		*/
+		<z-dialog is-open heading="Create a folder" onclose={handleClose}>
+			<z-field label="Name">
+				<z-input
+					value={folderName}
+					oninput={onZestValue<string>((value) => $composer.set.lookup('folderName', value))}
+					onKeyDown={handleNameKeyDown}
+					placeholder="Product notes"
+					autoFocus
+				/>
+			</z-field>
 
-				<label className="folderComposerField">
-					<span>Name</span>
-					<input
-						value={folderName}
-						onChange={(event) => $composer.set.lookup('folderName', event.target.value)}
-						placeholder="Product notes"
-						autoFocus
-					/>
-				</label>
+			<z-field label="Description">
+				<z-textarea
+					value={folderDescription}
+					oninput={onZestValue<string>((value) => $composer.set.lookup('folderDescription', value))}
+					placeholder="Optional context for this collection"
+				/>
+			</z-field>
 
-				<label className="folderComposerField">
-					<span>Description</span>
-					<textarea
-						value={folderDescription}
-						onChange={(event) => $composer.set.lookup('folderDescription', event.target.value)}
-						placeholder="Optional context for this collection"
-					/>
-				</label>
-
-				<div className="folderComposerActions">
-					<ZButton isSmall isOutlined isNeutral type="button" onClick={handleClose}>
-						Cancel
-					</ZButton>
-					<ZButton isSmall isSolid isPink type="submit" isDisabled={!folderName.trim() || isCreating}>
-						Create folder
-					</ZButton>
-				</div>
-			</form>
-		</div>
+			<div slot="footer">
+				<z-button kind="outline" accent="neutral" onClick={handleClose}>
+					Cancel
+				</z-button>
+				<z-button accent="dom" onClick={() => void handleCreate()} disabled={!folderName.trim() || isCreating}>
+					Create folder
+				</z-button>
+			</div>
+		</z-dialog>
 	)
 }

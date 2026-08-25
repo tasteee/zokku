@@ -1,190 +1,115 @@
 .folderRail {
 	position: sticky;
-	top: calc(3.5rem + var(--spacing-8));
+	top: calc(3.5rem + var(--space-2xl));
 	align-self: start;
+	max-height: calc(100dvh - 7.5rem);
+}
+
+.folderRailCard {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-3);
-	max-height: calc(100dvh - 7.5rem);
-	padding: var(--spacing-3);
-	border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
-	border-radius: var(--medium-button-radius);
-	background: color-mix(in srgb, var(--paper) 82%, transparent);
-	box-shadow: 0 18px 60px color-mix(in srgb, black 22%, transparent);
+	gap: var(--space-sm);
+	height: 100%;
 	overflow: hidden;
 }
 
-.folderRailSection,
-.folderRailList {
+.folderRailWorkspaceHeader {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-1);
+	gap: var(--space-xs);
 }
 
-.folderRailList {
-	overflow-y: auto;
-	padding-right: var(--spacing-1);
+.folderRailBackLink {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-xs);
+	width: fit-content;
+	padding: 0;
+	border: none;
+	background: transparent;
+	color: var(--muted-foreground);
+	text-decoration: none;
+	font: inherit;
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-semibold);
+	cursor: pointer;
+	transition: color 120ms ease;
+}
+.folderRailBackLink:hover { color: var(--foreground); }
+.folderRailBackLink svg { width: 0.9rem; height: 0.9rem; }
+
+.folderRailWorkspaceHeaderName {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--foreground);
+	font-size: var(--font-size-h4);
+	font-weight: var(--font-weight-bold);
+  margin-bottom: 0.5rem;
 }
 
-.folderRailDivider {
-	height: 1px;
-	background: var(--line);
-	margin: var(--spacing-1) 0;
+/* Appearance lives in TrashLink.css; the rail only pins it to the bottom. */
+.folderRailFooterLink {
+	margin-top: auto;
 }
+
+.folderRailSection,
+.folderRailList { display: flex; flex-direction: column; gap: 0.25rem; }
+.folderRailList { overflow-y: auto; padding-right: 0.25rem; }
 
 .folderRailHeader {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 0 var(--spacing-2);
-	font-size: var(--font-size-0);
+	padding: 0 var(--space-xs);
+	font-size: var(--font-size-caption);
 	font-weight: var(--font-weight-bold);
 	letter-spacing: 0.11em;
 	text-transform: uppercase;
-	color: var(--muted);
+	color: var(--muted-foreground);
 }
-
-.folderRailHeaderActions {
-	display: flex;
-	align-items: center;
-	gap: var(--spacing-2);
-}
-
-.folderRailAddButton {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 1.5rem;
-	height: 1.5rem;
-	border: 1px solid transparent;
-	border-radius: var(--small-button-radius);
-	background: transparent;
-	color: var(--muted);
-	cursor: pointer;
-	transition:
-		border-color 120ms,
-		background 120ms,
-		color 120ms;
-}
-
-.folderRailAddButton svg {
-	width: 0.8125rem;
-	height: 0.8125rem;
-}
-
-.folderRailAddButton:hover {
-	border-color: color-mix(in srgb, var(--accent) 44%, transparent);
-	background: color-mix(in srgb, var(--accent) 12%, transparent);
-	color: var(--accent);
-}
-
-.folderRailRow {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
-	gap: var(--spacing-1);
-}
+.folderRailHeaderActions { display: flex; align-items: center; gap: var(--space-xs); }
 
 .folderRailItem {
-	display: grid;
-	grid-template-columns: auto minmax(0, 1fr) auto;
+	display: flex;
 	align-items: center;
-	gap: var(--spacing-2);
-	width: 100%;
-	min-height: 2.25rem;
-	padding: 0 var(--spacing-2);
-	border: 1px solid transparent;
-	border-radius: var(--small-button-radius);
-	background: transparent;
-	color: var(--muted);
-	text-align: left;
-	font-family: var(--font-sans);
-	cursor: pointer;
-	transition:
-		background 120ms,
-		border-color 120ms,
-		color 120ms;
+	gap: 0.25rem;
 }
 
-.folderRailItem:hover {
-	background: color-mix(in srgb, var(--primary) 6%, transparent);
+.folderRailItemButton {
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 2.25rem;
+	padding: 0 var(--space-sm);
+	border: 1px solid transparent;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--muted-foreground);
+	font: inherit;
+	font-size: var(--font-size-caption);
+	font-weight: var(--font-weight-medium);
+	text-align: left;
+	cursor: pointer;
+	transition: background 120ms, color 120ms;
+}
+.folderRailItemButton:hover {
+	background: color-mix(in srgb, var(--foreground) 6%, transparent);
 	color: var(--foreground);
 }
-
-.folderRailItem[data-active='true'] {
-	border-color: color-mix(in srgb, var(--accent) 38%, transparent);
-	background: color-mix(in srgb, var(--accent) 12%, transparent);
-	color: var(--primary);
+.folderRailItemButton[data-active='true'] {
+	background: color-mix(in srgb, var(--purple) 12%, transparent);
+	color: var(--purple);
 }
-
-.folderRailItemIcon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 1rem;
-	color: currentColor;
-}
-
-.folderRailItemIcon svg {
+.folderRailItemButton svg {
+	flex-shrink: 0;
 	width: 0.95rem;
 	height: 0.95rem;
 }
-
 .folderRailItemText {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: var(--font-size-caption);
-	font-weight: var(--font-weight-medium);
-}
-
-.folderRailItemCount {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 1.375rem;
-	height: 1.25rem;
-	padding: 0 var(--spacing-1);
-	border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
-	border-radius: 999px;
-	font-size: var(--font-size-0);
-	color: var(--muted);
-}
-
-.folderRailDeleteButton {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 2.25rem;
-	height: 2.25rem;
-	border: 1px solid transparent;
-	border-radius: var(--small-button-radius);
-	background: transparent;
-	color: var(--muted);
-	font-family: var(--font-sans);
-	cursor: pointer;
-	transition:
-		border-color 120ms,
-		background 120ms,
-		color 120ms;
-}
-
-.folderRailDeleteButton svg {
-	width: 0.875rem;
-	height: 0.875rem;
-}
-
-.folderRailDeleteButton:hover,
-.folderRailDeleteButton[data-confirm='true'] {
-	border-color: color-mix(in srgb, var(--accent-alt) 44%, transparent);
-	background: color-mix(in srgb, var(--accent-alt) 10%, transparent);
-	color: var(--accent-alt);
-}
-
-.folderRailDeleteButton[data-confirm='true'] {
-	width: auto;
-	padding: 0 var(--spacing-2);
-	font-size: var(--font-size-0);
-	font-weight: var(--font-weight-bold);
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
 }
